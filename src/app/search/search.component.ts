@@ -1,34 +1,53 @@
-import { Component } from '@angular/core';
+import { Component, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { FormsModule } from '@angular/forms';
-import { RESULTS } from '../mock-results';
-import { EXPLANATIONS } from '../mock-explanations';
+import { HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, SearchResultsComponent, FormsModule],
   templateUrl: './search.component.html',
-  styleUrl: './search.component.scss'
+  styleUrl: './search.component.scss',
+  imports: [CommonModule, SearchResultsComponent, FormsModule, HttpClientModule],
 })
 
+@Injectable()
 export class SearchComponent {
   searchInput : string = "";
 
   results : any = {};
+  queryResult: any = {};
+
+  baseUrl = 'http://192.168.178.57:8082/api/search?query=';
+  joinSuffix = '&join=';
+
+  constructor(private http: HttpClient) {
+  }
 
   onSearchChange(event: Event) {
     this.search(this.searchInput);
   }
 
-  search(term : string) {
+  async query(searchInput: string, join?: string) {
+    let query = `${this.baseUrl}${searchInput}`
+    if (join != null) {
+      query += this.joinSuffix + join;
+    }
+    console.log("q", query);
+    this.http.get(query);
+
+    const data = await fetch(query);
+    return await data.json() ?? [];
+  }
+
+  async search(term : string) {
+
     console.log(`Searching for ${term}`);
-
-    // TODO: async call auf API mit irgendeiner HTTP scheise
-
-    var results = RESULTS;
-    var explanations = EXPLANATIONS;
+    let results = await this.query(this.searchInput, "annotation")
+    let explanations = await this.query(this.searchInput);
 
     for(var result of results.docs) {
       result.expanded = true;

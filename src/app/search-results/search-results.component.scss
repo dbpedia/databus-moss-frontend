@@ -18,6 +18,8 @@
 
 .explanation-list {
     padding: 0;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .explanation-list>li {
@@ -26,6 +28,7 @@
     padding: .5em;
     border-radius: 8px;
     margin-left: .4em;
+    margin-bottom: .4em;
     width: fit-content;
 }
 
