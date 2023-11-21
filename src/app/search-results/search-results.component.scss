@@ -4,9 +4,10 @@
 }
 
 .result-list>li {
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
+    border-bottom: 1px solid #dbdbdb;
     padding: .5em;
+    padding-top: 0;
+    padding-bottom: 1em;
     margin-bottom: 1em;
 }
 
@@ -19,10 +20,11 @@
 }
 
 .explanation-list>li {
-    background-color: #f3f3f3;
+    border: 1px solid #dbdbdb;
+    background-color: #fafafa;
     padding: .5em;
     border-radius: 8px;
-    margin-left: .1em;
+    margin-left: .4em;
 }
 
 .explanation-list .annotation {
@@ -32,4 +34,8 @@
 
 .explanation-list .annotation svg {
     margin-right: .5em;
+}
+
+.explanation-list .annotation span {
+    margin-left: .3em;
 }
