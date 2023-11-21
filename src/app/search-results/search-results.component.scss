@@ -1,0 +1,35 @@
+.result-list {
+    list-style: none;
+    padding: 0;
+}
+
+.result-list>li {
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    padding: .5em;
+    margin-bottom: 1em;
+}
+
+.result-list>li>.content {
+    padding: .5em;
+}
+
+.explanation-list {
+    padding: 0;
+}
+
+.explanation-list>li {
+    background-color: #f3f3f3;
+    padding: .5em;
+    border-radius: 8px;
+    margin-left: .1em;
+}
+
+.explanation-list .annotation {
+    display: flex;
+    align-items: center;
+}
+
+.explanation-list .annotation svg {
+    margin-right: .5em;
+}
