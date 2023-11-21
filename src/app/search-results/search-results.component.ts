@@ -19,6 +19,8 @@ export class SearchResultsComponent {
 
   ngOnInit() {
 
+    this.results = {};
+    this.results.docs = [];
 
   }
 
