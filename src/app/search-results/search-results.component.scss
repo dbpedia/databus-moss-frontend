@@ -4,7 +4,7 @@
 }
 
 .result-list>li {
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid #c8c8c8;
     padding: .5em;
     padding-top: 0;
     padding-bottom: 1em;
@@ -13,6 +13,7 @@
 
 .result-list>li>.content {
     padding: .5em;
+    padding-top: 0;
 }
 
 .explanation-list {
@@ -25,6 +26,7 @@
     padding: .5em;
     border-radius: 8px;
     margin-left: .4em;
+    width: fit-content;
 }
 
 .explanation-list .annotation {
