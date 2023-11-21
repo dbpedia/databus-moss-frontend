@@ -1,4 +1,4 @@
-export const RESULTS = {
+export const RESULTS : any = {
     "docs": [
       {
         "annotation": [

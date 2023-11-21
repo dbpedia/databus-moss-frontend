@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { RESULTS } from '../mock-results';
 import { EXPLANATIONS } from '../mock-explanations';
@@ -15,30 +15,15 @@ import { EXPLANATIONS } from '../mock-explanations';
 
 export class SearchResultsComponent {
  
-  results: any;
+  @Input() results : any;
 
   ngOnInit() {
 
-    this.processInput(RESULTS, EXPLANATIONS);
 
   }
 
-  processInput(results : any, explanations : any) {
+  processInput() {
 
-    for(var result of results.docs) {
-      result.expanded = true;
-      result.explanations = [];
-
-      for(var explanation of explanations.docs) {
-
-        for(var annotationUri of result.annotation) {
-          if(annotationUri == explanation.id) {
-            result.explanations.push(explanation);
-          }
-        }
-      }
-    }
-
-    this.results = results;
+    
   }
 }

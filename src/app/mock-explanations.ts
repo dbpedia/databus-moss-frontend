@@ -1,4 +1,4 @@
-export const EXPLANATIONS ={
+export const EXPLANATIONS : any = {
   "docs": [
     {
       "score": [
