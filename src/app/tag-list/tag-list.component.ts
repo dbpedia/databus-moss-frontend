@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 export class TagListComponent {
   searchInput : string = "";
   tags : any;
-  baseUrl : string = 'http://akswnc7.informatik.uni-leipzig.de:19899/api/search?query=';
+  baseUrl : string = 'http://akswnc7.informatik.uni-leipzig.de:19899/api/search?type=tag&query=';
 
   @Output() select = new EventEmitter();
 
@@ -42,10 +42,6 @@ export class TagListComponent {
 
 
   async search(term : string) {
-
-    if(term == "") {
-      term = "c";
-    }
 
     let tags = await this.query(term);
 

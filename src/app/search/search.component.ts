@@ -24,8 +24,8 @@ export class SearchComponent {
   joinSuffix = '&join=';
 
   onSelectAnnotation(event : any) {
-    
     this.searchInput = `&classId=${event.tag.classId[0]}`;
+    this.search(this.searchInput);
   }
 
   onSearchChange(event: Event) {
