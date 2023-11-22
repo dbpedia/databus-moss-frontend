@@ -2,8 +2,7 @@ import { Component, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { HttpClient } from '@angular/common/http';
+import { TagListComponent } from '../tag-list/tag-list.component';
 
 
 @Component({
@@ -11,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
-  imports: [CommonModule, SearchResultsComponent, FormsModule, HttpClientModule],
+  imports: [CommonModule, SearchResultsComponent, TagListComponent, FormsModule],
 })
 
 @Injectable()
@@ -21,10 +20,12 @@ export class SearchComponent {
   results : any = {};
   queryResult: any = {};
 
-  baseUrl = 'http://192.168.178.57:8082/api/search?query=';
+  baseUrl = 'http://akswnc7.informatik.uni-leipzig.de:19899/api/search?query=';
   joinSuffix = '&join=';
 
-  constructor(private http: HttpClient) {
+  onSelectAnnotation(event : any) {
+    
+    this.searchInput = `&classId=${event.tag.classId[0]}`;
   }
 
   onSearchChange(event: Event) {
@@ -36,8 +37,6 @@ export class SearchComponent {
     if (join != null) {
       query += this.joinSuffix + join;
     }
-    console.log("q", query);
-    this.http.get(query);
 
     const data = await fetch(query);
     return await data.json() ?? [];

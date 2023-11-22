@@ -1,0 +1,19 @@
+.tag-list {}
+
+.tag-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.tag-list li {
+    padding: .5em;
+    background-color: #fafafa;
+    border: 1px solid #dbdbdb;
+    margin-bottom: .5em;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.tag-list li:hover {
+    background-color: #f3f3f3;
+}

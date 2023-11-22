@@ -1,6 +1,7 @@
 .result-list {
     list-style: none;
     padding: 0;
+    max-width: 1200px;
 }
 
 .result-list>li {
@@ -20,6 +21,7 @@
     padding: 0;
     display: flex;
     flex-wrap: wrap;
+    margin-bottom: -.4em;
 }
 
 .explanation-list>li {

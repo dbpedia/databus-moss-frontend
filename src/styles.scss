@@ -15,3 +15,30 @@ h3 {
     color: #369;
     font-family: Arial, Helvetica, sans-serif;
 }
+
+.columns {
+    display: flex;
+}
+
+.column {
+    flex-grow: 1;
+}
+
+.column.medium {
+    flex-basis: 30%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.column.bordered {
+    border-left: 1px solid #dbdbdb;
+}
+
+input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-width: 400px;
+    outline: none;
+}

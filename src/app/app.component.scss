@@ -55,11 +55,13 @@ button:disabled {
 
 .page-layout>.pages {
     padding: 2em;
+    width: 100%;
 }
 
 nav {
     border-right: 1px solid #dbdbdb;
     width: 300px;
+    min-width: 300px;
     min-height: 100vh;
     background-color: #fafafa;
 }
