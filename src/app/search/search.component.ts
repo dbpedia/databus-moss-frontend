@@ -54,7 +54,7 @@ export class SearchComponent {
       result.expanded = true;
       result.explanations = [];
 
-      if(result.moveType != undefined) {
+      if(result.modType != undefined) {
        result.modName = SearchComponent.uriToName(result.modType[0]);
       }
 
