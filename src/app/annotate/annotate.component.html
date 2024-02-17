@@ -1,2 +1,17 @@
 <h2>Annotate</h2>
-<app-tag-list (select)="onSelectAnnotation($event)"></app-tag-list>
+
+<input class="file-input" [(ngModel)]="fileInput" placeholder="Enter Databus identifier..." (input)="onFileChange($event)" />
+<div class="columns">
+    <div class="column large">
+        <div class="file-annotations">
+            <ul>
+                <li *ngFor="let ann of annotations">
+                    {{ ann }}
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="column ">
+        <app-tag-list annotatedCount="0,100000"  (select)="onSelectAnnotation($event)"></app-tag-list>
+    </div>
+</div>

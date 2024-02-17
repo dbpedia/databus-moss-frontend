@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule, NgFor } from '@angular/common';
 import { TAGS } from '../mock-tags';
 import { FormsModule } from '@angular/forms';
@@ -13,9 +13,12 @@ import { FormsModule } from '@angular/forms';
 export class TagListComponent {
   searchInput : string = "";
   tags : any;
-  baseUrl : string = 'http://akswnc7.informatik.uni-leipzig.de:19899/api/search?type=tag&query=';
+  baseUrl : string = 'http://localhost:8082/api/search?type=tag&query=';
+  annotatedCountSuffix : string = "&annotatedCount="
 
   @Output() select = new EventEmitter();
+  
+  @Input() annotatedCount : string = "1,1000000";
 
   constructor() {
     this.tags = {};
@@ -35,11 +38,10 @@ export class TagListComponent {
   }
 
   async query(searchInput: string) {
-    let query = `${this.baseUrl}${searchInput}`
+    let query = `${this.baseUrl}${searchInput}${this.annotatedCountSuffix}${this.annotatedCount}`
     const data = await fetch(query);
     return await data.json() ?? [];
   }
-
 
   async search(term : string) {
 
@@ -52,5 +54,5 @@ export class TagListComponent {
     }
 
     this.tags = tags;
-  } 
+  }
 }

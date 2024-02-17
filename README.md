@@ -25,3 +25,15 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+## Notes
+
+* Set up MOSS based on MODS
+* Built-in Simple Annotation "MOD" creates simple annotation
+* Steps for each MOD
+    * Create MOD
+    * Create MOD specific Lookup Config
+        * Index mods (not files)
+        * MODS entries hold fields to annotations *and* files
+        * Retrieval of annotations and files might differ depending on the MOD
+Search over annotations and join to MOD entries. Retrieve file from MOD entry and deduplicate locally *or* create file entries in lucene and do a second join

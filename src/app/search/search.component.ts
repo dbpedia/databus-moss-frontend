@@ -20,11 +20,13 @@ export class SearchComponent {
   results : any = {};
   queryResult: any = {};
 
-  baseUrl = 'http://akswnc7.informatik.uni-leipzig.de:19899/api/search?query=';
+  baseUrl = 'http://localhost:8082/api/search?query=';
   joinSuffix = '&join=';
 
+
+
   onSelectAnnotation(event : any) {
-    this.searchInput = `&classId=${event.tag.classId[0]}`;
+    this.searchInput = `&id=${event.tag.id[0]}`;
     this.search(this.searchInput);
   }
 
@@ -52,9 +54,14 @@ export class SearchComponent {
       result.expanded = true;
       result.explanations = [];
 
+       result.modName = SearchComponent.uriToName(result.modType[0]);
+
       for(var explanation of explanations.docs) {
         for(var annotationUri of result.annotation) {
           if(annotationUri == explanation.id) {
+           
+            explanation.idName = SearchComponent.uriToName(explanation.id[0]);
+          
             result.explanations.push(explanation);
           }
         }
@@ -63,4 +70,19 @@ export class SearchComponent {
 
     this.results = results;
   } 
+
+  static uriToName(uri : string) {
+    if (uri == null) {
+      return null;
+    }
+
+    var result = uri.substr(uri.lastIndexOf('/') + 1);
+    result = result.substr(result.lastIndexOf('#') + 1);
+
+    if (result.includes('.')) {
+      result = result.substr(0, result.lastIndexOf('.'));
+    }
+
+    return result;
+  }
 }

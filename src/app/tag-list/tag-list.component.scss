@@ -3,6 +3,9 @@
 .tag-list ul {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 550px;
 }
 
 .tag-list li {
@@ -11,7 +14,9 @@
     border: 1px solid #dbdbdb;
     margin-bottom: .5em;
     border-radius: 8px;
+    width: fit-content;
     cursor: pointer;
+    margin-right: .5em;
 }
 
 .tag-list li:hover {
