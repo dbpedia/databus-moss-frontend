@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 export class TagListComponent {
   searchInput : string = "";
   tags : any;
-  baseUrl : string = 'http://localhost:8082/api/search?type=tag&query=';
+  baseUrl : string = process.env['LOOKUP_SEARCH_URL'] + '?type=tag&query=';
   annotatedCountSuffix : string = "&annotatedCount="
 
   @Output() select = new EventEmitter();

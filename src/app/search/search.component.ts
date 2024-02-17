@@ -20,7 +20,7 @@ export class SearchComponent {
   results : any = {};
   queryResult: any = {};
 
-  baseUrl = 'http://localhost:8082/api/search?query=';
+  baseUrl = process.env['LOOKUP_SEARCH_URL'] + '?query=';
   joinSuffix = '&join=';
 
 
@@ -54,7 +54,9 @@ export class SearchComponent {
       result.expanded = true;
       result.explanations = [];
 
+      if(result.moveType != undefined) {
        result.modName = SearchComponent.uriToName(result.modType[0]);
+      }
 
       for(var explanation of explanations.docs) {
         for(var annotationUri of result.annotation) {
