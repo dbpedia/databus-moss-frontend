@@ -20,7 +20,7 @@ export class SearchComponent {
   results : any = {};
   queryResult: any = {};
 
-  baseUrl = 'https://dev.moss.dbpedia.org/api/search' + '?query=';
+  baseUrl = 'http://localhost:2003/api/search' + '?query=';
   joinSuffix = '&join=';
 
 
