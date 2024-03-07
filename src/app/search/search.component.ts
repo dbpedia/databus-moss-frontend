@@ -23,9 +23,11 @@ export class SearchComponent {
   baseUrl = 'http://localhost:2003/api/search' + '?query=';
   joinSuffix = '&join=';
 
-
-
   onSelectAnnotation(event : any) {
+    if(event.tag == undefined) {
+      return;
+    }
+
     this.searchInput = `&id=${event.tag.id[0]}`;
     this.search(this.searchInput);
   }
@@ -53,6 +55,9 @@ export class SearchComponent {
     for(var result of results.docs) {
       result.expanded = true;
       result.explanations = [];
+
+      result.path = new URL(result.id[0]).pathname;
+      result.usedName = SearchComponent.uriToName(result.used[0]);
 
       if(result.modType != undefined) {
        result.modName = SearchComponent.uriToName(result.modType[0]);

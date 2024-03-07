@@ -2,7 +2,7 @@
 <ul class="result-list">
     <li *ngFor="let result of results.docs">
         <div class="content">
-            <a href="{{result.used}}">{{result.used}}</a>
+            <a href="{{result.used}}">{{result.usedName}}</a>
         </div>
         <ul class="explanation-list" *ngIf="result.expanded">
             <li class="annotation" *ngFor="let explanation of result.explanations">
@@ -13,7 +13,8 @@
                         <span>(<a href="{{explanation.id}}">{{explanation.idName}}</a>)</span>
                     </div>
                     <div style="font-size: .8em; color: grey;">by
-                        <a style="color: grey" href="{{ result.modType }}">{{ result.modName }}</a></div>
+                        <a style="color: grey" href="{{ result.path }}">{{ result.modName }}</a>
+                    </div>
                 </div>
             </li>
         </ul>

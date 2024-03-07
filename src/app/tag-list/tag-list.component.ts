@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 export class TagListComponent {
   searchInput : string = "";
   tags : any;
-  baseUrl : string = 'https://dev.moss.dbpedia.org/api/search' + '?type=tag&query=';
+  baseUrl : string = 'http://localhost:2003/api/search' + '?type=tag&query=';
   annotatedCountSuffix : string = "&annotatedCount="
 
   @Output() select = new EventEmitter();
