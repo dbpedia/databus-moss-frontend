@@ -2,15 +2,28 @@ import { Component } from '@angular/core';
 import { CommonModule, NgFor } from '@angular/common';
 import { TagListComponent } from '../tag-list/tag-list.component';
 import { FormsModule } from '@angular/forms';
+import { TabComponent } from '../tabs/tab.component';
+import { TabsComponent } from '../tabs/tabs.component';
+import { AnnotateSimpleTabComponent } from '../annotate-simple-tab/annotate-simple-tab.component';
+import { AnnotateRdfTabComponent } from '../annotate-rdf-tab/annotate-rdf-tab.component';
 
 @Component({
   selector: 'app-annotate',
   standalone: true,
-  imports: [CommonModule, TagListComponent, FormsModule, NgFor],
+  imports: [
+    CommonModule, 
+    TagListComponent, 
+    FormsModule, 
+    NgFor, 
+    TabsComponent, 
+    TabComponent, 
+    AnnotateSimpleTabComponent,
+    AnnotateRdfTabComponent
+  ],
   templateUrl: './annotate.component.html',
   styleUrl: './annotate.component.scss'
 })
-export class AnnotateComponent {
+export default class AnnotateComponent {
 
   fileInput : string = "";
   annotations : any;

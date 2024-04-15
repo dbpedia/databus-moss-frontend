@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import AnnotateComponent from './annotate.component';
+import { AnnotateRdfTabComponent } from './annotate-rdf-tab.component';
 
-describe('AnnotateComponent', () => {
-  let component: AnnotateComponent;
-  let fixture: ComponentFixture<AnnotateComponent>;
+describe('AnnotateRdfTabComponent', () => {
+  let component: AnnotateRdfTabComponent;
+  let fixture: ComponentFixture<AnnotateRdfTabComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AnnotateComponent]
+      imports: [AnnotateRdfTabComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(AnnotateComponent);
+    fixture = TestBed.createComponent(AnnotateRdfTabComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
