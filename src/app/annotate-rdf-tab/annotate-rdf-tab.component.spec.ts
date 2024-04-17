@@ -8,7 +8,7 @@ describe('AnnotateRdfTabComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AnnotateRdfTabComponent]
+      declarations: [AnnotateRdfTabComponent] 
     })
     .compileComponents();
     
