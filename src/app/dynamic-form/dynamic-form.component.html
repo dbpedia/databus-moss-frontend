@@ -1,0 +1,11 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div *ngFor="let field of schema.fields">
+      <div [ngSwitch]="field.type">
+        <input *ngSwitchCase="'text'" type="text" [formControlName]="field.name" [placeholder]="field.label">
+        <select *ngSwitchCase="'select'" [formControlName]="field.name">
+          <option *ngFor="let option of field.options" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" [disabled]="form.invalid">{{ submitButtonText }}</button>
+</form>

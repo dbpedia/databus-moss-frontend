@@ -1,6 +1,6 @@
 import { RouterModule, UrlMatcher, UrlMatchResult, Routes, Route, UrlSegmentGroup, UrlSegment } from '@angular/router';
 import { SearchComponent } from './search/search.component';
-import { AnnotateComponent } from './annotate/annotate.component';
+import AnnotateComponent from './annotate/annotate.component';
 import { AboutComponent } from './about/about.component';
 import { ViewerComponent } from './viewer/viewer.component';
 

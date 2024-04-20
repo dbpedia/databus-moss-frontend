@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import AnnotateComponent from './annotate.component';
+import { DynamicFormComponent } from './dynamic-form.component';
 
-describe('AnnotateComponent', () => {
-  let component: AnnotateComponent;
-  let fixture: ComponentFixture<AnnotateComponent>;
+describe('DynamicFormComponent', () => {
+  let component: DynamicFormComponent;
+  let fixture: ComponentFixture<DynamicFormComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AnnotateComponent]
+      imports: [DynamicFormComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(AnnotateComponent);
+    fixture = TestBed.createComponent(DynamicFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

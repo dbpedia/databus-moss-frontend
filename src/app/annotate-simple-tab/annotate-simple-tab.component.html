@@ -1,0 +1,20 @@
+<p>annotate-simple-tab works!</p>
+
+<dynamic-form [schema]="schema" (submitted)="handleSubmit($event)"></dynamic-form>
+
+<div class="columns">
+    <div class="column large">
+        <div class="file-annotations">
+            <ul>
+                <li *ngFor="let ann of annotations">
+                    {{ ann }}
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+    <div class="column ">
+        <app-tag-list annotatedCount="0,100000"  (select)="onSelectAnnotation($event)"></app-tag-list>
+    </div>
+
+</div>
