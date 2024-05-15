@@ -1,13 +1,3 @@
 <h2>Annotate</h2>
 
 <input class="file-input" [(ngModel)]="fileInput" placeholder="Enter Databus identifier..." (input)="onFileChange($event)" />
-
-<tabs #tabs>
-    <tab #simple tabTitle="Simple">
-        <app-annotate-simple-tab></app-annotate-simple-tab>
-  </tab>
-  <tab #rdf tabTitle="RDF">
-    <app-annotate-rdf-tab></app-annotate-rdf-tab>
-  </tab>
-</tabs>
-

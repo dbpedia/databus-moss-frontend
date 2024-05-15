@@ -14,7 +14,7 @@ import { log } from 'console';
 })
 export class ViewerComponent {
   id: string;
-  baseUrl = 'http://localhost:2000/';
+  baseUrl = 'http://localhost:8080/';
   data : any;
 
   constructor(private activatedRoute: ActivatedRoute) {

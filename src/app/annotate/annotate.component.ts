@@ -4,8 +4,6 @@ import { TagListComponent } from '../tag-list/tag-list.component';
 import { FormsModule } from '@angular/forms';
 import { TabComponent } from '../tabs/tab.component';
 import { TabsComponent } from '../tabs/tabs.component';
-import { AnnotateSimpleTabComponent } from '../annotate-simple-tab/annotate-simple-tab.component';
-import { AnnotateRdfTabComponent } from '../annotate-rdf-tab/annotate-rdf-tab.component';
 
 @Component({
   selector: 'app-annotate',
@@ -17,8 +15,6 @@ import { AnnotateRdfTabComponent } from '../annotate-rdf-tab/annotate-rdf-tab.co
     NgFor, 
     TabsComponent, 
     TabComponent, 
-    AnnotateSimpleTabComponent,
-    AnnotateRdfTabComponent
   ],
   templateUrl: './annotate.component.html',
   styleUrl: './annotate.component.scss'

@@ -1,4 +1,5 @@
 import { RouterModule, UrlMatcher, UrlMatchResult, Routes, Route, UrlSegmentGroup, UrlSegment } from '@angular/router';
+import { HttpHeaders } from '@angular/common/http';
 import { SearchComponent } from './search/search.component';
 import AnnotateComponent from './annotate/annotate.component';
 import { AboutComponent } from './about/about.component';
@@ -14,10 +15,6 @@ const customMatcher: UrlMatcher = (
         return null as any;
     }
 
-    const acceptHeader = window.navigator.userAgent;
-    if (!acceptHeader.includes('text/html')) {
-      return null as any; 
-    }
 
     const firstSegment = segments[0];
 
