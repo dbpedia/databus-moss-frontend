@@ -14,6 +14,11 @@ const customMatcher: UrlMatcher = (
         return null as any;
     }
 
+    const acceptHeader = window.navigator.userAgent;
+    if (!acceptHeader.includes('text/html')) {
+      return null as any; 
+    }
+
     const firstSegment = segments[0];
 
     if (firstSegment.path === "g") {
