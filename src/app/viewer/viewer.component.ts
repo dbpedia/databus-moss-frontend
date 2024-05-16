@@ -30,4 +30,10 @@ export class ViewerComponent {
     const data = await fetch(query);
     this.data = await data.json() ?? {};
   }
+
+  urlRSplit(url: string): string {
+    const splitParts = url.split('/');
+    return splitParts.slice(0, -1).join('/');
+  }
+
 }

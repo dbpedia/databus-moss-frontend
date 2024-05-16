@@ -1,5 +1,20 @@
 <h3>{{ id }}</h3>
 
-<code>
-    <pre>{{data |json}}</pre>
-</code>
+<div *ngIf="data">
+  <h2>Folder List</h2>
+  <ul>
+    <li><a href="{{ urlRSplit(id) }}">{{ '../' }} </a></li>
+    <li *ngFor="let folder of data.folders"> 
+        <a href="{{ id + '/' + folder }}">{{ folder }} </a>
+    </li>
+  </ul>
+  <h2>File List</h2>
+  <ul>
+    <li *ngFor="let file of data.files"> 
+        <a href="{{ id + '/' + file }}">{{ id + '/' + file }} </a>
+    </li>
+  </ul>
+</div>
+<div *ngIf="id.endsWith('.jsonld')">
+  <code>{{data |json}}</code>
+</div>
