@@ -1,62 +1,66 @@
-<script lang="ts" context="module">
-    import CodeMirror from "svelte-codemirror-editor";
-    import { json, jsonParseLinter } from "@codemirror/lang-json";
-    import {linter, lintGutter, type Diagnostic } from "@codemirror/lint";
+
+<script lang="ts">
     import SearchResult from "./../components/search-result/search-result.svelte";
+    import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
+    import { MossUtils } from '$lib/utils';
 
+    let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?query=`;
+    let joinSuffix = `&join=`;
+    let joinField = "annotation";
 
-    let value: string = `{
-        "@id" : "http://localhost:8080/g/openenergy-platform.org/dataedit/view/reference/entry_groupoemetadatajsonld#layer",
-        "@type" : "http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayer",
-        "name" : "oemetadata",
-        "version" : "1.0.0",
-        "endedAtTime" : "2024-05-15T13:13:39.323Z",
-        "generated" : "http://localhost:8080/g/openenergy-platform.org/dataedit/view/reference/entry_groupoemetadatajsonld",
-        "startedAtTime" : "2024-05-15T13:13:39.323Z",
-        "used" : "https://openenergy-platform.org/dataedit/view/reference/entry_group",
-        "@context" : {
-            "used" : {
-            "@id" : "http://www.w3.org/ns/prov#used",
-            "@type" : "@id"
-            },
-            "startedAtTime" : {
-            "@id" : "http://www.w3.org/ns/prov#startedAtTime",
-            "@type" : "http://www.w3.org/2001/XMLSchema#dateTime"
-            },
-            "generated" : {
-            "@id" : "http://www.w3.org/ns/prov#generated",
-            "@type" : "@id"
-            },
-            "endedAtTime" : {
-            "@id" : "http://www.w3.org/ns/prov#endedAtTime",
-            "@type" : "http://www.w3.org/2001/XMLSchema#dateTime"
-            },
-            "version" : {
-            "@id" : "http://dataid.dbpedia.org/ns/moss#version"
-            },
-            "name" : {
-            "@id" : "http://dataid.dbpedia.org/ns/moss#name"
-            }
-        }
-    }`
+    let searchResults : any;
 
-
-    let extensions = [
-        linter(jsonParseLinter())
-    ]
+    searchResults = [];
 
     let searchInput : string;
-    async function onSearchInputChanged() {
-        var response = await fetch("http://localhost:2003/api/search?type=class&query=sub%20meth");
-    }
 
+ 
+
+    async function query(searchInput: string, join?: string) {
+        let query = `${baseUrl}${searchInput}`
+        if (join != null) {
+            query += joinSuffix + join;
+        }
+
+        const data = await fetch(query);
+        return await data.json() ?? [];
+    }
+    
+    async function onSearchInputChanged() {
+        var results = await query(searchInput, joinField);
+        var explanations = await query(searchInput);
+
+        for(var result of results.docs) {
+            result.expanded = true;
+            result.explanations = [];
+
+            result.path = new URL(result.id[0]).pathname;
+            result.usedName = MossUtils.uriToName(result.used[0]);
+
+            if(result.modType != undefined) {
+            result.modName = MossUtils.uriToName(result.modType[0]);
+            }
+
+            for(var explanation of explanations.docs) {
+                for(var annotationUri of result.annotation) {
+                    if(annotationUri == explanation.id) {
+                    
+                        explanation.idName = MossUtils.uriToName(explanation.id[0]);
+                        result.explanations.push(explanation);
+                    }
+                }
+            }
+        }
+
+        searchResults = results.docs;
+    }
 </script>
 
-<h1>Dopumimp</h1>
-
 <input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
-
-
-<CodeMirror bind:value lang={json()} extensions={extensions} />
-
-<SearchResult></SearchResult>
+<ul>
+	{#each searchResults as result }
+		<li>
+            <SearchResult data={result} />
+		</li>
+	{/each}
+</ul>
