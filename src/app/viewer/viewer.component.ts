@@ -4,11 +4,15 @@ import { Observable } from 'rxjs/internal/Observable';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { log } from 'console';
+import { DocumentViewerComponent } from '../document-viewer/document-viewer.component';
 
 @Component({
   selector: 'app-viewer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    DocumentViewerComponent
+  ],
   templateUrl: './viewer.component.html',
   styleUrl: './viewer.component.scss'
 })
