@@ -8,7 +8,6 @@
     let isLoading = true;
     let absolutePath : string;
 
-
     onMount(async () => {
 		
         try {
@@ -43,15 +42,9 @@
 
 </script>
 
-
-
 {#if !isLoading}
-
 {#if !isDocument}
-
 <h1>Folder</h1>
-
-
 <ul>
     <li>
         <a href="{absolutePath}/.." target="_self">..</a>
@@ -67,16 +60,11 @@
 		</li>
 	{/each}
 </ul>
-
-
 {/if}
-
 {#if isDocument}
 <h1>Document</h1>
 <a href="{absolutePath}/.." target="_self">Go Back</a>
 <CodeMirror value={JSON.stringify(data, null, 3)} />
-
 <button on:click={saveDocument}>Save</button>
 {/if}
-
 {/if}
