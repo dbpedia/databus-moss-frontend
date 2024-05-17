@@ -1,11 +1,9 @@
 <script lang="ts" context="module">
     import CodeMirror from "svelte-codemirror-editor";
-    import { EditorView } from "@codemirror/view";
     import { json, jsonParseLinter } from "@codemirror/lang-json";
-    import { javascript } from "@codemirror/lang-javascript";
-    import {syntaxTree} from "@codemirror/language";
     import {linter, lintGutter, type Diagnostic } from "@codemirror/lint";
-    import { onMount } from 'svelte';
+    import SearchResult from "./../components/search-result/search-result.svelte";
+
 
     let value: string = `{
         "@id" : "http://localhost:8080/g/openenergy-platform.org/dataedit/view/reference/entry_groupoemetadatajsonld#layer",
@@ -47,7 +45,18 @@
         linter(jsonParseLinter())
     ]
 
+    let searchInput : string;
+    async function onSearchInputChanged() {
+        var response = await fetch("http://localhost:2003/api/search?type=class&query=sub%20meth");
+    }
+
 </script>
 
-<h1>Docuemtn</h1>
+<h1>Dopumimp</h1>
+
+<input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
+
+
 <CodeMirror bind:value lang={json()} extensions={extensions} />
+
+<SearchResult></SearchResult>
