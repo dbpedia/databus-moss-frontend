@@ -1,6 +1,6 @@
 
 <script lang="ts">
-    import SearchResult from "./../components/search-result/search-result.svelte";
+    import SearchResult from "$lib/components/search-result.svelte";
     import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
     import { MossUtils } from '$lib/utils';
 
@@ -58,7 +58,7 @@
 
 <input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
 <ul>
-	{#each searchResults as result }
+	{#each searchResults as result (result.id) }
 		<li>
             <SearchResult data={result} />
 		</li>
