@@ -7,6 +7,7 @@
     let isDocument = false;
     let isLoading = true;
     let absolutePath : string;
+    let jsonString : string;
 
     onMount(async () => {
 		
@@ -26,9 +27,11 @@
 
             if(contentType != "application/json") {
                 isDocument = true;
+                jsonString = JSON.stringify(data, null, 3);
             }
 
             isLoading = false;
+            
 
         } catch(err) {
             console.log(err);
@@ -37,7 +40,7 @@
     });
 
     async function saveDocument() {
-
+        alert(jsonString);
     }
 
 </script>
@@ -64,7 +67,7 @@
 {#if isDocument}
 <h1>Document</h1>
 <a href="{absolutePath}/.." target="_self">Go Back</a>
-<CodeMirror value={JSON.stringify(data, null, 3)} />
+<CodeMirror bind:value={jsonString} />
 <button on:click={saveDocument}>Save</button>
 {/if}
 {/if}

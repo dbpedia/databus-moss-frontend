@@ -6,8 +6,12 @@
     let extensions = [
         linter(jsonParseLinter())
     ]
+
+    function onCodeChanged(e : CustomEvent<string>) {
+        value = e.detail;
+    }
     
     export let value: string;
 </script>
 
-<CodeMirror bind:value lang={json()} extensions={extensions} />
+<CodeMirror bind:value lang={json()}  extensions={extensions} />
