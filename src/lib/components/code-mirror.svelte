@@ -14,4 +14,7 @@
     export let value: string;
 </script>
 
-<CodeMirror bind:value lang={json()}  extensions={extensions} />
+<CodeMirror 
+    bind:value lang={json()}  
+    extensions={extensions}
+/>
