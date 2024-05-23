@@ -1,3 +1,4 @@
+import { PUBLIC_MOSS_BASE_URL } from "$env/static/public";
 
 export class MossUtils {
     static uriToName(uri : string) {
@@ -28,5 +29,24 @@ export class MossUtils {
         let query = `${baseUrl}${searchInput}`
         const data = await fetch(query);
         return await data.json() ?? [];
+    }
+
+    static getFileExtension(file: string): string {
+        const reFileExtension = /(?:\.([^.]+))?$/;
+        let result = reFileExtension.exec(file);
+        const extension = result?.pop();
+        return extension ? extension : "";
+    }
+
+    static getEndpoint(iri: string): URL {
+        const [repo] = iri.split("/", 1);
+        const path = iri.substring(iri.indexOf("/") + 1);
+        const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
+
+        endpointURL.pathname = "/api/save";
+        endpointURL.searchParams.append("repo", repo);
+        endpointURL.searchParams.append("path", path);
+
+        return endpointURL;
     }
 }

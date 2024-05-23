@@ -10,6 +10,8 @@
 	// Dont forget to add the extended classType in
 	// the button tag
 	export let rounded = false;
+
+	export let name: string = "";
 </script>
 
 <button
@@ -23,6 +25,7 @@
 	on:focus
 	on:submit
 >
+	{name}
 	<slot />
 </button>
 

@@ -5,12 +5,16 @@
     import CodeMirror from "$lib/components/code-mirror.svelte";
 	import SaveButton from '$lib/components/save-button.svelte';
     import { EditorView } from "@codemirror/view";
+	import CreateFile from '$lib/components/create-file.svelte';
 
     let data : any;
     let content: string;
     let isDocument = false;
     let isLoading = true;
     let absolutePath : string;
+
+    let buttonName = "Save Document";
+    let pending = false;
 
     onMount(async () => {
 		
@@ -54,7 +58,7 @@
         return endpointURL;
     }
 
-    export async function postDocument(): Promise<any> {
+    export async function postDocument(): Promise<Response> {
         const url = getEndpoint();
         const data: string = JSON.stringify(content);
         const response = await fetch(url, {
@@ -64,10 +68,23 @@
             },
             body: content,
         })
-        
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`)
-        }
+        return response;
+        // if (!response.ok) {
+        //     throw new Error(`Error: ${response.statusText}`)
+        // }
+    }
+
+    function toggleButton() {
+        pending = !pending;
+        buttonName = pending? "Save Document" : "Pending...";
+    }
+
+    function request() {
+        toggleButton();
+        let response: Promise<Response> = postDocument();
+        // if (!response.ok) {
+
+        // }
     }
 
 </script>
@@ -89,14 +106,18 @@
             <a href="{absolutePath}/{file}" target="_self">{file}</a>
 		</li>
 	{/each}
+    <CreateFile/>
 </ul>
 {/if}
     {#if isDocument}
         <h1>Document</h1>
         <div class="top">
-            <a href="{absolutePath}/.." target="_self">Go Back</a>
+            <div class="left-side">
+                <a href="{absolutePath}/.." target="_self">Go Back</a>
+            </div>
             <div class="side">
-                <SaveButton on:click={postDocument} >Save Document</SaveButton>
+                <SaveButton bind:name={buttonName} on:click={request}>
+                </SaveButton>
             </div>
         </div>
         <div class="bottom">
@@ -111,6 +132,13 @@
     float: right;
     padding: 1em;
     width: 35%;
+}
+
+.left-side {
+    display: flex;
+    padding: 1em;
+    gap: 40px;
+    /* width: 35%; */
 }
 
 .top, .bottom {
