@@ -91,10 +91,40 @@
 	{/each}
 </ul>
 {/if}
-{#if isDocument}
-<h1>Document</h1>
-<a href="{absolutePath}/.." target="_self">Go Back</a>
-<SaveButton on:click={postDocument} >Save Document</SaveButton>
-<CodeMirror bind:value={content} />
+    {#if isDocument}
+        <h1>Document</h1>
+        <div class="top">
+            <a href="{absolutePath}/.." target="_self">Go Back</a>
+            <div class="side">
+                <SaveButton on:click={postDocument} >Save Document</SaveButton>
+            </div>
+        </div>
+        <div class="bottom">
+            <CodeMirror bind:value={content} />
+        </div>
+    {/if}
 {/if}
-{/if}
+
+
+<style>
+.side {
+    float: right;
+    padding: 1em;
+    width: 35%;
+}
+
+.top, .bottom {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.top {
+    justify-content: space-between;
+}
+
+.bottom {
+    margin-top: 20px;
+    padding: 1em;
+}
+</style>
