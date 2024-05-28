@@ -14,7 +14,15 @@
     export let value: string;
 </script>
 
-<CodeMirror 
-    bind:value lang={json()}  
-    extensions={extensions}
-/>
+<div class="container">
+    <CodeMirror 
+        bind:value lang={json()}  
+        extensions={extensions}
+    />
+</div>
+
+<style>
+.container {
+    width: 100%;
+}
+</style>

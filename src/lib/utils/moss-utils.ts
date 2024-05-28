@@ -37,7 +37,7 @@ export class MossUtils {
     }
 
     static splitPath(path: string): string[] {
-        let segements = path.split("/");
+        const segements = path.split("/");
         segements.shift();
         return segements
     }

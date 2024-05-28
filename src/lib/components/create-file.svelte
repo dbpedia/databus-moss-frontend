@@ -22,17 +22,15 @@
 </script>
 
 <div class="container">
-    <!-- <label for="layerName">Path: </label> -->
     <form>
         <div class="grid gap-6 mb-6 md:grid-cols-2">
             <div class="path-container">
-                <Label for="layerName" class="mb-2">Path:</Label>
-                <Input type="text" id="path" placeholder={pathPlaceholder}/>
-                <!-- <input bind:value={layerName} placeholder={pathPlaceholder}> -->
+                <Label for="layer-name" class="mb-2">Path:</Label>
+                <Input type="text" id="layer-name" placeholder={pathPlaceholder}/>
             </div>
             <div class="databus-resource-container">
-                <Label for="databusResource" class="mb-2">Databus Resource: </Label>
-                <Input bind:value={databusResource} placeholder={filePlaceholder}/>
+                <Label for="databus-resource" class="mb-2">Databus Resource: </Label>
+                <Input bind:value={databusResource} id="databus-resource" placeholder={filePlaceholder}/>
                 <Button 
                     color="light"
                     class="submit"
@@ -71,11 +69,6 @@
         padding-top: 3px;
         padding-left: 1em;
         gap: 10px;
-    }
-
-    .submit {
-        background-color: green;
-        margin: 5;
     }
 
 </style>

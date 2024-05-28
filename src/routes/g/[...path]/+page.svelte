@@ -15,7 +15,6 @@
         } 
             from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
-    // import { HomeOutline, ChevronDoubleRightOutline } from 'flowbite-svelte-icons';
     import { A } from 'flowbite-svelte';
 
     let data : any;
@@ -39,53 +38,39 @@
     const parentDir = "..";
 
     onMount(async () => {
-        try {
-            let path = currentURI;
+        // console.log(data.props);
+        // try {
+        //     let path = currentURI;
 
-            absolutePath = `/g`;
+        //     absolutePath = `/g`;
 
-            if(path != undefined && path.length > 0) {
-                absolutePath += `/${path}`;
-            }
+        //     if(path != undefined && path.length > 0) {
+        //         absolutePath += `/${path}`;
+        //     }
 
-            //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
-            //path here contains a "#" which gets filtered out -> resulting in a 404 from moss
-            // which is then not properly return or so.
-            let response = await fetch(`${PUBLIC_MOSS_BASE_URL}/g/${path}`);
-            data = await response.json();
-            folders = data.folders;
-            if (!folders) {
-                folders = [];
-            }
-            folders.unshift(parentDir);
-            files = data.files;
+            // let endpoint = `${PUBLIC_MOSS_BASE_URL}/g/${path}`;
+            // let response = await fetch(endpoint);
+            // data2 = await response.json();
+            // folders = data2.folders;
+            // if (!folders) {
+            //     folders = [];
+            // }
+            // folders.unshift(parentDir);
+            // files = data2.files;
 
-            if(data) {
-                if (data.folders) {
-                    folders = data.folders;
-                }
+        //     let contentType = response.headers.get("Content-Type");
 
-                if (data.files) {
-                    files = data.files;
-                }
-            }
+        //     if(contentType != "application/json") {
+        //         isDocument = true;
+        //         content = JSON.stringify(data2, null, 3)
+        //     }
 
-            let contentType = response.headers.get("Content-Type");
+        //     isLoading = false;
 
-            if(contentType != "application/json") {
-                isDocument = true;
-                content = JSON.stringify(data, null, 3);
-            } else {
-                absolutePath = absolutePath.replaceAll("#", "%23");
-            }
-
-            baseURL = `${PUBLIC_MOSS_BASE_URL}/g/${path}`
-            isLoading = false;
-
-        } catch(err) {
-            console.log(err);
-            isLoading = false;
-        }
+        // } catch(err) {
+        //     console.log(err);
+        //     isLoading = false;
+        // }
     });
 
     function getEndpoint(): URL {
@@ -102,14 +87,14 @@
 
     export async function postDocument(): Promise<Response> {
         const url = getEndpoint();
-        // const data: string = JSON.stringify(content);
+        const data2: string = JSON.stringify(content);
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: data,
+            body: data2,
         });
         console.log(response);
         return response;
@@ -171,11 +156,13 @@
 </script>
 
 <div class="container">
+    <div class="top-bar-container">
+        <TopBar segments={data.props.segments}/>
+    </div>
 {#if !isLoading}
     {#if !isDocument}
         <div class="list-container">
             <ul>
-                <TopBar></TopBar>
                 {#if folders?.length}
                     <FileList collection={folders} files={false}></FileList>
                 {/if}
@@ -193,7 +180,7 @@
     <div class="editor-container">
         <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
                 <div class="buttons">
-                    <A href="{absolutePath}/.." target="_self">
+                    <A href="/g" target="_self">
                         <Button color="alternative">Go Back</Button>
                     </A>
                     <div class="button-group-right">
@@ -210,26 +197,33 @@
 
 
 <style>
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 70px;
+    width: 100%;
+}
+
+.top-bar-container {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: blueviolet;
+}
+
 #title {
     align-items: center;
     text-align: center;
 }
 
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* min-height: 100vh; */
-}
-
 .list-container {
     display: flex;
     align-items: center;
-    /* justify-content: center; */
+    margin: 50px;
 }
 
 .editor-container {
-    /* width: 80%; */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -256,35 +250,10 @@
 
 .code-mirror-container {
     background-color: aliceblue;
+    display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.side {
-    float: right;
-    padding: 1em;
-    width: 35%;
-}
-
-.left-side {
-    display: flex;
-    padding: 1em;
-    gap: 40px;
-}
-
-.top, .bottom {
-    flex: 1;
-    display: flex;
-    align-items: center;
-}
-
-.top {
-    justify-content: space-between;
-}
-
-.bottom {
-    margin-top: 20px;
-    padding: 1em;
+    width: 80%;
 }
 
 .error-msg {
