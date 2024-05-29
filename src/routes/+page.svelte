@@ -6,6 +6,7 @@
     import { MossUtils } from '$lib/utils/moss-utils';
 
     let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?query=`;
+    // let baseUrl = `/api/search?query=`;
     let joinSuffix = `&join=`;
     let joinField = "annotation";
 

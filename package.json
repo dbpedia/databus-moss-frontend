@@ -2,6 +2,7 @@
 	"name": "databus-moss-frontend",
 	"version": "0.0.1",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -29,7 +30,6 @@
 		"typescript": "^5.0.0",
 		"vite": "^5.0.3"
 	},
-	"type": "module",
 	"dependencies": {
 		"@codemirror/lang-javascript": "^6.2.2",
 		"@codemirror/lang-json": "^6.0.1",
@@ -38,6 +38,7 @@
 		"jsonld": "^8.3.2",
 		"svelte-codemirror-editor": "^1.4.0",
 		"tailwind-merge": "^2.3.0",
-		"tailwind-variants": "^0.2.1"
+		"tailwind-variants": "^0.2.1",
+		"vite": "^5.0.3"
 	}
 }
