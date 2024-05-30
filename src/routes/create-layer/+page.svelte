@@ -1,14 +1,18 @@
 <script lang="ts">
 	import SaveButton from "$lib/components/save-button.svelte";
     import { MossUtils } from "$lib/utils/moss-utils";
+    import Dropdown from "$lib/components/dropdown.svelte";
+
+    const layerPlaceholder: string = "%LAYERNAME%";
+    const databusResourcePlaceholder: string = "%DATABUSRESOURCE%";
+    const buttonName: string = "Create Layer";
 
     let layerTestName = "simple";
     let resourceTestName = "https://databus.openenergyplatform.org/hu_wu/test_group/";
     let layerName: string = layerTestName;
     let databusResource: string = resourceTestName;
-    const layerPlaceholder: string = "%LAYERNAME%";
-    const databusResourcePlaceholder: string = "%DATABUSRESOURCE%";
-    const buttonName: string = "Create Layer";
+    let toggledDropdown: boolean = false;
+    let layerList: string[] = [];
 
 
     async function postDocument() {
@@ -43,7 +47,10 @@
 
 <div class="container">
     <h1>Create Layer</h1>
-    <SaveButton name={buttonName} on:click={postDocument}>+</SaveButton>
+    <div class:show={toggledDropdown}>
+        <Dropdown layerList={layerList} ></Dropdown>
+    </div>
+    <SaveButton name={buttonName} on:click={postDocument}></SaveButton>
     <br/>
     <label for="layerName">Path: </label>
     <input bind:value={layerName} class="input" placeholder={layerPlaceholder}>

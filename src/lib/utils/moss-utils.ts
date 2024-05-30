@@ -21,6 +21,15 @@ export class MossUtils {
         return result;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async fetchLayers(): Promise<any> {
+        const layerRoute: string = "layer/";
+        const response = await fetch(`${PUBLIC_MOSS_BASE_URL}/${layerRoute}`);
+        const data = await response.json();
+
+        return data;
+    }
+
 
     static getLastPathSegment(uri : string) {
         const segments = uri.split('/');
@@ -28,7 +37,7 @@ export class MossUtils {
     }
 
     static async fetchJSON(baseUrl : string, searchInput: string) {
-        const query = `${baseUrl}${searchInput}`
+        const query = `${baseUrl}${searchInput}`;
         const data = await fetch(query);
         return await data.json() ?? [];
     }
