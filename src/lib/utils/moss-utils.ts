@@ -10,7 +10,7 @@ export class MossUtils {
             return null;
         }
 
-        var result = uri.substring(uri.lastIndexOf('/') + 1);
+        let result = uri.substring(uri.lastIndexOf('/') + 1);
         result = result.substring(result.lastIndexOf('#') + 1);
 
         if (result.includes('.')) {
@@ -26,14 +26,14 @@ export class MossUtils {
     }
 
     static async fetchJSON(baseUrl : string, searchInput: string) {
-        let query = `${baseUrl}${searchInput}`
+        const query = `${baseUrl}${searchInput}`
         const data = await fetch(query);
         return await data.json() ?? [];
     }
 
     static getFileExtension(file: string): string {
         const reFileExtension = /(?:\.([^.]+))?$/;
-        let result = reFileExtension.exec(file);
+        const result = reFileExtension.exec(file);
         const extension = result?.pop();
         return extension ? extension : "";
     }
@@ -44,6 +44,8 @@ export class MossUtils {
         const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
 
         endpointURL.pathname = "/api/save";
+        console.log("repo", repo);
+        console.log("path", path);
         endpointURL.searchParams.append("repo", repo);
         endpointURL.searchParams.append("path", path);
 
