@@ -1,5 +1,6 @@
 import { PUBLIC_MOSS_BASE_URL } from "$env/static/public";
 
+
 export class MossUtils {
     static uriToName(uri : string) {
         if (uri == null) {
@@ -40,12 +41,18 @@ export class MossUtils {
     }
 
     static getDocumentUri(databusResource : string, layerName : string): string {
-        var databusResourceURL = new URL(databusResource);
+        const reMultiSlash: RegExp = /\/\/+/g;
+        const reTrailingSlash: RegExp = /\/+$/g;
+        const encodedHashTag = "%23";
+        const databusResourceURL = new URL(databusResource);
+
+        layerName = layerName.replace(reTrailingSlash, "");
         let result = databusResourceURL.hostname + databusResourceURL.pathname + "/" + layerName + ".jsonld";
 
-        // TODO: DEAL WITH TRAILING / LEADING SLASHES (AUCH IN LAYERNAME, USER SIND MANCHMAL WILD)
+        result = result
+                    .replaceAll(reMultiSlash, "/")
+                    .replaceAll("#", encodedHashTag);
 
-        // TODO: DEAL WITH # (REPLACE WITH %23 oä)
         return result;
     }
 
@@ -53,12 +60,15 @@ export class MossUtils {
         const [repo] = iri.split("/", 1);
         const path = iri.substring(iri.indexOf("/") + 1);
         const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
+        console.log(PUBLIC_MOSS_BASE_URL);
 
         endpointURL.pathname = "/api/save";
         console.log("repo", repo);
         console.log("path", path);
         endpointURL.searchParams.append("repo", repo);
         endpointURL.searchParams.append("path", path);
+
+        console.log(endpointURL.toString());
 
         return endpointURL;
     }
