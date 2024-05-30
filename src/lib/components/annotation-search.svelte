@@ -1,6 +1,7 @@
 <script lang="ts">
     import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
 	import { MossUtils } from '$lib/utils/moss-utils';
+    import { onMount } from 'svelte';
     import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
@@ -36,9 +37,10 @@
         dispatch("annotationClick", result);   
     }
 
-    onSearchInputChanged();
+    onMount(async () => {
+        onSearchInputChanged();
+    }); 
 </script>
-
 
 <input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search annotations..." />
 
