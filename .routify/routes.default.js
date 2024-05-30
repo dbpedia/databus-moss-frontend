@@ -30,6 +30,35 @@ export default {
     },
     {
       "meta": {},
+      "id": "_default_create_layer",
+      "name": "create-layer",
+      "module": false,
+      "file": {
+        "path": "src/routes/create-layer",
+        "dir": "src/routes",
+        "base": "create-layer",
+        "ext": "",
+        "name": "create-layer"
+      },
+      "children": [
+        {
+          "meta": {},
+          "id": "_default_create_layer__page_svelte",
+          "name": "+page",
+          "file": {
+            "path": "src/routes/create-layer/+page.svelte",
+            "dir": "src/routes/create-layer",
+            "base": "+page.svelte",
+            "ext": ".svelte",
+            "name": "+page"
+          },
+          "asyncModule": () => import('../src/routes/create-layer/+page.svelte'),
+          "children": []
+        }
+      ]
+    },
+    {
+      "meta": {},
       "id": "_default_g",
       "name": "g",
       "module": false,

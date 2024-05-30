@@ -20,6 +20,7 @@ export class MossUtils {
         return result;
     }
 
+
     static getLastPathSegment(uri : string) {
         const segments = uri.split('/');
         return segments.pop() || segments.pop();
@@ -36,6 +37,16 @@ export class MossUtils {
         const result = reFileExtension.exec(file);
         const extension = result?.pop();
         return extension ? extension : "";
+    }
+
+    static getDocumentUri(databusResource : string, layerName : string): string {
+        var databusResourceURL = new URL(databusResource);
+        let result = databusResourceURL.hostname + databusResourceURL.pathname + "/" + layerName + ".jsonld";
+
+        // TODO: DEAL WITH TRAILING / LEADING SLASHES (AUCH IN LAYERNAME, USER SIND MANCHMAL WILD)
+
+        // TODO: DEAL WITH # (REPLACE WITH %23 oä)
+        return result;
     }
 
     static getEndpoint(iri: string): URL {
