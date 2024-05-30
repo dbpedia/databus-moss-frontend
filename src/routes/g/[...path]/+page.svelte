@@ -5,7 +5,6 @@
     import CodeMirror from "$lib/components/code-mirror.svelte";
 	import SaveButton from '$lib/components/save-button.svelte';
     import { EditorView } from "@codemirror/view";
-	import CreateFile from '$lib/components/create-file.svelte';
 
     let data : any;
     let content: string;
@@ -106,7 +105,6 @@
             <a href="{absolutePath}/{file}" target="_self">{file}</a>
 		</li>
 	{/each}
-    <CreateFile/>
 </ul>
 {/if}
     {#if isDocument}
