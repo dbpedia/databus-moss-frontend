@@ -5,7 +5,7 @@
 	const dispatch = createEventDispatcher();
 
     let searchInput = "";
-    let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?type=tag&query=`;
+    let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?type=class&query=`;
     let annotatedCountSuffix = "&annotatedCount=1,1000000";
     let searchResults : any;
     let hideUnused : boolean;
