@@ -19,6 +19,8 @@
     let baseURL: string;
     let headerPresent: false;
     let validationErrorMsg = "";
+    let files: string[] = [];
+    let folders: string[] = [];
     const path = $page.params.path;
 
     onMount(async () => {
@@ -31,6 +33,14 @@
 
             let response = await fetch(`${PUBLIC_MOSS_BASE_URL}/g/${path}`);
             data = await response.json();
+
+            if (data.folders) {
+                folders = data.folders;
+            }
+
+            if (data.files) {
+                files = data.files;
+            }
 
             let contentType = response.headers.get("Content-Type");
 

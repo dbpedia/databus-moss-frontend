@@ -63,7 +63,10 @@
     }
 </script>
 
-<div class="header"><a href="/g">Browse</a></div>
+<div class="header">
+    <a href="/g">Browse</a>
+    <a href="/create-layer">Create Layer</a>
+</div>
 
 <div class="page">
     <div class="main">
