@@ -1,25 +1,28 @@
 <script lang="ts">
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
+    import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
 	import SaveButton from '$lib/components/save-button.svelte';
-    import { EditorView } from "@codemirror/view";
+    import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
+    import { JsonldUtils } from '$lib/utils/jsonld-utils';
+    import { MossUris } from '$lib/utils/moss-uris';
+    import { MossUtils } from '$lib/utils/moss-utils';
 
     let data : any;
     let content: string;
-    let isDocument = false;
-    let isLoading = true;
     let absolutePath : string;
-
-    let buttonName = "Save Document";
     let pending = false;
+    let isLoading = true;
+    let isDocument = false;
+    let buttonName = "Save Document";
+    let baseURL: string;
+    let headerPresent: false;
+    let validationErrorMsg = "";
+    const path = $page.params.path;
 
     onMount(async () => {
-		
         try {
-            let path = $page.params.path;
-
             absolutePath = `/g`;
 
             if(path != undefined && path.length > 0) {
@@ -33,9 +36,10 @@
 
             if(contentType != "application/json") {
                 isDocument = true;
-                content = JSON.stringify(data, null, 3)
+                content = JSON.stringify(data, null, 3);
             }
 
+            baseURL = `${PUBLIC_MOSS_BASE_URL}/g/${path}`
             isLoading = false;
 
         } catch(err) {
@@ -59,7 +63,7 @@
 
     export async function postDocument(): Promise<Response> {
         const url = getEndpoint();
-        const data: string = JSON.stringify(content);
+        // const data: string = JSON.stringify(content);
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -78,14 +82,54 @@
         buttonName = pending? "Save Document" : "Pending...";
     }
 
-    function request() {
+    async function onSaveButtonClicked() {
         toggleButton();
+        const valid = await validateLayerHeader(content);
+
+        if (!valid) {
+            return;
+        }
+
         let response: Promise<Response> = postDocument();
         // if (!response.ok) {
-
         // }
     }
 
+    async function loadGraphs(content: string) {
+        const graph = JSON.parse(content);
+        const exp = await jsonld.expand(graph, {base: baseURL});
+        const flt = await jsonld.flatten(exp);
+        return flt;
+    }
+
+    async function validateLayerHeader(content: string): Promise<boolean> {
+        const graph = await loadGraphs(content);
+        const headerGraph = JsonldUtils.getTypedGraph(graph, MossUris.MOSS_DATABUS_METADATA_LAYER);
+        if (!headerGraph) {
+            validationErrorMsg = "No layer header!";
+            return false;
+        }
+
+        const layerName = JsonldUtils.getValue(headerGraph, MossUris.MOSS_LAYER_NAME);
+        if (layerName === null) {
+            validationErrorMsg = "Layer name not defined!";
+            return false;
+        }
+        const expectedLayerName = MossUtils.uriToName(path);
+
+        if (Array.isArray(layerName)) {
+            validationErrorMsg = `Multiple Layers not allowed!`;
+            return false;
+        } else {
+            if (expectedLayerName !==  layerName) {
+                validationErrorMsg = `Layer ${expectedLayerName} not found!`;
+                return false;
+            }
+        }
+        validationErrorMsg = "";
+
+        return true;
+    }
 </script>
 
 {#if !isLoading}
@@ -114,16 +158,21 @@
                 <a href="{absolutePath}/.." target="_self">Go Back</a>
             </div>
             <div class="side">
-                <SaveButton bind:name={buttonName} on:click={request}>
-                </SaveButton>
+                <button on:click={() => validateLayerHeader(content)}>Validate!</button>
+                <SaveButton bind:name={buttonName} on:click={onSaveButtonClicked}/>
+                {#if validationErrorMsg}
+                    <p class="error-msg">{validationErrorMsg}</p>
+                {:else}
+                    <p class="valid-msg">Valid Document</p>
+                {/if}
+
             </div>
         </div>
         <div class="bottom">
-            <CodeMirror bind:value={content} />
+            <CodeMirror bind:value={content}/>
         </div>
     {/if}
 {/if}
-
 
 <style>
 .side {
@@ -136,7 +185,6 @@
     display: flex;
     padding: 1em;
     gap: 40px;
-    /* width: 35%; */
 }
 
 .top, .bottom {
@@ -153,4 +201,15 @@
     margin-top: 20px;
     padding: 1em;
 }
+
+.error-msg {
+    color: red;
+}
+
+.valid-msg {
+    color: green;
+}
+
+
+
 </style>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RdfUris } from "./rdf-uris";
 
 /**
@@ -12,8 +13,8 @@ export class JsonldUtils {
      * @returns A graph with id @id or null
      */
     static getGraphById(graphs: any, id: string) {
-        for (var g in graphs) {
-            var graph = graphs[g];
+        for (const g in graphs) {
+            const graph = graphs[g];
             if (graph[RdfUris.JSONLD_ID] != undefined && graph[RdfUris.JSONLD_ID] == id) {
                 return graph;
             }
@@ -29,10 +30,10 @@ export class JsonldUtils {
      * @returns A list of graphs with type @graphType. If no graphs are found, the list is empty
      */
     static getTypedGraphs(graphs: any, graphType: string) {
-        var result = [];
+        const result = [];
 
-        for (var g in graphs) {
-            var graph = graphs[g];
+        for (const g in graphs) {
+            const graph = graphs[g];
 
             if (graph[RdfUris.JSONLD_TYPE] != undefined &&
                 graph[RdfUris.JSONLD_TYPE].includes(graphType)) {
@@ -50,8 +51,8 @@ export class JsonldUtils {
      * @returns A graph of type graphType or null
      */
     static getTypedGraph(graphs: any, graphType: string) {
-        for (var g in graphs) {
-            var graph = graphs[g];
+        for (const g in graphs) {
+            const graph = graphs[g];
             if (graph[RdfUris.JSONLD_TYPE] != undefined && graph[RdfUris.JSONLD_TYPE].includes(graphType)) {
                 return graph;
             }
@@ -69,7 +70,7 @@ export class JsonldUtils {
      */
     static setLiteral(graph: any, predicateURI: string, type: string, value: string) {
         graph[predicateURI] = [];
-        var entry: any = {};
+        const entry: any = {};
         entry[RdfUris.JSONLD_TYPE] = type;
         entry[RdfUris.JSONLD_VALUE] = value;
 
@@ -85,7 +86,7 @@ export class JsonldUtils {
     static setObject(graph: any, predicateURI: string, objectURI: string) {
         graph[predicateURI] = [];
 
-        var entry: any = {};
+        const entry: any = {};
         entry[RdfUris.JSONLD_ID] = objectURI;
         graph[predicateURI].push(entry);
     }
@@ -105,7 +106,7 @@ export class JsonldUtils {
 
         if (graph[predicateURI].length == 1) {
             // Only one value exists
-            var value = graph[predicateURI][0];
+            const value = graph[predicateURI][0];
 
             // Search for values either indicated as @value or @id
             if (value[RdfUris.JSONLD_VALUE] != null) {
@@ -119,10 +120,10 @@ export class JsonldUtils {
             return null;
         } else {
             // Multiple values
-            var result = [];
+            const result = [];
 
             // Again, search for values indicated as @value or @id
-            for (var value of graph[predicateURI]) {
+            for (const value of graph[predicateURI]) {
                 if (value[RdfUris.JSONLD_VALUE] != null) {
                     result.push(value[RdfUris.JSONLD_VALUE]);
                 }
