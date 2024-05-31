@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-    import SaveButton from "./save-button.svelte";
     import { MossUtils } from "$lib/utils/moss-utils";
     let menuName: string = "Available Layers";
     export let layerList: string[];
@@ -13,7 +11,6 @@
             try {
                 const data = await MossUtils.fetchLayers();
                 layerList = data.layers.map((item: any) => {
-                    console.log(item.name);
                     return item.name;
                 })
 
@@ -22,8 +19,6 @@
                 fetched = false;
             }
         }
-        console.log(layerList);
-        console.log(fetched);
     }
 
 </script>
@@ -33,18 +28,25 @@
         {fetched? "Hide " + menuName : "Show " + menuName}
     </button>
     {#if fetched}
-        <div class="drop-down">
+        <br/>
+        <select class="drop-down">
             {#each layerList as layer}
-                <p>{layer}</p>
+                <option>{layer}</option>
             {/each}
-        </div>
+        </select>
     {/if}
 </div>
 
 <style>
 
 .container {
+    padding-bottom: 3px;
+    padding-top: 3px;
+}
 
+.drop-down {
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 </style>

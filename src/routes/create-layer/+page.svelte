@@ -47,16 +47,19 @@
 
 <div class="container">
     <h1>Create Layer</h1>
-    <div class:show={toggledDropdown}>
+    <div class="drop-down">
         <Dropdown layerList={layerList} ></Dropdown>
     </div>
-    <SaveButton name={buttonName} on:click={postDocument}></SaveButton>
-    <br/>
-    <label for="layerName">Path: </label>
-    <input bind:value={layerName} class="input" placeholder={layerPlaceholder}>
-    <br/>
-    <label for="databusResource">Databus Resource: </label>
-    <input bind:value={databusResource} class="input" placeholder={databusResourcePlaceholder}>
+    <div class="create-layer">
+        <div class="create-layer-button">
+            <SaveButton name={buttonName} on:click={postDocument}></SaveButton>
+        </div>
+        <label for="layerName">Path: </label>
+        <input bind:value={layerName} class="input" placeholder={layerPlaceholder}>
+        <br/>
+        <label for="databusResource">Databus Resource: </label>
+        <input bind:value={databusResource} class="input" placeholder={databusResourcePlaceholder}>
+    </div>
 </div>
 
 <style>
@@ -70,12 +73,26 @@
         margin-top: 20px;
     }
 
-    label {
+    .drop-down {
+        margin-bottom: 10px;
+        margin: 0 5px;
+        width: 400px;
+    }
+
+    .create-layer {
+        margin-bottom: 10px;
+        width: 400px;
+    }
+
+    .create-layer-button {
+        margin-bottom: 10px;
+        margin-top: 10px;
         margin: 0 5px;
     }
 
-    .button {
-        margin-top: 20px;
+
+    label {
+        margin: 0 5px;
     }
 
     .input {
