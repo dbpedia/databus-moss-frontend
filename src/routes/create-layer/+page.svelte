@@ -46,6 +46,7 @@
 </script>
 
 <div class="container">
+    <div class="header"><a href="/g">Browse</a></div>
     <h1>Create Layer</h1>
     <div class="drop-down">
         <Dropdown layerList={layerList} ></Dropdown>
@@ -90,6 +91,10 @@
         margin: 0 5px;
     }
 
+    .header {
+        padding: 1em;
+        background-color: #eee;
+    }
 
     label {
         margin: 0 5px;
