@@ -46,10 +46,7 @@
 
             result.path = new URL(result.id[0]).pathname;
             result.usedName = MossUtils.uriToName(result.used[0]);
-
-            if(result.modType != undefined) {
-            result.modName = MossUtils.uriToName(result.modType[0]);
-            }
+            result.modName = MossUtils.uriToName(result.path);
 
             for(var explanation of explanations.docs) {
                 for(var annotationUri of result.annotation) {

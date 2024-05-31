@@ -56,7 +56,7 @@ export class MossUtils {
         const databusResourceURL = new URL(databusResource);
 
         layerName = layerName.replace(reTrailingSlash, "");
-        let result = databusResourceURL.hostname + databusResourceURL.pathname + "/" + layerName + ".jsonld";
+        let result = databusResourceURL.hostname + databusResourceURL.pathname + databusResourceURL.hash + "/" + layerName + ".jsonld";
 
         result = result
                     .replaceAll(reMultiSlash, "/")

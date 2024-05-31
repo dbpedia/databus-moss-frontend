@@ -37,6 +37,8 @@
             if(contentType != "application/json") {
                 isDocument = true;
                 content = JSON.stringify(data, null, 3);
+            } else {
+                absolutePath = absolutePath.replaceAll("#", "%23");
             }
 
             baseURL = `${PUBLIC_MOSS_BASE_URL}/g/${path}`
@@ -147,6 +149,7 @@
 	{#each data.files as file }
 		<li>
             <a href="{absolutePath}/{file}" target="_self">{file}</a>
+            {absolutePath}
 		</li>
 	{/each}
 </ul>
