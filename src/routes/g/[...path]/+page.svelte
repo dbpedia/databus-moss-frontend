@@ -7,7 +7,16 @@
     import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
     import { JsonldUtils } from '$lib/utils/jsonld-utils';
     import { MossUris } from '$lib/utils/moss-uris';
-    import { MossUtils } from '$lib/utils/moss-utils';
+	import CreateFile from '$lib/components/create-file.svelte';
+    import FileList from '$lib/components/file-list.svelte';
+    import TopBar from '$lib/components/top-bar.svelte';
+    import {
+            Button,
+        } 
+            from 'flowbite-svelte';
+	import { MossUtils } from '$lib/utils/moss-utils';
+    // import { HomeOutline, ChevronDoubleRightOutline } from 'flowbite-svelte-icons';
+    import { A } from 'flowbite-svelte';
 
     let data : any;
     let content: string;
@@ -24,22 +33,41 @@
     const path = $page.params.path;
 
     onMount(async () => {
+    })
+
+    const currentURI = $page.params.path;
+    const parentDir = "..";
+
+    onMount(async () => {
         try {
+            let path = currentURI;
+
             absolutePath = `/g`;
 
             if(path != undefined && path.length > 0) {
                 absolutePath += `/${path}`;
             }
 
+            //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
+            //path here contains a "#" which gets filtered out -> resulting in a 404 from moss
+            // which is then not properly return or so.
             let response = await fetch(`${PUBLIC_MOSS_BASE_URL}/g/${path}`);
             data = await response.json();
-
-            if (data.folders) {
-                folders = data.folders;
+            folders = data.folders;
+            if (!folders) {
+                folders = [];
             }
+            folders.unshift(parentDir);
+            files = data.files;
 
-            if (data.files) {
-                files = data.files;
+            if(data) {
+                if (data.folders) {
+                    folders = data.folders;
+                }
+
+                if (data.files) {
+                    files = data.files;
+                }
             }
 
             let contentType = response.headers.get("Content-Type");
@@ -61,9 +89,8 @@
     });
 
     function getEndpoint(): URL {
-        const iri = $page.params.path;
-        const [repo] = iri.split("/", 1);
-        const path = iri.substring(iri.indexOf("/") + 1);
+        const [repo] = currentURI.split("/", 1);
+        const path = currentURI.substring(currentURI.indexOf("/") + 1);
         const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
 
         endpointURL.pathname = "/api/save";
@@ -80,13 +107,12 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
-            body: content,
-        })
+            body: data,
+        });
+        console.log(response);
         return response;
-        // if (!response.ok) {
-        //     throw new Error(`Error: ${response.statusText}`)
-        // }
     }
 
     function toggleButton() {
@@ -144,50 +170,96 @@
     }
 </script>
 
+<div class="container">
 {#if !isLoading}
-{#if !isDocument}
-<h1>Folder</h1>
-<ul>
-    <li>
-        <a href="{absolutePath}/.." target="_self">..</a>
-    </li>
-	{#each data.folders as folder }
-		<li>
-            <a href="{absolutePath}/{folder}" target="_self">{folder}</a>
-		</li>
-	{/each}
-	{#each data.files as file }
-		<li>
-            <a href="{absolutePath}/{file}" target="_self">{file}</a>
-            {absolutePath}
-		</li>
-	{/each}
-</ul>
-{/if}
-    {#if isDocument}
-        <h1>Document</h1>
-        <div class="top">
-            <div class="left-side">
-                <a href="{absolutePath}/.." target="_self">Go Back</a>
-            </div>
-            <div class="side">
-                <button on:click={() => validateLayerHeader(content)}>Validate!</button>
-                <SaveButton bind:name={buttonName} on:click={onSaveButtonClicked}/>
-                {#if validationErrorMsg}
-                    <p class="error-msg">{validationErrorMsg}</p>
-                {:else}
-                    <p class="valid-msg">Valid Document</p>
+    {#if !isDocument}
+        <div class="list-container">
+            <ul>
+                <TopBar></TopBar>
+                {#if folders?.length}
+                    <FileList collection={folders} files={false}></FileList>
+                {/if}
+                {#if files?.length}
+                    <FileList collection={files}></FileList>
                 {/if}
 
-            </div>
-        </div>
-        <div class="bottom">
-            <CodeMirror bind:value={content}/>
+                <CreateFile/>
+            </ul>
         </div>
     {/if}
 {/if}
 
+{#if isDocument}
+    <div class="editor-container">
+        <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
+                <div class="buttons">
+                    <A href="{absolutePath}/.." target="_self">
+                        <Button color="alternative">Go Back</Button>
+                    </A>
+                    <div class="button-group-right">
+                        <Button on:click={() => alert('Handle "success"')}>I accept</Button>
+                        <Button color="alternative">Decline</Button>
+                    </div>
+                </div>
+            <div class="code-mirror-container">
+                <CodeMirror bind:value={content} />
+            </div>
+    </div>
+{/if}
+</div>
+
+
 <style>
+#title {
+    align-items: center;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* min-height: 100vh; */
+}
+
+.list-container {
+    display: flex;
+    align-items: center;
+    /* justify-content: center; */
+}
+
+.editor-container {
+    /* width: 80%; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: right;
+    min-height: 100vh;
+    margin: 1em 0;
+}
+
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 0.25em;
+    margin-top: 0.25em;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+}
+
+.button-group-right {
+    display: flex;
+    gap: 5px;
+}
+
+.code-mirror-container {
+    background-color: aliceblue;
+    align-items: center;
+    justify-content: center;
+}
+
 .side {
     float: right;
     padding: 1em;
@@ -222,7 +294,5 @@
 .valid-msg {
     color: green;
 }
-
-
 
 </style>

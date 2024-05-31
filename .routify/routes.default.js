@@ -16,6 +16,23 @@ export default {
   "children": [
     {
       "meta": {},
+<<<<<<< HEAD
+=======
+      "id": "_default__layout_svelte",
+      "name": "+layout",
+      "file": {
+        "path": "src/routes/+layout.svelte",
+        "dir": "src/routes",
+        "base": "+layout.svelte",
+        "ext": ".svelte",
+        "name": "+layout"
+      },
+      "asyncModule": () => import('../src/routes/+layout.svelte'),
+      "children": []
+    },
+    {
+      "meta": {},
+>>>>>>> f69238d (Add flowbite css framework)
       "id": "_default__page_svelte",
       "name": "+page",
       "file": {
@@ -30,6 +47,7 @@ export default {
     },
     {
       "meta": {},
+<<<<<<< HEAD
       "id": "_default_create_layer",
       "name": "create-layer",
       "module": false,
@@ -56,6 +74,19 @@ export default {
           "children": []
         }
       ]
+=======
+      "id": "_default_demo_svelte",
+      "name": "demo",
+      "file": {
+        "path": "src/routes/demo.svelte",
+        "dir": "src/routes",
+        "base": "demo.svelte",
+        "ext": ".svelte",
+        "name": "demo"
+      },
+      "asyncModule": () => import('../src/routes/demo.svelte'),
+      "children": []
+>>>>>>> f69238d (Add flowbite css framework)
     },
     {
       "meta": {},
@@ -107,6 +138,25 @@ export default {
     },
     {
       "meta": {
+<<<<<<< HEAD
+=======
+        "isDefault": true
+      },
+      "id": "_default_index_svelte",
+      "name": "index",
+      "file": {
+        "path": "src/routes/index.svelte",
+        "dir": "src/routes",
+        "base": "index.svelte",
+        "ext": ".svelte",
+        "name": "index"
+      },
+      "asyncModule": () => import('../src/routes/index.svelte'),
+      "children": []
+    },
+    {
+      "meta": {
+>>>>>>> f69238d (Add flowbite css framework)
         "dynamic": true,
         "dynamicSpread": true,
         "order": false,

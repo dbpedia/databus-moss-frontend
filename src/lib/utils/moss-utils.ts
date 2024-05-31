@@ -36,6 +36,19 @@ export class MossUtils {
         return segments.pop() || segments.pop();
     }
 
+    static splitPath(path: string): string[] {
+        let segements = path.split("/");
+        segements.shift();
+        return segements
+    }
+
+    static getTitle(uri: string): string {
+        const title = uri.split("/").pop()?.split(".").at(0);
+        const capital = title?.charAt(0).toUpperCase();
+
+        return title? capital + title.slice(1) : "";
+    }
+
     static async fetchJSON(baseUrl : string, searchInput: string) {
         const query = `${baseUrl}${searchInput}`;
         const data = await fetch(query);
