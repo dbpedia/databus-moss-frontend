@@ -1,6 +1,9 @@
 <script lang="ts">
     import { MossUtils } from "$lib/utils/moss-utils";
     import Dropdown from "$lib/components/dropdown.svelte";
+	import { onMount } from "svelte";
+    import { FolderDuplicateOutline } from "flowbite-svelte-icons";
+    import MenuLink from "$lib/components/menu-link.svelte";
     import { 
         Input,
         Label,
@@ -9,7 +12,6 @@
 		type SelectOptionType,
 		TabItem,
      } from "flowbite-svelte";
-	import { onMount } from "svelte";
 
     const layerPlaceholder: string = "%LAYERNAME%";
     const databusResourcePlaceholder: string = "%DATABUSRESOURCE%";
@@ -21,8 +23,8 @@
     let layerName: string = layerTestName;
     let databusResource: string = resourceTestName;
     let toggledDropdown: boolean = false;
-    // let layerList: SelectOptionType<string>[] = [];
-    let layerList: any[];
+    let layerList: SelectOptionType<string>[] = [];
+    // let layerList: Promise<SelectOptionType<string>[]>;
     let selected: string | null;
     let isLoading: boolean = true;
 
@@ -56,59 +58,27 @@
         return response;
     }
 
-    let fetched: boolean = false;
-
-    async function listLayers(): Promise<SelectOptionType<string>[]> {
-        let list: SelectOptionType<string>[] = [];
-
-        try {
-            const data = await MossUtils.fetchLayers();
-            list = data.layers.map((item: any) => {
-                return {
-                    value: item.name,
-                    label: item.name,
-                };
-            })
-            console.log("done", list);
-        } catch(error) {
-            console.error("Error fetching available layers:", error);
-        } finally {
-            isLoading = false;
-        }
-
-        return list;
-    } 
-
     onMount(async () => {
         console.log("loading", isLoading);
-        // layerList = await listLayers();
-        // selected = layerList[0].value;
-        // console.log(selected);
         layerList = data.props.layers;
         isLoading = data.props.isLoading;
-        console.log(layerList);
         console.log("loading", isLoading);
     });
 
 </script>
 
 <div class="container">
-    <div class="header"><a href="/g">Browse</a></div>
+    <div class="header">
+        <MenuLink href="/g" icon={FolderDuplicateOutline}>Browse</MenuLink>
+    </div>
     <h1>Create Layer</h1>
     <div class="drop-down">
         <!-- <Dropdown layerList={layerList} ></Dropdown> -->
         {#if isLoading}
             <p>Loading...</p>
         {:else } 
-            {#each layerList as layer }
-                <Select items={layerList} bind:value={selected}>
-                    <!-- {#each layerList as layer }
-                        <option value={layer}>{layer.label}</option>
-                    {/each} -->
-                </Select>
-
-                <p>{layer.value}</p>
-            {/each}
+            <Select items={layerList} bind:value={selected}>
+            </Select>
         {/if}
     </div>
     <div class="create-layer">
@@ -152,7 +122,8 @@
     }
 
     .header {
-        padding: 1em;
+        padding-top: 1em;
+        padding-bottom: 1em;
         background-color: #eee;
     }
 

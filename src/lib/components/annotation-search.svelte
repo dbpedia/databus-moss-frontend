@@ -3,6 +3,13 @@
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { onMount } from 'svelte';
     import { createEventDispatcher } from 'svelte';
+    import { 
+        Input,
+        Label,
+        Checkbox,
+     } from 'flowbite-svelte';
+
+
 	const dispatch = createEventDispatcher();
 
     let searchInput = "";
@@ -42,12 +49,13 @@
     }); 
 </script>
 
-<input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search annotations..." />
+<!-- <Label for="searchInput" class="block mb-2">Search Annotations</Label> -->
+<Input id="searchInput" bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search Annotations..." class="block w-full p-2.5"/>
 
-<label>
-    <input type="checkbox" bind:checked={hideUnused} />
-	Hide unused
-</label>
+<Label for="hideUnusedCheckbox" class="inline-flex items-center mt-2">
+    <Checkbox id="hideUnusedCheckbox" bind:checked={hideUnused} />
+    <span class="ml-2">Hide unused</span>
+</Label>
 
 <ul class="tag-list">
 	{#each searchResults as result }

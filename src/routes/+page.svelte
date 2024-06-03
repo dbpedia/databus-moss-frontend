@@ -4,7 +4,11 @@
     import AnnotationSearch from "$lib/components/annotation-search.svelte";
     import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
     import { MossUtils } from '$lib/utils/moss-utils';
-    import { A } from "flowbite-svelte";
+    import MenuLink from "$lib/components/menu-link.svelte";
+    import { 
+        A,
+        Input,
+     } from "flowbite-svelte";
     import { 
         FileCirclePlusOutline,
         FolderDuplicateOutline,
@@ -67,22 +71,17 @@
         searchResults = results.docs;
     }
 
-    const linkColor = "dark:text-primary-500";
-
 </script>
 
 <div class="header">
-    <A href="/g" color={linkColor}>
-        <FolderDuplicateOutline></FolderDuplicateOutline> Browse</A>
-    <A href="/create-layer" color={linkColor}>
-        <FileCirclePlusOutline></FileCirclePlusOutline> Create Layer
-    </A>
+    <MenuLink href="/g" icon={FolderDuplicateOutline}>Browser</MenuLink>
+    <MenuLink href="/create-layer" icon={FileCirclePlusOutline}>Create Layer</MenuLink>
 </div>
 
 <div class="page">
     <div class="main">
         <!-- <input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." /> -->
-        <input bind:value={searchInput} placeholder="Search files..." />
+        <Input bind:value={searchInput} placeholder="Search files..." />
         <ul>
             {#each searchResults as result (result.id) }
                 <li>

@@ -137,7 +137,7 @@
                     <FileList collection={files}></FileList>
                 {/if}
 
-                <CreateFile/>
+                <!-- <CreateFile/> -->
             </ul>
         </div>
     {/if}
@@ -186,8 +186,12 @@
 
 .list-container {
     display: flex;
-    align-items: center;
     margin: 50px;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    margin: 1em 0;
+
 }
 
 .editor-container {
