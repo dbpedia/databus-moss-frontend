@@ -16,8 +16,6 @@ export default {
   "children": [
     {
       "meta": {},
-<<<<<<< HEAD
-=======
       "id": "_default__layout_svelte",
       "name": "+layout",
       "file": {
@@ -32,7 +30,6 @@ export default {
     },
     {
       "meta": {},
->>>>>>> f69238d (Add flowbite css framework)
       "id": "_default__page_svelte",
       "name": "+page",
       "file": {
@@ -47,7 +44,6 @@ export default {
     },
     {
       "meta": {},
-<<<<<<< HEAD
       "id": "_default_create_layer",
       "name": "create-layer",
       "module": false,
@@ -74,7 +70,9 @@ export default {
           "children": []
         }
       ]
-=======
+    },
+    {
+      "meta": {},
       "id": "_default_demo_svelte",
       "name": "demo",
       "file": {
@@ -86,7 +84,6 @@ export default {
       },
       "asyncModule": () => import('../src/routes/demo.svelte'),
       "children": []
->>>>>>> f69238d (Add flowbite css framework)
     },
     {
       "meta": {},
@@ -138,8 +135,6 @@ export default {
     },
     {
       "meta": {
-<<<<<<< HEAD
-=======
         "isDefault": true
       },
       "id": "_default_index_svelte",
@@ -156,7 +151,6 @@ export default {
     },
     {
       "meta": {
->>>>>>> f69238d (Add flowbite css framework)
         "dynamic": true,
         "dynamicSpread": true,
         "order": false,

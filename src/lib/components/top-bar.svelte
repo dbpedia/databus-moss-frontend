@@ -15,7 +15,7 @@
 
 <div class="container">
     <Breadcrumb  aria-label="Default breadcrumb example">
-        <A href={"/g"} target="_self">
+        <A href={"/"} target="_self">
             <BreadcrumbItem home={true} slots={{icon: HomeOutline}}>
                 <svelte:fragment slot="icon">
                     <HomeOutline class="w-4 h-4 me-2"/>

@@ -4,6 +4,11 @@
     import AnnotationSearch from "$lib/components/annotation-search.svelte";
     import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
     import { MossUtils } from '$lib/utils/moss-utils';
+    import { A } from "flowbite-svelte";
+    import { 
+        FileCirclePlusOutline,
+        FolderDuplicateOutline,
+     } from "flowbite-svelte-icons";
 
     let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?query=`;
     // let baseUrl = `/api/search?query=`;
@@ -61,11 +66,17 @@
 
         searchResults = results.docs;
     }
+
+    const linkColor = "dark:text-primary-500";
+
 </script>
 
 <div class="header">
-    <a href="/g">Browse</a>
-    <a href="/create-layer">Create Layer</a>
+    <A href="/g" color={linkColor}>
+        <FolderDuplicateOutline></FolderDuplicateOutline> Browse</A>
+    <A href="/create-layer" color={linkColor}>
+        <FileCirclePlusOutline></FileCirclePlusOutline> Create Layer
+    </A>
 </div>
 
 <div class="page">
@@ -80,9 +91,9 @@
             {/each}
         </ul>
     </div>
-    <!-- <div class="side">
+    <div class="side">
         <AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
-    </div> -->
+    </div>
 </div>
 
 <style>
@@ -105,11 +116,11 @@
     width: 60%;
 }
 
-/* .side {
+.side {
     float: right;
     padding: 1em;
     width: 35%;
-} */
+}
 
 ul {
     list-style-type: none;

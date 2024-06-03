@@ -51,10 +51,6 @@
 		"svelte-codemirror-editor": "^1.4.0",
 		"tailwind-merge": "^2.3.0",
 		"tailwind-variants": "^0.2.1",
-<<<<<<< HEAD
-		"vite": "^5.0.3"
-=======
 		"tailwindcss": "^3.4.3"
->>>>>>> f69238d (Add flowbite css framework)
 	}
 }
