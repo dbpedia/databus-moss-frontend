@@ -3,11 +3,9 @@
     import { onMount } from 'svelte';
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
-	import SaveButton from '$lib/components/save-button.svelte';
     import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
     import { JsonldUtils } from '$lib/utils/jsonld-utils';
     import { MossUris } from '$lib/utils/moss-uris';
-	import CreateFile from '$lib/components/create-file.svelte';
     import FileList from '$lib/components/file-list.svelte';
     import TopBar from '$lib/components/top-bar.svelte';
     import {
@@ -55,13 +53,14 @@
 
     export async function postDocument(): Promise<Response> {
         const url = getEndpoint();
+        const body = content;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify(content),
+            body: body,
         });
         console.log(response);
         return response;
@@ -80,7 +79,8 @@
             return;
         }
 
-        let response: Promise<Response> = postDocument();
+        let response = await postDocument();
+        console.log(response)
         // if (!response.ok) {
         // }
     }
@@ -136,29 +136,32 @@
                 {#if files?.length}
                     <FileList collection={files}></FileList>
                 {/if}
-
-                <!-- <CreateFile/> -->
             </ul>
         </div>
     {/if}
-{/if}
 
-{#if isDocument}
-    <div class="editor-container">
-        <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
-                <div class="buttons">
-                    <A href="/g" target="_self">
-                        <Button color="alternative">Go Back</Button>
-                    </A>
-                    <div class="button-group-right">
-                        <Button on:click={() => alert('Handle "success"')} color="alternative">Validate</Button>
-                        <Button >Save Document</Button>
+    {#if isDocument}
+        <div class="editor-container">
+            <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
+                    <div class="buttons">
+                        <A href="/g" target="_self">
+                            <Button color="alternative">Go Back</Button>
+                        </A>
+                        <div class="button-group-right">
+                            <Button on:click={() => validateLayerHeader(content)} color="alternative">Validate</Button>
+                            <Button on:click={onSaveButtonClicked}>Save Document</Button>
+                            {#if validationErrorMsg}
+                                <p class="error-msg">{validationErrorMsg}</p>
+                            {:else}
+                                <p class="valid-msg">Valid Document</p>
+                            {/if}
+                        </div>
                     </div>
+                <div class="code-mirror-container">
+                    <CodeMirror bind:value={content} />
                 </div>
-            <div class="code-mirror-container">
-                <CodeMirror bind:value={content} />
-            </div>
-    </div>
+        </div>
+    {/if}
 {/if}
 </div>
 
