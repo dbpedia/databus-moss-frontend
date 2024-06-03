@@ -227,7 +227,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 80%;
+    width: 150%;
 }
 
 .error-msg {
