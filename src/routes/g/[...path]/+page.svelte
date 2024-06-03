@@ -17,61 +17,29 @@
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
 
-    let data : any;
-    let content: string;
-    let absolutePath : string;
+
+    /** @type {import('./$types').PageData} */
+	export let data;
+
+    let isDocument = data.props.isDocument;
+    let content = data.props.content;
+    let isLoading = data.props.isLoading;
+
+    let folders = data.props.folders;
+    let files = data.props.files;
+
     let pending = false;
-    let isLoading = true;
-    let isDocument = false;
     let buttonName = "Save Document";
     let baseURL: string;
     let headerPresent: false;
     let validationErrorMsg = "";
-    let files: string[] = [];
-    let folders: string[] = [];
     const path = $page.params.path;
 
     onMount(async () => {
     })
 
     const currentURI = $page.params.path;
-    const parentDir = "..";
 
-    onMount(async () => {
-        // console.log(data.props);
-        // try {
-        //     let path = currentURI;
-
-        //     absolutePath = `/g`;
-
-        //     if(path != undefined && path.length > 0) {
-        //         absolutePath += `/${path}`;
-        //     }
-
-            // let endpoint = `${PUBLIC_MOSS_BASE_URL}/g/${path}`;
-            // let response = await fetch(endpoint);
-            // data2 = await response.json();
-            // folders = data2.folders;
-            // if (!folders) {
-            //     folders = [];
-            // }
-            // folders.unshift(parentDir);
-            // files = data2.files;
-
-        //     let contentType = response.headers.get("Content-Type");
-
-        //     if(contentType != "application/json") {
-        //         isDocument = true;
-        //         content = JSON.stringify(data2, null, 3)
-        //     }
-
-        //     isLoading = false;
-
-        // } catch(err) {
-        //     console.log(err);
-        //     isLoading = false;
-        // }
-    });
 
     function getEndpoint(): URL {
         const [repo] = currentURI.split("/", 1);
@@ -87,14 +55,13 @@
 
     export async function postDocument(): Promise<Response> {
         const url = getEndpoint();
-        const data2: string = JSON.stringify(content);
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: data2,
+            body: JSON.stringify(content),
         });
         console.log(response);
         return response;
@@ -184,8 +151,8 @@
                         <Button color="alternative">Go Back</Button>
                     </A>
                     <div class="button-group-right">
-                        <Button on:click={() => alert('Handle "success"')}>I accept</Button>
-                        <Button color="alternative">Decline</Button>
+                        <Button on:click={() => alert('Handle "success"')} color="alternative">Validate</Button>
+                        <Button >Save Document</Button>
                     </div>
                 </div>
             <div class="code-mirror-container">

@@ -1,8 +1,4 @@
 import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
-import { 
-    FolderOpenOutline,
-    FileOutline,
-    } from 'flowbite-svelte-icons';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {	
@@ -42,8 +38,8 @@ export async function load({ url }) {
     }
 
     const currentURI = url.pathname;
-    folders = createItems(folders, FolderOpenOutline.toString(), currentURI);
-    files = createItems(files, FileOutline.toString(), currentURI);
+    folders = createItems(folders, currentURI);
+    files = createItems(files, currentURI);
 
     return {
         props: {
@@ -58,7 +54,7 @@ export async function load({ url }) {
     };
 }
 
-function createItems(collection: string[], iconType: any, currentURI: string) {
+function createItems(collection: string[], currentURI: string) {
     return collection?.map((item: any) => {
         if (item.startsWith("/")) {
             item = item.substring(1);
@@ -66,7 +62,6 @@ function createItems(collection: string[], iconType: any, currentURI: string) {
         return {
             name: item,
             href: buildLink(currentURI, item),
-            icon: iconType,
             attrs: {
                 target: '_self'
             }
