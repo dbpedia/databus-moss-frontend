@@ -7,7 +7,7 @@
 
     export let link: string;
     export let label: string | undefined;
-
+    
 </script>
 
 <A href={link} target="_self">

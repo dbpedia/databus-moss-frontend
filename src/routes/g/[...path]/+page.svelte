@@ -148,14 +148,18 @@
                             <Button color="alternative">Go Back</Button>
                         </A>
                         <div class="button-group-right">
-                            <Button on:click={() => validateLayerHeader(content)} color="alternative">Validate</Button>
-                            <Button on:click={onSaveButtonClicked}>Save Document</Button>
-                            {#if validationErrorMsg}
-                                <p class="error-msg">{validationErrorMsg}</p>
-                            {:else}
-                                <p class="valid-msg">Valid Document</p>
-                            {/if}
+                            <div class="button-group-buttons">
+                                <Button  on:click={() => validateLayerHeader(content)} color="alternative">Validate</Button>
+                                <Button on:click={onSaveButtonClicked}>Save Document</Button>
+                            </div>
                         </div>
+                    </div>
+                    <div class="valid-label-container">
+                        {#if validationErrorMsg}
+                            <p class="error-msg">{validationErrorMsg}</p>
+                        {:else}
+                            <p class="valid-msg">Valid Document</p>
+                        {/if}
                     </div>
                 <div class="code-mirror-container">
                     <CodeMirror bind:value={content} />
@@ -170,16 +174,25 @@
 .container {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    /* align-items: center; */
     padding-top: 70px;
-    width: 100%;
+    width: 90%;
+    padding-left: 2em;
 }
 
 .top-bar-container {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: blueviolet;
+    /* position: fixed; */
+    /* top: 0; */
+    /* width: 100%; */
+    /* background-color: blueviolet; */
+}
+
+.valid-label-container {
+    padding-right: 1em;
+}
+
+.valid-label-container > p {
+    float: right;
 }
 
 #title {
@@ -202,7 +215,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: right;
-    min-height: 100vh;
     margin: 1em 0;
 }
 
@@ -227,7 +239,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 150%;
+    width: 100%;
 }
 
 .error-msg {
