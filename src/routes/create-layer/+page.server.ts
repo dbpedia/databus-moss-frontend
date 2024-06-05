@@ -9,10 +9,6 @@ export async function load({ url }) {
         const data = await MossUtils.fetchLayers();
         layers = data.layers.map((item: any) => {
             console.log("sever -item", item)
-            // return {
-            //     value: item.name,
-            //     label: item.name,
-            // };
             return item.name;
         })
         console.log("done", layers);

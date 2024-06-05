@@ -62,7 +62,7 @@
             },
             body: body,
         });
-        console.log(response);
+
         return response;
     }
 
@@ -121,7 +121,6 @@
         return true;
     }
 
-    console.log(path.slice(0, path.lastIndexOf("/")));
 </script>
 
 <div class="container">

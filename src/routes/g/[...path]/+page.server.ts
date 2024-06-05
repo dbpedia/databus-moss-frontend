@@ -72,7 +72,6 @@ function createItems(collection: string[], currentURI: string) {
 
 
 function buildLink(linkURI: string, item: string): string {
-    console.log("linkURI", linkURI);
     let url = "/g/";
     if (!linkURI) {
         return url + item;
