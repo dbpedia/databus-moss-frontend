@@ -10,7 +10,7 @@
     
 </script>
 
-<A href={link} target="_self">
+<A href={link}>
     <BreadcrumbItem>
         {label}
     </BreadcrumbItem>

@@ -77,10 +77,11 @@
 
 <div class="container">
     <h1>Create Layer</h1>
-    <div class="drop-down">
-        <Select items={layerList}/>
-    </div>
+    
     <div class="create-layer">
+        <div class="drop-down">
+            <Select items={layerList}/>
+        </div>
         <Label for="databusResource">Databus Resource: </Label>
         <Input bind:value={databusResource} class="input" placeholder={databusResourcePlaceholder}/>
         <br/>

@@ -1,10 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
     import { FolderOpenOutline, FileOutline } from 'flowbite-svelte-icons';
-	import { onMount } from 'svelte';
-    import { MossUtils } from '$lib/utils/moss-utils';
-    import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
-    import { get } from 'svelte/store';
     import { 
             Listgroup,
             ListgroupItem,
