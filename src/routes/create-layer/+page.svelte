@@ -6,6 +6,7 @@
         Label,
         Button,
 		type SelectOptionType,
+		Select,
      } from "flowbite-svelte";
 
     const layerPlaceholder: string = "%LAYERNAME%";
@@ -17,7 +18,7 @@
     let resourceTestName = "https://databus.openenergyplatform.org/hu_wu/test_group/";
     let layerName: string = layerTestName;
     let databusResource: string = resourceTestName;
-    let layerList: SelectOptionType<string>[] = data.props.layers;
+    let layerList: any = data.props.layers;
     let selected: string | null;
     let errorMessage: string = "";
 
@@ -65,16 +66,19 @@
         return response;
     }
 
+    layerList = layerList.map((layer: string) => {
+        return {
+            value: layer,
+            name: layer,
+        }
+    })
+
 </script>
 
 <div class="container">
     <h1>Create Layer</h1>
     <div class="drop-down">
-        <select class="drop-down" bind:value={layerName}>
-            {#each layerList as layer}
-                <option>{layer}</option>
-            {/each}
-        </select>
+        <Select items={layerList}/>
     </div>
     <div class="create-layer">
         <Label for="databusResource">Databus Resource: </Label>
@@ -103,12 +107,13 @@
     .drop-down {
         margin-bottom: 10px;
         margin: 0 5px;
-        width: 400px;
+        width: 90%;
+        padding-bottom: 1em;
     }
 
     .create-layer {
         margin-bottom: 10px;
-        width: 400px;
+        width: 90%;
     }
 
     .create-layer-button {
