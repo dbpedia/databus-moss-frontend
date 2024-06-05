@@ -1,0 +1,10 @@
+<script lang="ts">
+    import { A } from "flowbite-svelte";
+</script>
+
+<h1>404: Not found</h1>
+<A href="/g">Hütte</A>
+
+<style>
+
+</style>

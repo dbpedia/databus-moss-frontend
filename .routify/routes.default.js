@@ -117,6 +117,20 @@ export default {
           "children": [
             {
               "meta": {},
+              "id": "_default_g_____path___error_svelte",
+              "name": "+error",
+              "file": {
+                "path": "src/routes/g/[...path]/+error.svelte",
+                "dir": "src/routes/g/[...path]",
+                "base": "+error.svelte",
+                "ext": ".svelte",
+                "name": "+error"
+              },
+              "asyncModule": () => import('../src/routes/g/[...path]/+error.svelte'),
+              "children": []
+            },
+            {
+              "meta": {},
               "id": "_default_g_____path___page_svelte",
               "name": "+page",
               "file": {

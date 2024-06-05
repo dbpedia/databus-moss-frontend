@@ -1,4 +1,6 @@
+import { page } from '$app/stores';
 import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
+import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {	
@@ -11,32 +13,30 @@ export async function load({ url }) {
     let isDocument = false;
     let content;
     let endpoint = `${PUBLIC_MOSS_BASE_URL}${url.pathname}`
-    // let endpoint2 = `${PUBLIC_MOSS_BASE_URL}${url.pathname}${}`
 
-    console.log(url);
-    console.log(endpoint);
 
-    try {
-        //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
-        //path here contains a "#" which gets filtered out -> resulting in a 404 from moss
-        // which is then not properly return or so.
-        let response = await fetch(endpoint);
-        const data = await response.json();
-        folders = data.folders;
-        if (!folders) {
-            folders = [];
-        }
-        folders.unshift(parentDir);
-        files = data.files;
+    //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
+    //path here contains a "#" which gets filtered out -> resulting in a 404 from moss
+    // which is then not properly return or so.
+    let response = await fetch(endpoint);
 
-        let contentType = response.headers.get("Content-Type");
+    if (response.status === 404) {
+        throw error(response.status, response.statusText);
+    }
 
-        if(contentType != "application/json") {
-            isDocument = true;
-            content = JSON.stringify(data, null, 3)
-        }
-    } catch(err) {
-        console.log(err);
+    const data = await response.json();
+    folders = data.folders;
+    if (!folders) {
+        folders = [];
+    }
+    folders.unshift(parentDir);
+    files = data.files;
+
+    let contentType = response.headers.get("Content-Type");
+
+    if(contentType != "application/json") {
+        isDocument = true;
+        content = JSON.stringify(data, null, 3)
     }
 
     const currentURI = url.pathname;
