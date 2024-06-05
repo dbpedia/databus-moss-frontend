@@ -1,6 +1,5 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { onMount } from 'svelte';
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
     import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
@@ -22,17 +21,12 @@
     let pending = false;
     let buttonName = "Save Document";
     let baseURL: string;
-    let headerPresent: false;
     let validationErrorMsg = "";
-    const path = $page.params.path;
-
-    onMount(async () => {
-    })
-
-    const currentURI = $page.params.path;
 
 
     function getEndpoint(): URL {
+        
+        const currentURI = $page.params.path;
         const [repo] = currentURI.split("/", 1);
         const path = currentURI.substring(currentURI.indexOf("/") + 1);
         const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
@@ -98,6 +92,8 @@
             validationErrorMsg = "Layer name not defined!";
             return false;
         }
+
+        const path = $page.params.path;
         const expectedLayerName = MossUtils.uriToName(path);
 
         if (Array.isArray(layerName)) {
@@ -135,7 +131,7 @@
 
     {#if data.props.isDocument}
         <div class="editor-container">
-            <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
+            <h1 id="title">{MossUtils.getTitle($page.params.path)}</h1>
                     <div class="buttons">
                         <A href={"./"}>
                             <Button color="alternative">Go Back</Button>
