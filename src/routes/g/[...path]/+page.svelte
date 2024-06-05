@@ -17,14 +17,7 @@
 
 
     /** @type {import('./$types').PageData} */
-	export let data;
-
-    let isDocument = data.props.isDocument;
-    let content = data.props.content;
-    let isLoading = data.props.isLoading;
-
-    let folders = data.props.folders;
-    let files = data.props.files;
+	export let data: any;
 
     let pending = false;
     let buttonName = "Save Document";
@@ -53,7 +46,7 @@
 
     export async function postDocument(): Promise<Response> {
         const url = getEndpoint();
-        const body = content;
+        const body = data.content;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -73,7 +66,7 @@
 
     async function onSaveButtonClicked() {
         toggleButton();
-        const valid = await validateLayerHeader(content);
+        const valid = await validateLayerHeader(data.content);
 
         if (!valid) {
             return;
@@ -127,30 +120,29 @@
     <div class="top-bar-container">
         <TopBar segments={data.props.segments}/>
     </div>
-{#if !isLoading}
-    {#if !isDocument}
+    {#if !data.props.isDocument}
         <div class="list-container">
             <ul>
-                {#if folders?.length}
-                    <FileList collection={folders} files={false}></FileList>
+                {#if data.props.folders?.length}
+                    <FileList collection={data.props.folders} files={false}></FileList>
                 {/if}
-                {#if files?.length}
-                    <FileList collection={files}></FileList>
+                {#if data.props.files?.length}
+                    <FileList collection={data.props.files}></FileList>
                 {/if}
             </ul>
         </div>
     {/if}
 
-    {#if isDocument}
+    {#if data.props.isDocument}
         <div class="editor-container">
             <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
                     <div class="buttons">
-                        <A href={"./"} target="_self">
+                        <A href={"./"}>
                             <Button color="alternative">Go Back</Button>
                         </A>
                         <div class="button-group-right">
                             <div class="button-group-buttons">
-                                <Button  on:click={() => validateLayerHeader(content)} color="alternative">Validate</Button>
+                                <Button  on:click={() => validateLayerHeader(data.content)} color="alternative">Validate</Button>
                                 <Button on:click={onSaveButtonClicked}>Save Document</Button>
                             </div>
                         </div>
@@ -163,11 +155,10 @@
                         {/if}
                     </div>
                 <div class="code-mirror-container">
-                    <CodeMirror bind:value={content} />
+                    <CodeMirror bind:value={data.content} />
                 </div>
         </div>
     {/if}
-{/if}
 </div>
 
 

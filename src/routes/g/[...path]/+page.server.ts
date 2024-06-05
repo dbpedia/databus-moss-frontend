@@ -2,6 +2,7 @@ import { page } from '$app/stores';
 import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
 import { error } from '@sveltejs/kit';
 
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {	
 
@@ -20,11 +21,13 @@ export async function load({ url }) {
     // which is then not properly return or so.
     let response = await fetch(endpoint);
 
+
     if (response.status === 404) {
         throw error(response.status, response.statusText);
     }
 
     const data = await response.json();
+	
     folders = data.folders;
     if (!folders) {
         folders = [];
@@ -43,14 +46,15 @@ export async function load({ url }) {
     folders = createItems(folders, currentURI);
     files = createItems(files, currentURI);
 
+	
     return {
+        content: content,
         props: {
             segments,
             domain,
             isDocument,
             folders,
-            files,
-            content
+            files
         }
     };
 }
@@ -63,9 +67,6 @@ function createItems(collection: string[], currentURI: string) {
         return {
             name: item,
             href: buildLink(currentURI, item),
-            attrs: {
-                target: '_self'
-            }
         };
     });
 }
