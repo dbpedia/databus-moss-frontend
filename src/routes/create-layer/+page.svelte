@@ -1,16 +1,13 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { MossUtils } from "$lib/utils/moss-utils";
-    import Dropdown from "$lib/components/dropdown.svelte";
-	import { onMount } from "svelte";
     import { FolderDuplicateOutline } from "flowbite-svelte-icons";
     import MenuLink from "$lib/components/menu-link.svelte";
     import { 
         Input,
         Label,
         Button,
-        Select,
 		type SelectOptionType,
-		TabItem,
      } from "flowbite-svelte";
 
     const layerPlaceholder: string = "%LAYERNAME%";
@@ -22,14 +19,26 @@
     let resourceTestName = "https://databus.openenergyplatform.org/hu_wu/test_group/";
     let layerName: string = layerTestName;
     let databusResource: string = resourceTestName;
-    let toggledDropdown: boolean = false;
-    let layerList: SelectOptionType<string>[] = [];
-    // let layerList: Promise<SelectOptionType<string>[]>;
+    let layerList: SelectOptionType<string>[] = data.props.layers;
     let selected: string | null;
-    let isLoading: boolean = true;
+    let errorMessage: string = "";
 
 
     async function postDocument() {
+        // Get the document and see if it exists
+        let documentMossPath = MossUtils.getDocumentUri(databusResource, layerName);
+        let documentUri = `/g/${documentMossPath}`;
+
+        let getResponse = await fetch(documentUri);
+
+        if(getResponse.status == 200) {
+            errorMessage = `Layer already exists. (${documentUri})`;
+            return;
+        }
+
+        errorMessage = "";
+        const saveURL = MossUtils.getEndpoint(documentMossPath);
+
         const content = `{
             "@context" : "https://raw.githubusercontent.com/dbpedia/databus-moss/dev/devenv/context2.jsonld",
             "@id" : "${databusResourcePlaceholder}",
@@ -41,8 +50,6 @@
             }
         }`
 
-        let documentUri = MossUtils.getDocumentUri(databusResource, layerName);
-        const saveURL = MossUtils.getEndpoint(documentUri);
 
         let body = content
             .replace(layerPlaceholder, layerName)
@@ -55,15 +62,10 @@
             },
             body: body,
         });
+
+        goto(documentUri);
         return response;
     }
-
-    onMount(async () => {
-        console.log("loading", isLoading);
-        layerList = data.props.layers;
-        isLoading = data.props.isLoading;
-        console.log("loading", isLoading);
-    });
 
 </script>
 
@@ -73,24 +75,23 @@
     </div>
     <h1>Create Layer</h1>
     <div class="drop-down">
-        <!-- <Dropdown layerList={layerList} ></Dropdown> -->
-        {#if isLoading}
-            <p>Loading...</p>
-        {:else } 
-            <Select items={layerList} bind:value={selected}>
-            </Select>
-        {/if}
+        <select class="drop-down" bind:value={layerName}>
+            {#each layerList as layer}
+                <option>{layer}</option>
+            {/each}
+        </select>
     </div>
     <div class="create-layer">
+        <Label for="databusResource">Databus Resource: </Label>
+        <Input bind:value={databusResource} class="input" placeholder={databusResourcePlaceholder}/>
+        <br/>
         <div class="create-layer-button">
             <Button name={buttonName} on:click={postDocument}>{buttonName}</Button>
         </div>
-        <Label for="layerName">Path: </Label>
-        <Input bind:value={layerName} class="input" placeholder={layerPlaceholder}/>
-        <br/>
-        <Label for="databusResource">Databus Resource: </Label>
-        <Input bind:value={databusResource} class="input" placeholder={databusResourcePlaceholder}/>
     </div>
+    {#if errorMessage}
+        {errorMessage}
+    {/if}
 </div>
 
 <style>

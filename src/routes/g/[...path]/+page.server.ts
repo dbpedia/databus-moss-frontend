@@ -10,7 +10,6 @@ export async function load({ url }) {
     let files;
     let isDocument = false;
     let content;
-    let isLoading;
     let endpoint = `${PUBLIC_MOSS_BASE_URL}${url.pathname}`
     // let endpoint2 = `${PUBLIC_MOSS_BASE_URL}${url.pathname}${}`
 
@@ -36,12 +35,8 @@ export async function load({ url }) {
             isDocument = true;
             content = JSON.stringify(data, null, 3)
         }
-
-        isLoading = false;
-
     } catch(err) {
         console.log(err);
-        isLoading = false;
     }
 
     const currentURI = url.pathname;
@@ -53,7 +48,6 @@ export async function load({ url }) {
             segments,
             domain,
             isDocument,
-            isLoading,
             folders,
             files,
             content
