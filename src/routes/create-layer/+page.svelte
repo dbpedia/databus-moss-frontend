@@ -1,8 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { MossUtils } from "$lib/utils/moss-utils";
-    import { FolderDuplicateOutline } from "flowbite-svelte-icons";
-    import MenuLink from "$lib/components/menu-link.svelte";
     import { 
         Input,
         Label,
@@ -70,9 +68,6 @@
 </script>
 
 <div class="container">
-    <div class="header">
-        <MenuLink href="/g" icon={FolderDuplicateOutline}>Browse</MenuLink>
-    </div>
     <h1>Create Layer</h1>
     <div class="drop-down">
         <select class="drop-down" bind:value={layerName}>

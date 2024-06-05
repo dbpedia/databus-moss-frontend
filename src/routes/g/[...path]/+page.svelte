@@ -120,6 +120,8 @@
 
         return true;
     }
+
+    console.log(path.slice(0, path.lastIndexOf("/")));
 </script>
 
 <div class="container">
@@ -144,7 +146,7 @@
         <div class="editor-container">
             <h1 id="title">{MossUtils.getTitle(currentURI)}</h1>
                     <div class="buttons">
-                        <A href="/g" target="_self">
+                        <A href={"./"} target="_self">
                             <Button color="alternative">Go Back</Button>
                         </A>
                         <div class="button-group-right">

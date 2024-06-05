@@ -1,7 +1,9 @@
 <script>
 	import '../app.css';
+	import MenuBar from '$lib/components/menu-bar.svelte';
 </script>
 
-<slot></slot>
+<MenuBar/>
+<slot/>
 
 <style></style>

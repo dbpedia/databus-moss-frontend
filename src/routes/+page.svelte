@@ -4,15 +4,9 @@
     import AnnotationSearch from "$lib/components/annotation-search.svelte";
     import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
     import { MossUtils } from '$lib/utils/moss-utils';
-    import MenuLink from "$lib/components/menu-link.svelte";
     import { 
-        A,
         Input,
      } from "flowbite-svelte";
-    import { 
-        FileCirclePlusOutline,
-        FolderDuplicateOutline,
-     } from "flowbite-svelte-icons";
 
     let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?query=`;
     // let baseUrl = `/api/search?query=`;
@@ -72,11 +66,6 @@
     }
 
 </script>
-
-<div class="header">
-    <MenuLink href="/g" icon={FolderDuplicateOutline}>Browser</MenuLink>
-    <MenuLink href="/create-layer" icon={FileCirclePlusOutline}>Create Layer</MenuLink>
-</div>
 
 <div class="page">
     <div class="main">
