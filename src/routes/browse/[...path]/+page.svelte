@@ -15,7 +15,10 @@
     } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
-	import { PaperPlaneOutline } from 'flowbite-svelte-icons';
+	import { 
+        CheckCircleOutline,
+        ExclamationCircleOutline,
+    } from 'flowbite-svelte-icons';
 
 
     /** @type {import('./$types').PageData} */
@@ -28,7 +31,7 @@
     let displaySave = writable(false);
 
 
-    export async function postDocument(): Promise<Response> {
+export async function postDocument(): Promise<Response> {
         const currentURI = $page.params.path;
 
         const url = MossUtils.getSavePath(currentURI.replace("/browse/", "/g/"));
@@ -151,12 +154,16 @@
                         <div class="feedback">
                             {#if $displayFeedback}
                                 <Toast dismissable={true} contentClass="flex space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse divide-gray-200 dark:divide-gray-700">
-                                    <PaperPlaneOutline class="w-5 h-5 text-primary-600 dark:text-primary-500 rotate-45" />
+                                    {#if validationErrorMsg}
+                                        <ExclamationCircleOutline class="w-5 h-5 text-primary-600 dark:text-primary-500" />
+                                    {:else}
+                                        <CheckCircleOutline class="w-5 h-5 text-green-600 dark:text-green-500" />
+                                    {/if}
                                     <div class="validation ps-4 text-sm font-normal">
                                         {#if validationErrorMsg}
-                                            <p class="error-msg">{validationErrorMsg}</p>
+                                            <p class="text-primary-600 dark:text-primary-500">{validationErrorMsg}</p>
                                         {:else}
-                                            <p class="valid-msg">Valid Document</p>
+                                            <p class="text-green-600 dark:text-green-500">Valid Document</p>
                                         {/if}
                                     </div>
                                 </Toast>
