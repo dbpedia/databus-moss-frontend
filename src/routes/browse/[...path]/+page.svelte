@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    import { writable } from 'svelte/store';
     // @ts-ignore
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
@@ -7,9 +8,14 @@
     import { MossUris } from '$lib/utils/moss-uris';
     import FileList from '$lib/components/file-list.svelte';
     import TopBar from '$lib/components/top-bar.svelte';
-    import { Button } from 'flowbite-svelte';
+    import {
+        Button,
+        Toast,
+        Spinner,
+    } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
+	import { PaperPlaneOutline } from 'flowbite-svelte-icons';
 
 
     /** @type {import('./$types').PageData} */
@@ -19,6 +25,8 @@
     let buttonName = "Save Document";
     let baseURL: string;
     let validationErrorMsg = "";
+    let displayFeedback = writable(false);
+    let displaySave: boolean = false;
 
 
     export async function postDocument(): Promise<Response> {
@@ -45,6 +53,7 @@
 
     async function onSaveButtonClicked() {
         toggleButton();
+        displaySave = true;
         const valid = await validateLayerHeader(data.content);
 
         if (!valid) {
@@ -53,8 +62,9 @@
 
         let response = await postDocument();
         console.log(response)
-        // if (!response.ok) {
-        // }
+        if (!response.ok) {
+
+        }
     }
 
     async function loadGraphs(content: string) {
@@ -95,6 +105,14 @@
         return true;
     }
 
+    async function onValidButtonClicked(content: string) {
+        displayFeedback.set(false);
+        setTimeout(() => {
+            displayFeedback.set(true);
+        }, 0);
+        validateLayerHeader(content);
+    }
+
 </script>
 
 <div class="container">
@@ -115,23 +133,39 @@
     {#if data.props.isDocument}
         <div class="editor-container">
             <h1 id="title">{MossUtils.getTitle($page.params.path)}</h1>
+                    <div class="valid-label-container">
+                        <div class="feedback">
+                            {#if $displayFeedback}
+                                <Toast dismissable={true} contentClass="flex space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse divide-gray-200 dark:divide-gray-700">
+                                    <PaperPlaneOutline class="w-5 h-5 text-primary-600 dark:text-primary-500 rotate-45" />
+                                    <div class="validation ps-4 text-sm font-normal">
+                                        <!-- {validationErrorMsg} -->
+                                        {#if validationErrorMsg}
+                                            <p class="error-msg">{validationErrorMsg}</p>
+                                        {:else}
+                                            <p class="valid-msg">Valid Document</p>
+                                        {/if}
+                                    </div>
+                                </Toast>
+                            {/if}
+                        </div>
+                    </div>
                     <div class="buttons">
                         <A href={"./"}>
                             <Button color="alternative">Go Back</Button>
                         </A>
                         <div class="button-group-right">
                             <div class="button-group-buttons">
-                                <Button  on:click={() => validateLayerHeader(data.content)} color="alternative">Validate</Button>
-                                <Button on:click={onSaveButtonClicked}>Save Document</Button>
+                                <Button  on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
+                                <Button on:click={onSaveButtonClicked}>
+                                    {#if displaySave}
+                                        <Spinner class="me-3" size="4" color="white" />Saving ...
+                                    {:else}
+                                        Save Document
+                                    {/if}
+                                </Button>
                             </div>
                         </div>
-                    </div>
-                    <div class="valid-label-container">
-                        {#if validationErrorMsg}
-                            <p class="error-msg">{validationErrorMsg}</p>
-                        {:else}
-                            <p class="valid-msg">Valid Document</p>
-                        {/if}
                     </div>
                 <div class="code-mirror-container">
                     <CodeMirror bind:value={data.content} />
@@ -157,6 +191,10 @@
 
 .valid-label-container {
     padding-right: 1em;
+}
+
+.feedback {
+    float: right;
 }
 
 .valid-label-container > p {
