@@ -26,7 +26,7 @@
         }
 
         searchInput = `&id=${event.detail.id[0]}`;
-        // onSearchInputChanged();
+        onSearchInputChanged();
     }
 
     async function query(searchInput: string, join?: string) {
@@ -70,7 +70,7 @@
 <div class="page">
     <div class="main">
         <!-- <input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." /> -->
-        <Input bind:value={searchInput} placeholder="Search files..." />
+        <Input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
         <ul>
             {#each searchResults as result (result.id) }
                 <li>
