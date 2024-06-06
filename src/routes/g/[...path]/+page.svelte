@@ -158,10 +158,6 @@
 
 <style>
 
-:global(body) {
-    background-color: blanchedalmond;
-}
-
 .container {
     /* display: flex; */
     /* flex-direction: column; */
@@ -169,7 +165,7 @@
     padding-top: 70px;
     width: 100%;
     /* padding-left: 2em; */
-    background-color: blueviolet;
+    /* background-color: blueviolet; */
     display: inline-block;
 }
 

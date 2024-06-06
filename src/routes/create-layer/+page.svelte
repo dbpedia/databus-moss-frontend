@@ -123,22 +123,4 @@
         margin: 0 5px;
     }
 
-    .header {
-        padding-top: 1em;
-        padding-bottom: 1em;
-        background-color: #eee;
-    }
-
-    label {
-        margin: 0 5px;
-    }
-
-    .input {
-        display: flex;
-        flex-direction: column;
-        margin-top: 20px;
-        padding: 2px;
-        width: 400px;
-        margin: 0 5px;
-    }
 </style>

@@ -90,11 +90,6 @@
     margin: 0;
 }
 
-.header {
-    padding: 1em;
-    background-color: #eee;
-}
-
 .page {
     width: 100%;
 }
