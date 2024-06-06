@@ -94,6 +94,7 @@
     padding: 1em;
     background-color: #eee;
 }
+
 .page {
     width: 100%;
 }
