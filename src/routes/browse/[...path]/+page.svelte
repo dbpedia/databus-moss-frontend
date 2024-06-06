@@ -53,7 +53,15 @@
     }
 
     async function validateLayerHeader(content: string): Promise<boolean> {
-        const graph = await loadGraphs(content);
+        let graph;
+        try {
+            const loadedGraph = await loadGraphs(content);
+            graph = loadedGraph;
+        } catch (error) {
+            validationErrorMsg = `${error}`
+            return false;
+        }
+
         const headerGraph = JsonldUtils.getTypedGraph(graph, MossUris.MOSS_DATABUS_METADATA_LAYER);
         if (!headerGraph) {
             validationErrorMsg = "No layer header!";
@@ -94,29 +102,21 @@
             return;
         }
 
-        displaySave.set(false);
-        setTimeout(() => {
-            displaySave.set(true);
-        }, 0);
+        displaySave.set(true);
 
         let response = await postDocument();
         console.log(response)
-        if (!response.ok) {
-            setTimeout(() => {
-                displaySave.set(false);
-            }, 1000);
-            buttonName.set("Error...");
-            return;
+
+        if (response.ok) {
+            buttonName.set("Success");
         }
 
-        setTimeout(() => {
-            displaySave.set(false);
-        }, 1000);
+        displaySave.set(false);
 
-        buttonName.set("Success");
+
         setTimeout(() => {
             buttonName.set("Save Document");
-        }, 1000);
+        }, 350);
     }
 
     async function onValidButtonClicked(content: string) {
