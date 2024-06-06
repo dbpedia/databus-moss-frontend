@@ -210,10 +210,6 @@
     float: right;
 }
 
-.valid-label-container > p {
-    float: right;
-}
-
 #title {
     align-items: center;
     text-align: center;
