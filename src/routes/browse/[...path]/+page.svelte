@@ -21,12 +21,11 @@
     /** @type {import('./$types').PageData} */
 	export let data: any;
 
-    let pending = false;
-    let buttonName = "Save Document";
+    let buttonName = writable("Save Document");
     let baseURL: string;
     let validationErrorMsg = "";
     let displayFeedback = writable(false);
-    let displaySave: boolean = false;
+    let displaySave = writable(false);
 
 
     export async function postDocument(): Promise<Response> {
@@ -44,27 +43,6 @@
         });
 
         return response;
-    }
-
-    function toggleButton() {
-        pending = !pending;
-        buttonName = pending? "Save Document" : "Pending...";
-    }
-
-    async function onSaveButtonClicked() {
-        toggleButton();
-        displaySave = true;
-        const valid = await validateLayerHeader(data.content);
-
-        if (!valid) {
-            return;
-        }
-
-        let response = await postDocument();
-        console.log(response)
-        if (!response.ok) {
-
-        }
     }
 
     async function loadGraphs(content: string) {
@@ -105,6 +83,42 @@
         return true;
     }
 
+    async function onSaveButtonClicked() {
+        const valid = await validateLayerHeader(data.content);
+
+        if (!valid) {
+            displayFeedback.set(false);
+            setTimeout(() => {
+                displayFeedback.set(true);
+            }, 0);
+            return;
+        }
+
+        displaySave.set(false);
+        setTimeout(() => {
+            displaySave.set(true);
+        }, 0);
+
+        let response = await postDocument();
+        console.log(response)
+        if (!response.ok) {
+            setTimeout(() => {
+                displaySave.set(false);
+            }, 1000);
+            buttonName.set("Error...");
+            return;
+        }
+
+        setTimeout(() => {
+            displaySave.set(false);
+        }, 1000);
+
+        buttonName.set("Success");
+        setTimeout(() => {
+            buttonName.set("Save Document");
+        }, 1000);
+    }
+
     async function onValidButtonClicked(content: string) {
         displayFeedback.set(false);
         setTimeout(() => {
@@ -139,7 +153,6 @@
                                 <Toast dismissable={true} contentClass="flex space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse divide-gray-200 dark:divide-gray-700">
                                     <PaperPlaneOutline class="w-5 h-5 text-primary-600 dark:text-primary-500 rotate-45" />
                                     <div class="validation ps-4 text-sm font-normal">
-                                        <!-- {validationErrorMsg} -->
                                         {#if validationErrorMsg}
                                             <p class="error-msg">{validationErrorMsg}</p>
                                         {:else}
@@ -156,12 +169,12 @@
                         </A>
                         <div class="button-group-right">
                             <div class="button-group-buttons">
-                                <Button  on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
+                                <Button on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
                                 <Button on:click={onSaveButtonClicked}>
-                                    {#if displaySave}
+                                    {#if $displaySave}
                                         <Spinner class="me-3" size="4" color="white" />Saving ...
                                     {:else}
-                                        Save Document
+                                        {$buttonName}
                                     {/if}
                                 </Button>
                             </div>
