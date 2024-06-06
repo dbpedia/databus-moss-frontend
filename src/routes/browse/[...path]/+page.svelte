@@ -103,14 +103,12 @@
     </div>
     {#if !data.props.isDocument}
         <div class="list-container">
-            <ul>
-                {#if data.props.folders?.length}
-                    <FileList collection={data.props.folders} files={false}></FileList>
-                {/if}
-                {#if data.props.files?.length}
-                    <FileList collection={data.props.files}></FileList>
-                {/if}
-            </ul>
+            {#if data.props.folders?.length}
+                <FileList collection={data.props.folders} files={false}></FileList>
+            {/if}
+            {#if data.props.files?.length}
+                <FileList collection={data.props.files}></FileList>
+            {/if}
         </div>
     {/if}
 
@@ -144,13 +142,16 @@
 
 
 <style>
+
 .container {
-    display: flex;
-    flex-direction: column;
+    /* display: flex; */
+    /* flex-direction: column; */
     /* align-items: center; */
     padding-top: 70px;
-    width: 90%;
-    padding-left: 2em;
+    width: 100%;
+    /* padding-left: 2em; */
+    /* background-color: blueviolet; */
+    display: inline-block;
 }
 
 .valid-label-container {

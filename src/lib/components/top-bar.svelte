@@ -38,9 +38,4 @@
         margin-right: 1em;
     }
 
-    .a-tag {
-        background-color: aqua;
-        text-align: center;
-    }
-
 </style>

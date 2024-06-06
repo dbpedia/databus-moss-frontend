@@ -25,22 +25,5 @@
 
 
 <style>
-    .container {
-        top: 0;
-        z-index: 1000;
-        margin-left: 1em;
-        margin-right: 1em;
-    }
-
-    .header {
-        background-color: azure;
-        padding-left: 1em;
-        padding: 1em;
-    }
-
-    .a-tag {
-        background-color: aqua;
-        text-align: center;
-    }
 
 </style>
