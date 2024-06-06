@@ -12,7 +12,8 @@
 
 <Navbar rounded color="form" >
     <NavBrand href="/">
-        <img src="/icon.svg" class="me-3 h-6 sm:h-9" alt="Moss Logo" />
+        <img src="/moss.svg" class="me-3 h-6 sm:h-9" alt="Moss Logo" />
+        <!-- <img src="/icon.svg" class="me-3 h-6 sm:h-9" alt="Moss Logo" /> -->
         <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">MOSS</span>
     </NavBrand>
     <NavHamburger  />
