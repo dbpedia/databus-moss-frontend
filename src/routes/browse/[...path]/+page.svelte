@@ -149,6 +149,7 @@
     /* align-items: center; */
     padding-top: 70px;
     width: 100%;
+    padding-left: 3em;
     /* padding-left: 2em; */
     /* background-color: blueviolet; */
     display: inline-block;

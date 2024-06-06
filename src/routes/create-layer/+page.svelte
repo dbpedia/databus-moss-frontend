@@ -77,7 +77,7 @@
     
     <div class="create-layer">
         <div class="drop-down">
-            <Select items={layerList}/>
+            <Select bind:value={layerName} items={layerList}/>
         </div>
         <Label for="databusResource">Databus Resource: </Label>
         <Input bind:value={databusResource} class="input" placeholder={databusResourcePlaceholder}/>
