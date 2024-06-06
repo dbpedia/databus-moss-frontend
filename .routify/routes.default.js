@@ -44,6 +44,68 @@ export default {
     },
     {
       "meta": {},
+      "id": "_default_browse",
+      "name": "browse",
+      "module": false,
+      "file": {
+        "path": "src/routes/browse",
+        "dir": "src/routes",
+        "base": "browse",
+        "ext": "",
+        "name": "browse"
+      },
+      "children": [
+        {
+          "meta": {
+            "dynamic": true,
+            "order": false,
+            "dynamicSpread": true
+          },
+          "id": "_default_browse_____path_",
+          "name": "[...path]",
+          "module": false,
+          "file": {
+            "path": "src/routes/browse/[...path]",
+            "dir": "src/routes/browse",
+            "base": "[...path]",
+            "ext": ".path]",
+            "name": "[...path]"
+          },
+          "children": [
+            {
+              "meta": {},
+              "id": "_default_browse_____path___error_svelte",
+              "name": "+error",
+              "file": {
+                "path": "src/routes/browse/[...path]/+error.svelte",
+                "dir": "src/routes/browse/[...path]",
+                "base": "+error.svelte",
+                "ext": ".svelte",
+                "name": "+error"
+              },
+              "asyncModule": () => import('../src/routes/browse/[...path]/+error.svelte'),
+              "children": []
+            },
+            {
+              "meta": {},
+              "id": "_default_browse_____path___page_svelte",
+              "name": "+page",
+              "file": {
+                "path": "src/routes/browse/[...path]/+page.svelte",
+                "dir": "src/routes/browse/[...path]",
+                "base": "+page.svelte",
+                "ext": ".svelte",
+                "name": "+page"
+              },
+              "asyncModule": () => import('../src/routes/browse/[...path]/+page.svelte'),
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {},
       "id": "_default_create_layer",
       "name": "create-layer",
       "module": false,
@@ -84,68 +146,6 @@ export default {
       },
       "asyncModule": () => import('../src/routes/demo.svelte'),
       "children": []
-    },
-    {
-      "meta": {},
-      "id": "_default_g",
-      "name": "g",
-      "module": false,
-      "file": {
-        "path": "src/routes/g",
-        "dir": "src/routes",
-        "base": "g",
-        "ext": "",
-        "name": "g"
-      },
-      "children": [
-        {
-          "meta": {
-            "dynamic": true,
-            "order": false,
-            "dynamicSpread": true
-          },
-          "id": "_default_g_____path_",
-          "name": "[...path]",
-          "module": false,
-          "file": {
-            "path": "src/routes/g/[...path]",
-            "dir": "src/routes/g",
-            "base": "[...path]",
-            "ext": ".path]",
-            "name": "[...path]"
-          },
-          "children": [
-            {
-              "meta": {},
-              "id": "_default_g_____path___error_svelte",
-              "name": "+error",
-              "file": {
-                "path": "src/routes/g/[...path]/+error.svelte",
-                "dir": "src/routes/g/[...path]",
-                "base": "+error.svelte",
-                "ext": ".svelte",
-                "name": "+error"
-              },
-              "asyncModule": () => import('../src/routes/g/[...path]/+error.svelte'),
-              "children": []
-            },
-            {
-              "meta": {},
-              "id": "_default_g_____path___page_svelte",
-              "name": "+page",
-              "file": {
-                "path": "src/routes/g/[...path]/+page.svelte",
-                "dir": "src/routes/g/[...path]",
-                "base": "+page.svelte",
-                "ext": ".svelte",
-                "name": "+page"
-              },
-              "asyncModule": () => import('../src/routes/g/[...path]/+page.svelte'),
-              "children": []
-            }
-          ]
-        }
-      ]
     },
     {
       "meta": {

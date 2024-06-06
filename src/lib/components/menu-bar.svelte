@@ -18,7 +18,7 @@
     <NavHamburger  />
     <NavUl >
         <NavLi href="/">Home</NavLi>
-        <NavLi href="/g">Browse</NavLi>
+        <NavLi href="/browse">Browse</NavLi>
         <NavLi href="/create-layer">Create Layer</NavLi>
     </NavUl>
 </Navbar>

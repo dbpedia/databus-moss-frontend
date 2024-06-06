@@ -1,12 +1,15 @@
 import { MossUtils } from "$lib/utils/moss-utils";
-import type { SelectOptionType } from "flowbite-svelte";
+
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {	
     console.log(url);
     let layers = [];
     try {
-        const data = await MossUtils.fetchLayers();
+
+        const response = await fetch(`${import.meta.env.VITE_MOSS_BASE_URL}/layer/`);
+        const data = await response.json();
+        
         layers = data.layers.map((item: any) => {
             console.log("sever -item", item)
             return item.name;

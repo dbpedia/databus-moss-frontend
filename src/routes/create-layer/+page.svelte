@@ -5,7 +5,6 @@
         Input,
         Label,
         Button,
-		type SelectOptionType,
 		Select,
      } from "flowbite-svelte";
 
@@ -19,7 +18,6 @@
     let layerName: string = layerTestName;
     let databusResource: string = resourceTestName;
     let layerList: any = data.props.layers;
-    let selected: string | null;
     let errorMessage: string = "";
 
 
@@ -36,7 +34,7 @@
         }
 
         errorMessage = "";
-        const saveURL = MossUtils.getEndpoint(documentMossPath);
+        const saveURL = MossUtils.getSavePath(documentMossPath);
 
         const content = `{
             "@context" : "https://raw.githubusercontent.com/dbpedia/databus-moss/dev/devenv/context2.jsonld",
@@ -48,7 +46,6 @@
                 "created" : "2024-03-01 14:37:32"
             }
         }`
-
 
         let body = content
             .replace(layerPlaceholder, layerName)
@@ -62,7 +59,7 @@
             body: body,
         });
 
-        goto(documentUri);
+        goto(documentUri.replace("/g/", "/browse/"));
         return response;
     }
 
@@ -123,22 +120,4 @@
         margin: 0 5px;
     }
 
-    .header {
-        padding-top: 1em;
-        padding-bottom: 1em;
-        background-color: #eee;
-    }
-
-    label {
-        margin: 0 5px;
-    }
-
-    .input {
-        display: flex;
-        flex-direction: column;
-        margin-top: 20px;
-        padding: 2px;
-        width: 400px;
-        margin: 0 5px;
-    }
 </style>

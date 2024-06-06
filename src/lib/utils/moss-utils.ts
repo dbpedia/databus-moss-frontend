@@ -1,5 +1,3 @@
-import { PUBLIC_MOSS_BASE_URL } from "$env/static/public";
-
 
 export class MossUtils {
     static uriToName(uri : string) {
@@ -21,16 +19,7 @@ export class MossUtils {
         return result;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    static async fetchLayers(): Promise<any> {
-        const layerRoute: string = "layer/";
-        const response = await fetch(`${PUBLIC_MOSS_BASE_URL}/${layerRoute}`);
-        const data = await response.json();
-
-        return data;
-    }
-
-
+   
     static getLastPathSegment(uri : string) {
         const segments = uri.split('/');
         return segments.pop() || segments.pop();
@@ -78,20 +67,53 @@ export class MossUtils {
         return result;
     }
 
-    static getEndpoint(iri: string): URL {
+    static getSavePath(iri: string): string {
         const [repo] = iri.split("/", 1);
         const path = iri.substring(iri.indexOf("/") + 1);
-        const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
-        console.log(PUBLIC_MOSS_BASE_URL);
-
-        endpointURL.pathname = "/api/save";
-        console.log("repo", repo);
-        console.log("path", path);
-        endpointURL.searchParams.append("repo", repo);
-        endpointURL.searchParams.append("path", path);
-
-        console.log(endpointURL.toString());
-
-        return endpointURL;
+        
+        return `/api/save?repo=${repo}&path=${path}`;
     }
+
+   
+
+    static getUriSegments(path: string) {
+        let links: string[] = [];
+        if (!path) {
+            return links;
+        }
+        let segments = path.split("/");
+        let previous = "";
+    
+        segments.forEach((segment) => {
+            if (segment === '') {
+                return;
+            }
+            previous += "/" + segment;
+            links.push(previous);
+        });
+        
+        return links;
+    }
+
+    static createListGroupNavigationItems(collection: string[], currentURI: string) {
+        return collection?.map((item: any) => {
+            if (item.startsWith("/")) {
+                item = item.substring(1);
+            }
+            return {
+                name: item,
+                href: this.buildBrowseLink(currentURI, item),
+            };
+        });
+    }
+
+    static buildBrowseLink(linkURI: string, item: string): string {
+        let url = "/browse/";
+        if (!linkURI) {
+            return url + item;
+        }
+        url = linkURI + "/" + item;
+        return url.replace(/\/{2,}/g, '/');
+    }
+    
 }

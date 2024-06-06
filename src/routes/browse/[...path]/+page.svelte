@@ -1,16 +1,13 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    // @ts-ignore
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
-    import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
     import { JsonldUtils } from '$lib/utils/jsonld-utils';
     import { MossUris } from '$lib/utils/moss-uris';
     import FileList from '$lib/components/file-list.svelte';
     import TopBar from '$lib/components/top-bar.svelte';
-    import {
-            Button,
-        } 
-            from 'flowbite-svelte';
+    import { Button } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
 
@@ -24,22 +21,10 @@
     let validationErrorMsg = "";
 
 
-    function getEndpoint(): URL {
-        
-        const currentURI = $page.params.path;
-        const [repo] = currentURI.split("/", 1);
-        const path = currentURI.substring(currentURI.indexOf("/") + 1);
-        const endpointURL = new URL(PUBLIC_MOSS_BASE_URL);
-
-        endpointURL.pathname = "/api/save";
-        endpointURL.searchParams.append("repo", repo);
-        endpointURL.searchParams.append("path", path);
-
-        return endpointURL;
-    }
-
     export async function postDocument(): Promise<Response> {
-        const url = getEndpoint();
+        const currentURI = $page.params.path;
+
+        const url = MossUtils.getSavePath(currentURI.replace("/browse/", "/g/"));
         const body = data.content;
         const response = await fetch(url, {
             method: 'POST',
@@ -166,13 +151,6 @@
     padding-top: 70px;
     width: 90%;
     padding-left: 2em;
-}
-
-.top-bar-container {
-    /* position: fixed; */
-    /* top: 0; */
-    /* width: 100%; */
-    /* background-color: blueviolet; */
 }
 
 .valid-label-container {

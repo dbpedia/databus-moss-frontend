@@ -10,8 +10,8 @@
     
 </script>
 
-<A href={link}>
+<a href={link}>
     <BreadcrumbItem>
         {label}
     </BreadcrumbItem>
-</A>
+</a>
