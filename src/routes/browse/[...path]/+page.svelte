@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    import { writable } from 'svelte/store';
     // @ts-ignore
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
@@ -7,21 +8,30 @@
     import { MossUris } from '$lib/utils/moss-uris';
     import FileList from '$lib/components/file-list.svelte';
     import TopBar from '$lib/components/top-bar.svelte';
-    import { Button } from 'flowbite-svelte';
+    import {
+        Button,
+        Toast,
+        Spinner,
+    } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
+	import { 
+        CheckCircleOutline,
+        ExclamationCircleOutline,
+    } from 'flowbite-svelte-icons';
 
 
     /** @type {import('./$types').PageData} */
 	export let data: any;
 
-    let pending = false;
-    let buttonName = "Save Document";
+    let buttonName = writable("Save Document");
     let baseURL: string;
     let validationErrorMsg = "";
+    let displayFeedback = writable(false);
+    let displaySave = writable(false);
 
 
-    export async function postDocument(): Promise<Response> {
+export async function postDocument(): Promise<Response> {
         const currentURI = $page.params.path;
 
         const url = MossUtils.getSavePath(currentURI.replace("/browse/", "/g/"));
@@ -38,25 +48,6 @@
         return response;
     }
 
-    function toggleButton() {
-        pending = !pending;
-        buttonName = pending? "Save Document" : "Pending...";
-    }
-
-    async function onSaveButtonClicked() {
-        toggleButton();
-        const valid = await validateLayerHeader(data.content);
-
-        if (!valid) {
-            return;
-        }
-
-        let response = await postDocument();
-        console.log(response)
-        // if (!response.ok) {
-        // }
-    }
-
     async function loadGraphs(content: string) {
         const graph = JSON.parse(content);
         const exp = await jsonld.expand(graph, {base: baseURL});
@@ -65,7 +56,15 @@
     }
 
     async function validateLayerHeader(content: string): Promise<boolean> {
-        const graph = await loadGraphs(content);
+        let graph;
+        try {
+            const loadedGraph = await loadGraphs(content);
+            graph = loadedGraph;
+        } catch (error) {
+            validationErrorMsg = `${error}`
+            return false;
+        }
+
         const headerGraph = JsonldUtils.getTypedGraph(graph, MossUris.MOSS_DATABUS_METADATA_LAYER);
         if (!headerGraph) {
             validationErrorMsg = "No layer header!";
@@ -95,6 +94,42 @@
         return true;
     }
 
+    async function onSaveButtonClicked() {
+        const valid = await validateLayerHeader(data.content);
+
+        if (!valid) {
+            displayFeedback.set(false);
+            setTimeout(() => {
+                displayFeedback.set(true);
+            }, 0);
+            return;
+        }
+
+        displaySave.set(true);
+
+        let response = await postDocument();
+        console.log(response)
+
+        if (response.ok) {
+            buttonName.set("Success");
+        }
+
+        displaySave.set(false);
+
+
+        setTimeout(() => {
+            buttonName.set("Save Document");
+        }, 350);
+    }
+
+    async function onValidButtonClicked(content: string) {
+        displayFeedback.set(false);
+        setTimeout(() => {
+            displayFeedback.set(true);
+        }, 0);
+        validateLayerHeader(content);
+    }
+
 </script>
 
 <div class="container">
@@ -115,23 +150,42 @@
     {#if data.props.isDocument}
         <div class="editor-container">
             <h1 id="title">{MossUtils.getTitle($page.params.path)}</h1>
+                    <div class="valid-label-container">
+                        <div class="feedback">
+                            {#if $displayFeedback}
+                                <Toast dismissable={true} contentClass="flex space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse divide-gray-200 dark:divide-gray-700">
+                                    {#if validationErrorMsg}
+                                        <ExclamationCircleOutline class="w-5 h-5 text-primary-600 dark:text-primary-500" />
+                                    {:else}
+                                        <CheckCircleOutline class="w-5 h-5 text-green-600 dark:text-green-500" />
+                                    {/if}
+                                    <div class="validation ps-4 text-sm font-normal">
+                                        {#if validationErrorMsg}
+                                            <p class="text-primary-600 dark:text-primary-500">{validationErrorMsg}</p>
+                                        {:else}
+                                            <p class="text-green-600 dark:text-green-500">Valid Document</p>
+                                        {/if}
+                                    </div>
+                                </Toast>
+                            {/if}
+                        </div>
+                    </div>
                     <div class="buttons">
                         <A href={"./"}>
                             <Button color="alternative">Go Back</Button>
                         </A>
                         <div class="button-group-right">
                             <div class="button-group-buttons">
-                                <Button  on:click={() => validateLayerHeader(data.content)} color="alternative">Validate</Button>
-                                <Button on:click={onSaveButtonClicked}>Save Document</Button>
+                                <Button on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
+                                <Button on:click={onSaveButtonClicked}>
+                                    {#if $displaySave}
+                                        <Spinner class="me-3" size="4" color="white" />Saving ...
+                                    {:else}
+                                        {$buttonName}
+                                    {/if}
+                                </Button>
                             </div>
                         </div>
-                    </div>
-                    <div class="valid-label-container">
-                        {#if validationErrorMsg}
-                            <p class="error-msg">{validationErrorMsg}</p>
-                        {:else}
-                            <p class="valid-msg">Valid Document</p>
-                        {/if}
                     </div>
                 <div class="code-mirror-container">
                     <CodeMirror bind:value={data.content} />
@@ -159,7 +213,7 @@
     padding-right: 1em;
 }
 
-.valid-label-container > p {
+.feedback {
     float: right;
 }
 
