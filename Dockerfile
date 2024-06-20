@@ -13,10 +13,6 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
-# Build the application
-RUN npm run build
-
-
 EXPOSE 5173
 
 # Start the server

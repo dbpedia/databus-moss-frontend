@@ -164,6 +164,63 @@ export default {
       "children": []
     },
     {
+      "meta": {},
+      "id": "_default_login",
+      "name": "login",
+      "module": false,
+      "file": {
+        "path": "src/routes/login",
+        "dir": "src/routes",
+        "base": "login",
+        "ext": "",
+        "name": "login"
+      },
+      "children": [
+        {
+          "meta": {},
+          "id": "_default_login__page_svelte",
+          "name": "+page",
+          "file": {
+            "path": "src/routes/login/+page.svelte",
+            "dir": "src/routes/login",
+            "base": "+page.svelte",
+            "ext": ".svelte",
+            "name": "+page"
+          },
+          "asyncModule": () => import('../src/routes/login/+page.svelte'),
+          "children": []
+        }
+      ]
+    },
+    {
+      "meta": {},
+      "id": "_default_signin",
+      "name": "signin",
+      "module": false,
+      "file": {
+        "path": "src/routes/signin",
+        "dir": "src/routes",
+        "base": "signin",
+        "ext": "",
+        "name": "signin"
+      },
+      "children": []
+    },
+    {
+      "meta": {},
+      "id": "_default_signout",
+      "name": "signout",
+      "module": false,
+      "file": {
+        "path": "src/routes/signout",
+        "dir": "src/routes",
+        "base": "signout",
+        "ext": "",
+        "name": "signout"
+      },
+      "children": []
+    },
+    {
       "meta": {
         "dynamic": true,
         "dynamicSpread": true,

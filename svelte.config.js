@@ -14,6 +14,9 @@ const config = {
 		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
 		adapter: adapter()
 	},
+	csrf: { // This is required due to a breaking change in sveltekit see https://github.com/starbasehq/sveltekit-openid-connect/issues/11
+		checkOrigin: false
+	},
 
 	extensions: ['.svelte', '.svx'],
 	
