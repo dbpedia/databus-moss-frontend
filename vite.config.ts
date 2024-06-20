@@ -14,6 +14,6 @@ export default defineConfig(({command, mode}: any) =>  {
 				'/layer': env.VITE_MOSS_BASE_URL,
 			},
 		}
-	}
+	} 
 });
 

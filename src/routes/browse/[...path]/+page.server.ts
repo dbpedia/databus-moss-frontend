@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ url }: any) {	
+export async function load({ url, locals }: any) {	
 
     const parentDir = "..";
     const domain = url.toString();
@@ -48,8 +48,11 @@ export async function load({ url }: any) {
     folders = MossUtils.createListGroupNavigationItems(folders, currentURI);
     files = MossUtils.createListGroupNavigationItems(files, currentURI);
 
+    const session = await locals.auth() as any;
+
     return {
         content: content,
+        token: session.accessToken,
         props: {
             segments,
             domain,

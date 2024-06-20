@@ -44,6 +44,35 @@ export default {
     },
     {
       "meta": {},
+      "id": "_default_api",
+      "name": "api",
+      "module": false,
+      "file": {
+        "path": "src/routes/api",
+        "dir": "src/routes",
+        "base": "api",
+        "ext": "",
+        "name": "api"
+      },
+      "children": [
+        {
+          "meta": {},
+          "id": "_default_api_save",
+          "name": "save",
+          "module": false,
+          "file": {
+            "path": "src/routes/api/save",
+            "dir": "src/routes/api",
+            "base": "save",
+            "ext": "",
+            "name": "save"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "meta": {},
       "id": "_default_browse",
       "name": "browse",
       "module": false,

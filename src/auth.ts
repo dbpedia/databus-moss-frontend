@@ -10,7 +10,20 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
     clientSecret: "z7feqbX7lGyAFzPzGIaC4LT7vidPqrP5", // from the provider's dashboard
   }],
   secret: "isna",
- 
+  callbacks: {
+    async jwt({ token, account }) {
+      // Persist the OAuth access token to the token right after signin
+      if (account?.provider === "my-provider") {
+        
+        return { ...token, accessToken: account.access_token }
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      return { ...session, accessToken: token.accessToken }
+    }
+  }
 });
 /**
  *   clientId: "moss-dev",

@@ -41,6 +41,7 @@ export async function postDocument(): Promise<Response> {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'Authorization' : 'Bearer ' + data.token,
             },
             body: body,
         });
@@ -136,6 +137,7 @@ export async function postDocument(): Promise<Response> {
     <div class="top-bar-container">
         <TopBar segments={data.props.segments}/>
     </div>
+    
     {#if !data.props.isDocument}
         <div class="list-container">
             {#if data.props.folders?.length}
