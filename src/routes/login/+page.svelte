@@ -23,7 +23,7 @@
       </SignOut>
     {:else}
       <span class="notSignedInText">You are not signed in</span>
-      <SignIn provider="my-provider">
+      <SignIn provider="oidc_provider">
         <div slot="submitButton" class="buttonPrimary">Sign in</div>
       </SignIn>
     {/if}

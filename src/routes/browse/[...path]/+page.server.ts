@@ -52,7 +52,7 @@ export async function load({ url, locals }: any) {
 
     return {
         content: content,
-        token: session.accessToken,
+        token: session?.accessToken,
         props: {
             segments,
             domain,

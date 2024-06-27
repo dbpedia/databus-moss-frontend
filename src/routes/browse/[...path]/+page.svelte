@@ -1,6 +1,7 @@
 <script lang="ts">
     import { page } from '$app/stores';
     import { writable } from 'svelte/store';
+
     // @ts-ignore
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
@@ -36,13 +37,19 @@ export async function postDocument(): Promise<Response> {
 
         const url = MossUtils.getSavePath(currentURI.replace("/browse/", "/g/"));
         const body = data.content;
+
+        let headers: any= {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        };
+
+        if(data.token != undefined) {
+            headers['Authorization'] = 'Bearer ' + data.token;
+        }
+
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization' : 'Bearer ' + data.token,
-            },
+            headers: headers,
             body: body,
         });
 
