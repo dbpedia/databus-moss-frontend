@@ -250,6 +250,35 @@ export default {
       "children": []
     },
     {
+      "meta": {},
+      "id": "_default_user",
+      "name": "user",
+      "module": false,
+      "file": {
+        "path": "src/routes/user",
+        "dir": "src/routes",
+        "base": "user",
+        "ext": "",
+        "name": "user"
+      },
+      "children": [
+        {
+          "meta": {},
+          "id": "_default_user__page_svelte",
+          "name": "+page",
+          "file": {
+            "path": "src/routes/user/+page.svelte",
+            "dir": "src/routes/user",
+            "base": "+page.svelte",
+            "ext": ".svelte",
+            "name": "+page"
+          },
+          "asyncModule": () => import('../src/routes/user/+page.svelte'),
+          "children": []
+        }
+      ]
+    },
+    {
       "meta": {
         "dynamic": true,
         "dynamicSpread": true,

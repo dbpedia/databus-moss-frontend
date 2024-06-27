@@ -5,8 +5,9 @@
         Navbar,
         NavUl,
 		NavHamburger,
-    } 
+    }
     from 'flowbite-svelte';
+    import Login from './login.svelte';
 
 </script>
 
@@ -21,6 +22,10 @@
         <NavLi href="/">Home</NavLi>
         <NavLi href="/browse">Browse</NavLi>
         <NavLi href="/create-layer">Create Layer</NavLi>
+        <NavLi href="/create-user">Create User</NavLi>
+        <NavLi>
+            <Login/>
+        </NavLi>
     </NavUl>
 </Navbar>
 
