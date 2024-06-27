@@ -273,12 +273,4 @@ export async function postDocument(): Promise<Response> {
     width: 100%;
 }
 
-.error-msg {
-    color: red;
-}
-
-.valid-msg {
-    color: green;
-}
-
 </style>
