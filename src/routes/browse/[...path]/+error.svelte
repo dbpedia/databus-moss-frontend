@@ -3,7 +3,7 @@
 </script>
 
 <h1>404: Not found</h1>
-<A href="/g">Hütte</A>
+<A href="/browse">Hütte</A>
 
 <style>
 
