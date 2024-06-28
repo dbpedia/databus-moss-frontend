@@ -1,6 +1,5 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-	import NewUser from "$lib/components/new-user.svelte";
 	import UserData from "$lib/components/user-data.svelte";
     import { MossUtils } from "$lib/utils/moss-utils";
     import { onMount } from 'svelte';
