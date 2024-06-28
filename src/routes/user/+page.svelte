@@ -30,6 +30,8 @@
         if(response.ok) {
             let data = await response.json();
             console.log(data);
+
+            await fetchUserData();
         }
     }
 
@@ -39,8 +41,7 @@
         let response = await fetchAuthorized(uri, "POST");
         
         if (response.ok) {
-            user = {};
-            user.username = username;
+            await fetchUserData();
         }
     }
 
@@ -49,8 +50,7 @@
         let response = await fetchAuthorized(uri, 'POST');
 
         if(response.ok) {
-            let data = await response.json();
-            console.log(data);
+            await fetchUserData();
         }
     }
 
@@ -92,7 +92,6 @@
         {#if user != undefined} 
             <div>USERNAME:</div>
             <div>{user.username}</div>
-    
 
      
 
