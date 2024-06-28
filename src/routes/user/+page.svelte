@@ -1,37 +1,128 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
-	import ButtonGroup from "$lib/components/button-group.svelte";
-	import UserData from "$lib/components/user-data.svelte";
-    import { MossUtils } from "$lib/utils/moss-utils";
+    import { onMount } from 'svelte';
+    import { page } from "$app/stores"
     import {
         Input,
-        Label,
         Button,
-		Select,
      } from "flowbite-svelte";
 
-    let errorMessage: string = "";
+   
+
+    let usernameInput: string = "";
+    let apiKeyNameInput: string = "";
+    let user: any;
+
+    async function fetchUserData() {
+        let response = await fetchAuthorized('/api/users/get-user', "GET");
+
+        if (response.ok) {
+            user = await response.json();
+            usernameInput = user.username;
+        } else {
+            user = null;
+        }
+    }
+
+    async function onCreateAPIKeyButtonClicked() {
+        let uri = '/api/users/create-apikey?name=' + apiKeyNameInput;
+        let response = await fetchAuthorized(uri, 'POST');
+
+        if(response.ok) {
+            let data = await response.json();
+            console.log(data);
+        }
+    }
+
+    async function onChangeUsernameButtonClicked() {
+        let username = usernameInput;
+        let uri = '/api/users/set-username?username=' + username;
+        let response = await fetchAuthorized(uri, "POST");
+        
+        if (response.ok) {
+            user = {};
+            user.username = username;
+        }
+    }
+
+    async function onRevokeAPIKeyButtonClicked(keyName: string) {
+        let uri = '/api/users/revoke-apikey?name=' + keyName;
+        let response = await fetchAuthorized(uri, 'POST');
+
+        if(response.ok) {
+            let data = await response.json();
+            console.log(data);
+        }
+    }
+
+    async function fetchAuthorized(uri: string, method: string) : Promise<Response> {
+        let session = $page.data.session as any;
+
+        if (!session || !session.accessToken) {
+            return Response.error();
+        }
+
+        let headers: any= {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + session.accessToken
+        };
+
+        return fetch(uri, {
+            method: method,
+            headers: headers
+        });
+    }
+
+    
+    onMount(() => {
+        fetchUserData();
+    });
 
 </script>
 
 <div class="container">
 
-    <div class="header">
-        <h1>Create User</h1>
-        <ButtonGroup/>
+{#if $page.data.session}
+    <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
+    <div>
+        <div style="display: flex">
+            <Input bind:value={usernameInput} placeholder="Enter username..." />
+            <Button on:click={onChangeUsernameButtonClicked} color="alternative">Apply</Button>
+        </div>
+
+        {#if user != undefined} 
+            <div>USERNAME:</div>
+            <div>{user.username}</div>
+    
+
+     
+
+            <div style="display: flex">
+                <Input bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
+                <Button on:click={onCreateAPIKeyButtonClicked} color="alternative">Create API Key</Button>
+            </div>
+            <div>
+                {#each user.apiKeys as keyName }
+                    <div style="display: flex">
+                        <div>Key Name: { keyName }</div>
+                        
+                        <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)} 
+                            color="alternative">Revoke</Button>
+                    </div>
+                {/each}
+            </div>
+        {/if}
+
     </div>
 
-    <div class="body">
-        <UserData></UserData>
-    </div>
-
-    {#if errorMessage}
-        {errorMessage}
-    {/if}
+{:else}
+    <!-- LOGIN BUTTON -->
+{/if}
+   
 </div>
 
 <style>
     .container {
+        margin-left: 10em;
         align-items: center;
         padding-bottom: 3px;
         padding-top: 3px;
@@ -40,21 +131,5 @@
         flex-wrap: nowrap;
         margin-top: 20px;
     }
-
-    .header {
-        align-items: center;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-        margin-top: 1em;
-        margin-bottom: 1em;
-    }
-
-    .body {
-        background-color: burlywood;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-    }
-
+    
 </style>

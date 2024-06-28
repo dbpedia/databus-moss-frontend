@@ -1,9 +1,5 @@
 <script lang="ts">
-    import {
-            BreadcrumbItem,
-			}
-            from 'flowbite-svelte';
-    import { A } from 'flowbite-svelte';
+   
 
 </script>
 
