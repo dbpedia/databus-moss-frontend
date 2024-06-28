@@ -28,7 +28,7 @@
         </GradientButton>
     </SignOut>
 {:else}
-    <SignIn provider="my-provider">
+    <SignIn provider="oidc_provider">
         <GradientButton slot="submitButton" outline color="tealToLime">
             <span>Sign In</span>
             <ArrowRightOutline/>
