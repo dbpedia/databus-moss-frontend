@@ -1,6 +1,5 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-	import ButtonGroup from "$lib/components/button-group.svelte";
 	import NewUser from "$lib/components/new-user.svelte";
 	import UserData from "$lib/components/user-data.svelte";
     import { MossUtils } from "$lib/utils/moss-utils";
@@ -18,16 +17,14 @@
     let errorMessage: string = "";
 
     const rowNames  = [
-        "Userbame",
-        "User Sub",
-        "API Key",
+        "Keyname",
     ];
 
     let tabelItems = [
-        { key: 12345, sub: 'Toyota', name: 'ABC'},
-        { key: 67890, sub: 'Ford', name: 'CDE'},
-        { key: 54321, sub: 'Volvo', name: 'FGH'},
-        { key: 98765, sub: 'Saab', name: 'IJK'}
+        { keyName: 12345},
+        { keyName: 67890},
+        { keyName: 54321},
+        { keyName: 98765},
     ];
 
 </script>
@@ -36,7 +33,6 @@
 
     <div class="header">
         <Heading tag="h3" class="mb-2">User</Heading>
-        <ButtonGroup/>
     </div>
     <UserData></UserData>
     <div class="body">
@@ -48,18 +44,9 @@
                 {/each}
             </TableHead>
             <TableBody tableBodyClass="divide-y">
-                {#each tabelItems as item, index}
+                {#each tabelItems as item}
                     <TableBodyRow>
-                        <TableBodyCell>{item.name}</TableBodyCell>
-                        <TableBodyCell>{item.sub}</TableBodyCell>
-                        <TableBodyCell>
-                            <div class="key-input">
-                                <Input id="key{index}" readonly value={item.key}/>
-                                <ClipboardCheckOutline id="b1" on:click={() => console.log("clicked")} class="clipboard"/>
-                                <!-- <Button id="b1">Default popover</Button> -->
-                                <Popover class="w-32 text-sm font-light " triggeredBy="#b1">Copy to clipboard</Popover>
-                            </div>
-                        </TableBodyCell>
+                        <TableBodyCell>{item.keyName}</TableBodyCell>
                         <TableBodyCell>
                                 <Button>Revoke</Button>
                         </TableBodyCell>
