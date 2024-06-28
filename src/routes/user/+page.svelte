@@ -51,7 +51,6 @@
     }
 
     .body {
-        background-color: burlywood;
         display: flex;
         flex-direction: row;
         justify-content: center;
