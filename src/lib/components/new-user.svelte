@@ -17,12 +17,6 @@
     <TableBodyCell>
         <Input placeholder="API Key Name"/>
     </TableBodyCell>
-    <!-- <TableBodyCell>
-        <Input placeholder="User Sub"/>
-    </TableBodyCell> -->
-    <!-- <TableBodyCell>
-        <Input disabled placeholder="Generated API Key"/>
-    </TableBodyCell> -->
     <TableBodyCell>
             <Button>Add</Button>
     </TableBodyCell>
