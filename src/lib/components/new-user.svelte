@@ -15,14 +15,14 @@
 
 <TableBodyRow>
     <TableBodyCell>
-        <Input placeholder="Username"/>
+        <Input placeholder="API Key Name"/>
     </TableBodyCell>
-    <TableBodyCell>
+    <!-- <TableBodyCell>
         <Input placeholder="User Sub"/>
-    </TableBodyCell>
-    <TableBodyCell>
+    </TableBodyCell> -->
+    <!-- <TableBodyCell>
         <Input disabled placeholder="Generated API Key"/>
-    </TableBodyCell>
+    </TableBodyCell> -->
     <TableBodyCell>
             <Button>Add</Button>
     </TableBodyCell>
