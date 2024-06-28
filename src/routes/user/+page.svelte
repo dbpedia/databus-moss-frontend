@@ -159,30 +159,9 @@
         flex-direction: column;
     }
 
-    .header {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        margin-top: 1em;
-        margin-bottom: 1em;
-        padding-left: 1em;
-        padding-right: 1em;
-    }
-
     .body {
         flex-direction: row;
         justify-content: center;
-    }
-
-    .key-input {
-        justify-content: center;
-        display: flex;
-        align-items: center;
-    }
-
-    .table {
-        width: 100%;
-        flex-grow: 1;
     }
 
 </style>
