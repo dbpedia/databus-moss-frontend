@@ -23,10 +23,9 @@
         <NavLi href="/browse">Browse</NavLi>
         <NavLi href="/create-layer">Create Layer</NavLi>
         <NavLi href="/user">Create User</NavLi>
-        <NavLi>
-            <Login/>
-        </NavLi>
     </NavUl>
+
+    <Login/>
 </Navbar>
 
 

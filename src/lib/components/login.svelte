@@ -12,8 +12,10 @@
 </script>
 
 
-<div>
+<div style="display: flex; align-items: center">
 {#if $page.data.session}
+    <div style="margin-right: 1em">Logged in as <a style="color: cadetblue;" href="/user">{$page.data.session.user?.name ?? "User"}</a></div>
+
     <SignOut>
         <GradientButton slot="submitButton" outline color="tealToLime">
             <span class="spanBase">
