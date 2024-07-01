@@ -11,6 +11,7 @@
         Popover,
         Heading,
 		Label,
+		Helper,
      } from "flowbite-svelte";
     import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox, TableSearch } from 'flowbite-svelte';
     import { ClipboardCheckOutline } from "flowbite-svelte-icons";
@@ -18,6 +19,8 @@
     let usernameInput: string = "";
     let apiKeyNameInput: string = "";
     let user: any;
+    let usernameError = false;
+    let apiKeyNameError = false;
 
     async function fetchUserData() {
         let response = await fetchAuthorized('/api/users/get-user', "GET");
@@ -31,6 +34,13 @@
     }
 
     async function onCreateAPIKeyButtonClicked() {
+        apiKeyNameError = false;
+        if (!apiKeyNameInput) {
+            apiKeyNameError = true;
+            return;
+        }
+        console.log("api name error", apiKeyNameError);
+
         let uri = '/api/users/create-apikey?name=' + apiKeyNameInput;
         let response = await fetchAuthorized(uri, 'POST');
 
@@ -39,11 +49,17 @@
             console.log(data);
 
             await fetchUserData();
+            apiKeyNameInput = "";
         }
     }
 
     async function onChangeUsernameButtonClicked() {
         let username = usernameInput;
+        usernameError = false;
+        if (!usernameInput) {
+            usernameError = true;
+        }
+        console.log("user name error", usernameError);
         let uri = '/api/users/set-username?username=' + username;
         let response = await fetchAuthorized(uri, "POST");
 
@@ -104,18 +120,38 @@
                     {user.username}
                 {/if}
             </Label>
+            {#if !usernameError}
+                <div style="flex space-x-4">
+                    <Input id="usernameInput" on:input={() => usernameError = false} bind:value={usernameInput} placeholder="Enter username..." />
+                </div>
+            {:else}
+                <div class="mb-6">
+                    <Input id="usernameInput" on:input={() => usernameError = false} color="red" bind:value={usernameInput} placeholder="Faulty Username" />
+                    <Helper class="mt-2" color="red">
+                        <span class="font-medium">Username must not be empty!</span>
+                    </Helper>
+                </div>
+            {/if}
             <div style="items-center space-x-4">
-                <Input id="usernameInput" bind:value={usernameInput} placeholder="Enter username..." />
                 <Button on:click={onChangeUsernameButtonClicked} color="alternative">Apply</Button>
             </div>
         </div>
         {#if user != undefined}
         <div class="mb-4">
             <Label for="apiKeyNameInput">API Key Name:</Label>
-            <div style="flex space-x-4">
-                <Input id="apiKeyNameInput" bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
-                <Button on:click={onCreateAPIKeyButtonClicked} color="alternative">Create API Key</Button>
-            </div>
+            {#if !apiKeyNameError}
+                <div style="flex space-x-4">
+                    <Input id="apiKeyNameInput" on:input={() => apiKeyNameError = false} bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
+                </div>
+            {:else}
+                <div class="mb-6">
+                    <Input id="apiKeyNameInput" on:input={() => apiKeyNameError = false} color="red" bind:value={apiKeyNameInput} placeholder="Faulty API Key Name" />
+                    <Helper class="mt-2" color="red">
+                        <span class="font-medium">API Key must not be empty!</span>
+                    </Helper>
+                </div>
+            {/if}
+            <Button on:click={onCreateAPIKeyButtonClicked} color="alternative">Create API Key</Button>
         </div>
         <Table class="table" shadow striped>
             <TableHead>
