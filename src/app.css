@@ -1,3 +1,99 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 1.3em;
+    padding-top: 1em;
+    margin-bottom: 1em;
+}
+
+h2 {
+    font-size: 1em;
+    font-weight: 600;
+    margin-bottom: .5em;
+}
+
+h2:not(:first-child) {
+    margin-top: 2em;
+}
+
+.section {
+    width: 100%;
+    padding-top: 2em;
+    padding-bottom: 2em;
+    
+}
+
+.container {
+    margin: auto;
+
+    @media (min-width: 1536px) {
+        max-width: 1300px;
+    }
+}
+
+.columns {
+    width: 100%;
+    display: flex;
+}
+
+.columns .column.small {
+    width: 20%;
+    flex: 0;
+    flex-basis: 20%;
+}
+
+.columns .column.medium {
+    width: 33%;
+    flex: 0;
+    flex-basis: 33%;
+}
+
+.columns .column {
+    flex: 1;
+}
+
+.sidebar {
+    padding-right: 3em;
+}
+
+.sidebar-link {
+    padding-top: 0.4em;
+    padding-bottom: 0.4em;
+    padding-left: 0.5em;
+    border-left: 5px solid transparent;
+    cursor: pointer;
+    display: block;
+}
+
+.sidebar-link.active {
+    background-color: #f3f3f3;
+    border-left: 5px solid #dbdbdb;
+}
+
+input {
+    border: 1px solid #dbdbdb;
+    border-radius: 6px;
+    padding: .55em;
+    background-color: #f6f8fa;
+}
+
+.settings .setting {
+    margin-bottom: 1em;
+}
+
+.settings .setting input {
+    min-width: 440px;
+}
+
+.settings .setting .explanation {
+    color: #888;
+    margin-top: 0.1em;
+    font-size: .85em;
+}

@@ -275,6 +275,35 @@ export default {
           },
           "asyncModule": () => import('../src/routes/user/+page.svelte'),
           "children": []
+        },
+        {
+          "meta": {},
+          "id": "_default_user_keys",
+          "name": "keys",
+          "module": false,
+          "file": {
+            "path": "src/routes/user/keys",
+            "dir": "src/routes/user",
+            "base": "keys",
+            "ext": "",
+            "name": "keys"
+          },
+          "children": [
+            {
+              "meta": {},
+              "id": "_default_user_keys__page_svelte",
+              "name": "+page",
+              "file": {
+                "path": "src/routes/user/keys/+page.svelte",
+                "dir": "src/routes/user/keys",
+                "base": "+page.svelte",
+                "ext": ".svelte",
+                "name": "+page"
+              },
+              "asyncModule": () => import('../src/routes/user/keys/+page.svelte'),
+              "children": []
+            }
+          ]
         }
       ]
     },

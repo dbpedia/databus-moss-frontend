@@ -1,20 +1,14 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
-	import NewUser from "$lib/components/new-user.svelte";
 	import UserData from "$lib/components/user-data.svelte";
-    import { MossUtils } from "$lib/utils/moss-utils";
     import { onMount } from 'svelte';
     import { page } from "$app/stores"
     import {
         Input,
         Button,
-		Select,
-        Popover,
         Heading,
 		Label,
      } from "flowbite-svelte";
     import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox, TableSearch } from 'flowbite-svelte';
-    import { ClipboardCheckOutline } from "flowbite-svelte-icons";
 
     let usernameInput: string = "";
     let apiKeyNameInput: string = "";
@@ -53,14 +47,7 @@
         }
     }
 
-    async function onRevokeAPIKeyButtonClicked(keyName: string) {
-        let uri = '/api/users/revoke-apikey?name=' + keyName;
-        let response = await fetchAuthorized(uri, 'POST');
-
-        if(response.ok) {
-            await fetchUserData();
-        }
-    }
+   
 
     async function fetchAuthorized(uri: string, method: string) : Promise<Response> {
         let session = $page.data.session as any;
@@ -91,77 +78,43 @@
 
 </script>
 
-<div class="container">
 
-<Heading tag="h4" class="mb-2">Welcome</Heading>
-{#if $page.data.session}
-    <UserData userName={$page.data.session.user?.name ?? "User"}></UserData>
-    <div class="body">
-        <Heading tag="h6" class="mb-2">Create new API Key</Heading>
-        <div style="mb-4">
-            <Label for="usernameInput">
-                Username:
-                {#if user != undefined}
-                    {user.username}
-                {/if}
-            </Label>
-            <div style="items-center space-x-4">
-                <Input id="usernameInput" bind:value={usernameInput} placeholder="Enter username..." />
-                <Button on:click={onChangeUsernameButtonClicked} color="alternative">Apply</Button>
-            </div>
-        </div>
-        {#if user != undefined}
-        <div class="mb-4">
-            <Label for="apiKeyNameInput">API Key Name:</Label>
-            <div style="flex space-x-4">
-                <Input id="apiKeyNameInput" bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
-                <Button on:click={onCreateAPIKeyButtonClicked} color="alternative">Create API Key</Button>
-            </div>
-        </div>
-        <Table class="table" shadow striped>
-            <TableHead>
-                {#each rowNames as name}
-                    <TableHeadCell>{name}</TableHeadCell>
-                {/each}
-            </TableHead>
-            <TableBody tableBodyClass="divide-y">
-                    {#each user.apiKeys as keyName }
-                        <TableBodyRow>
-                            <TableBodyCell>{keyName}</TableBodyCell>
-                            <TableBodyCell>
-                                <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)}
-                                    color="alternative">Revoke</Button>
-                            </TableBodyCell>
-                        </TableBodyRow>
-                    {/each}
-            </TableBody>
-        </Table>
+
+<div class="section">
+    <div class="container">
+
+        {#if $page.data.session}
+        <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
+            
+        {:else}
+            <!-- LOGIN BUTTON -->
         {/if}
+
+        <div class="columns">
+            <div class="column small sidebar">
+                <a class="sidebar-link active" href="/user">
+                    Profile
+                </a>
+                <a class="sidebar-link" href="/user/keys">
+                    Keys
+                </a>
+            </div>
+            <div class="column settings">
+                {#if user != undefined}
+                <div class="setting">
+                    <h2>Username</h2>
+                    <Input id="usernameInput" style="width: 450px; margin-right: .5em" bind:value={usernameInput} placeholder="Enter a username..." />
+                    <div class="explanation">The username may appear around this MOSS instance where you contribute.</div>
+                </div>
+
+                <Button color="green" on:click={onChangeUsernameButtonClicked} >Save</Button>
+                {/if}
+               
+            </div>
+
+        </div>
+  
+
     </div>
-
-{:else}
-    <!-- LOGIN BUTTON -->
-{/if}
-
 </div>
 
-<style>
-    .container {
-        margin-left: 10em;
-        padding-bottom: 3px;
-        padding-top: 3px;
-        padding-left: 1em;
-        padding-right: 1em;
-        gap: 10px;
-        height: 100vh;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .body {
-        flex-direction: row;
-        justify-content: center;
-    }
-
-</style>

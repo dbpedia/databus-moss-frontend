@@ -35,7 +35,13 @@
 export async function postDocument(): Promise<Response> {
         const currentURI = $page.params.path;
 
-        const url = MossUtils.getSavePath(currentURI.replace("/browse/", "/g/"));
+        const layerName = MossUtils.getLayerName(currentURI);
+        const resourceURI = MossUtils.getResourceURI(currentURI);
+
+
+        const url = MossUtils.getSavePath(resourceURI, layerName);
+
+
         const body = data.content;
 
         let headers: any= {

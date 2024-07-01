@@ -21,6 +21,9 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
   secret: "isna",
   callbacks: {
     async jwt({ token, account }) {
+
+      console.log("JWT CALLBACK");
+      
       // Persist the OAuth refresh token to the token right after signin
       if (account?.provider === "oidc_provider") {
         return {

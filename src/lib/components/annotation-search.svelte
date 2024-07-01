@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { onMount } from 'svelte';
     import { createEventDispatcher } from 'svelte';
@@ -13,7 +12,7 @@
 	const dispatch = createEventDispatcher();
 
     let searchInput = "";
-    let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?type=class&query=`;
+    let baseUrl = `/api/search?type=class&query=`;
     let annotatedCountSuffix = "&annotatedCount=1,1000000";
     let searchResults : any;
     let hideUnused : boolean;

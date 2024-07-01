@@ -1,5 +1,9 @@
 
 export class MossUtils {
+	
+
+    static encodedHashTag = "%23";
+
     static uriToName(uri : string) {
         if (uri == null) {
             return null;
@@ -58,7 +62,7 @@ export class MossUtils {
         const databusResourceURL = new URL(databusResource);
 
         layerName = layerName.replace(reTrailingSlash, "");
-        let result = databusResourceURL.hostname + databusResourceURL.pathname + databusResourceURL.hash + "/" + layerName + ".jsonld";
+        let result = databusResourceURL.hostname + databusResourceURL.pathname + databusResourceURL.hash + "/" + layerName;
 
         result = result
                     .replaceAll(reMultiSlash, "/")
@@ -67,14 +71,31 @@ export class MossUtils {
         return result;
     }
 
-    static getSavePath(iri: string): string {
-        const [repo] = iri.split("/", 1);
-        const path = iri.substring(iri.indexOf("/") + 1);
+    static getResourceURI(currentURI: string) : string {
         
-        return `/api/save?repo=${repo}&path=${path}`;
-    }
+        let result = currentURI;
 
-   
+        if (result.includes('/')) {
+            result = result.substring(0, result.lastIndexOf('/'));
+        }
+
+        return "https://" + result;
+	}
+
+	static getLayerName(uri: string) {
+        let result = uri.substring(uri.lastIndexOf('/') + 1);
+
+        if (result.includes('.')) {
+            result = result.substring(0, result.lastIndexOf('.'));
+        }
+
+        return result;
+	}
+
+    static getSavePath(resource: string, layerName: string): string {
+        resource = resource.replaceAll("#", MossUtils.encodedHashTag);
+        return `/api/save?layer=${layerName}&resource=${resource}`;
+    }
 
     static getUriSegments(path: string) {
         let links: string[] = [];

@@ -2,14 +2,12 @@
 <script lang="ts">
     import SearchResult from "$lib/components/search-result.svelte";
     import AnnotationSearch from "$lib/components/annotation-search.svelte";
-    import { PUBLIC_LOOKUP_BASE_URL } from '$env/static/public';
     import { MossUtils } from '$lib/utils/moss-utils';
     import { 
         Input,
      } from "flowbite-svelte";
 
-    let baseUrl = `${PUBLIC_LOOKUP_BASE_URL}/api/search?query=`;
-    // let baseUrl = `/api/search?query=`;
+    let baseUrl = `/api/search?query=`;
     let joinSuffix = `&join=`;
     let joinField = "annotation";
 
@@ -67,20 +65,23 @@
 
 </script>
 
-<div class="page">
-    <div class="main">
-        <!-- <input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." /> -->
-        <Input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
-        <ul>
-            {#each searchResults as result (result.id) }
-                <li>
-                    <SearchResult data={result} />
-                </li>
-            {/each}
-        </ul>
-    </div>
-    <div class="side">
-        <AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
+<div class="section">
+    <div class="container">
+        <div class=columns>
+            <div class="column" style="padding-right: 2em">
+                <Input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
+                <ul>
+                    {#each searchResults as result (result.id) }
+                        <li>
+                            <SearchResult data={result} />
+                        </li>
+                    {/each}
+                </ul>
+            </div>
+            <div class="column medium">
+                <AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -111,3 +112,4 @@ ul {
     padding: 0;
 }
 </style>
+
