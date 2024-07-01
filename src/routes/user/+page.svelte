@@ -5,14 +5,13 @@
     import {
         Input,
         Button,
-        Heading,
-		Label,
      } from "flowbite-svelte";
-    import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox, TableSearch } from 'flowbite-svelte';
 
     let usernameInput: string = "";
     let apiKeyNameInput: string = "";
     let user: any;
+    let usernameError = false;
+    let apiKeyNameError = false;
 
     async function fetchUserData() {
         let response = await fetchAuthorized('/api/users/get-user', "GET");
@@ -26,6 +25,13 @@
     }
 
     async function onCreateAPIKeyButtonClicked() {
+        apiKeyNameError = false;
+        if (!apiKeyNameInput) {
+            apiKeyNameError = true;
+            return;
+        }
+        console.log("api name error", apiKeyNameError);
+
         let uri = '/api/users/create-apikey?name=' + apiKeyNameInput;
         let response = await fetchAuthorized(uri, 'POST');
 
@@ -34,11 +40,17 @@
             console.log(data);
 
             await fetchUserData();
+            apiKeyNameInput = "";
         }
     }
 
     async function onChangeUsernameButtonClicked() {
         let username = usernameInput;
+        usernameError = false;
+        if (!usernameInput) {
+            usernameError = true;
+        }
+        console.log("user name error", usernameError);
         let uri = '/api/users/set-username?username=' + username;
         let response = await fetchAuthorized(uri, "POST");
 
@@ -86,9 +98,74 @@
         {#if $page.data.session}
         <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
             
-        {:else}
-            <!-- LOGIN BUTTON -->
+
         {/if}
+            <!-- LOGIN BUTTON 
+        
+<Heading tag="h4" class="mb-2">Welcome</Heading>
+{#if $page.data.session}
+    <UserData userName={$page.data.session.user?.name ?? "User"}></UserData>
+    <div class="body">
+        <Heading tag="h6" class="mb-2">Create new API Key</Heading>
+        <div style="mb-4">
+            <Label for="usernameInput">
+                Username:
+                {#if user != undefined}
+                    {user.username}
+                {/if}
+            </Label>
+            {#if !usernameError}
+                <div style="flex space-x-4">
+                    <Input id="usernameInput" on:input={() => usernameError = false} bind:value={usernameInput} placeholder="Enter username..." />
+                </div>
+            {:else}
+                <div class="mb-6">
+                    <Input id="usernameInput" on:input={() => usernameError = false} color="red" bind:value={usernameInput} placeholder="Faulty Username" />
+                    <Helper class="mt-2" color="red">
+                        <span class="font-medium">Username must not be empty!</span>
+                    </Helper>
+                </div>
+            {/if}
+            <div style="items-center space-x-4">
+                <Button on:click={onChangeUsernameButtonClicked} color="alternative">Apply</Button>
+            </div>
+        </div>
+        {#if user != undefined}
+        <div class="mb-4">
+            <Label for="apiKeyNameInput">API Key Name:</Label>
+            {#if !apiKeyNameError}
+                <div style="flex space-x-4">
+                    <Input id="apiKeyNameInput" on:input={() => apiKeyNameError = false} bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
+                </div>
+            {:else}
+                <div class="mb-6">
+                    <Input id="apiKeyNameInput" on:input={() => apiKeyNameError = false} color="red" bind:value={apiKeyNameInput} placeholder="Faulty API Key Name" />
+                    <Helper class="mt-2" color="red">
+                        <span class="font-medium">API Key must not be empty!</span>
+                    </Helper>
+                </div>
+            {/if}
+            <Button on:click={onCreateAPIKeyButtonClicked} color="alternative">Create API Key</Button>
+        </div>
+        <Table class="table" shadow striped>
+            <TableHead>
+                {#each rowNames as name}
+                    <TableHeadCell>{name}</TableHeadCell>
+                {/each}
+            </TableHead>
+            <TableBody tableBodyClass="divide-y">
+                    {#each user.apiKeys as keyName }
+                        <TableBodyRow>
+                            <TableBodyCell>{keyName}</TableBodyCell>
+                            <TableBodyCell>
+                                <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)}
+                                    color="alternative">Revoke</Button>
+                            </TableBodyCell>
+                        </TableBodyRow>
+                    {/each}
+            </TableBody>
+        </Table>
+        {/if}-->
 
         <div class="columns">
             <div class="column small sidebar">

@@ -91,21 +91,6 @@
     margin: 0;
 }
 
-.page {
-    width: 100%;
-}
-
-.main {
-    float:left; 
-    padding: 1em;
-    width: 60%;
-}
-
-.side {
-    float: right;
-    padding: 1em;
-    width: 35%;
-}
 
 ul {
     list-style-type: none;
