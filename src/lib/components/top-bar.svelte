@@ -1,31 +1,35 @@
 <script lang="ts">
     import {
             Breadcrumb,
-            BreadcrumbItem, 
+            BreadcrumbItem,
             A,
-            } 
+            }
             from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { HomeOutline } from 'flowbite-svelte-icons';
     import TopBarLink from './top-bar-link.svelte';
 
-    export let segments: string[]; 
+    export let segments: string[];
 
 </script>
 
 <div class="container">
     <div class="top-bar">
-        <Breadcrumb  aria-label="Default breadcrumb example">
+        <Breadcrumb  class="breadcrumb" aria-label="Default breadcrumb example">
             <A href={"/"} >
+            <div class="home-icon">
                 <BreadcrumbItem home={true} slots={{icon: HomeOutline}}>
                     <svelte:fragment slot="icon">
-                        <HomeOutline class="w-4 h-4 me-2"/>
+                        <HomeOutline class="home-icon"/>
                     </svelte:fragment>
                 </BreadcrumbItem>
+            </div>
             </A>
-            {#each segments as segment}
-                <TopBarLink link={segment} label={MossUtils.getLastPathSegment(segment)}></TopBarLink>
-            {/each}
+            <div class="routes">
+                {#each segments as segment}
+                    <TopBarLink link={segment} label={MossUtils.getLastPathSegment(segment)}></TopBarLink>
+                {/each}
+            </div>
         </Breadcrumb>
     </div>
 </div>
@@ -36,6 +40,23 @@
         z-index: 1000;
         margin-left: 1em;
         margin-right: 1em;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+    }
+
+    .home-icon {
+        margin-right: 0.5em;
+        padding-top: 8px;
+    }
+
+    .routes {
+        padding-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
     }
 
 </style>
