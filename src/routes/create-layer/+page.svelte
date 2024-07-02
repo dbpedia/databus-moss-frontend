@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { Input, Label, Button, Select } from 'flowbite-svelte';
+	import { Input, Label, Button, Select, Heading, Span } from 'flowbite-svelte';
 
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	const layerPlaceholder: string = '%LAYERNAME%';
 	const databusResourcePlaceholder: string = '%DATABUSRESOURCE%';
@@ -82,31 +83,44 @@
 			body: body
 		});
 	}
+
+	onMount(async () => {
+		const session = $page.data.session;
+		const user = $page.data.session?.user;
+
+	})
 </script>
 
 <div class="section">
 	<div class="settings container">
+		{#if $page.data.session?.user}
+			<h1>Create Layer</h1>
+			<div class="setting">
+				<h2>Layer Name</h2>
+				<div>
+					<Select bind:value={layerName} items={layerList} />
+				</div>
+				<div class="explanation">The name of the layer. The admin of the MOSS instance can add more layer types.</div>
+			</div>
+			<div class="setting">
+				<h2>Databus Resource</h2>
+				<Input
+				bind:value={databusResource}
+				class="input"
+				placeholder={databusResourcePlaceholder}/>
+				<div class="explanation">Any Databus resource that should be described by the layer.</div>
+			</div>
 
-        <h1>Create Layer</h1>
-		<div class="setting">
-            <h2>Layer Name</h2>
-            <div>
-                <Select bind:value={layerName} items={layerList} />
-            </div>
-            <div class="explanation">The name of the layer. The admin of the MOSS instance can add more layer types.</div>
-        </div>
-        <div class="setting">
-            <h2>Databus Resource</h2>
-            <Input
-            bind:value={databusResource}
-            class="input"
-            placeholder={databusResourcePlaceholder}/>
-            <div class="explanation">Any Databus resource that should be described by the layer.</div>
-        </div>
-				
-        <Button name={buttonName} on:click={postDocument}>{buttonName}</Button>
-		{#if errorMessage}
-			{errorMessage}
+			<Button name={buttonName} on:click={postDocument}>{buttonName}</Button>
+			{#if errorMessage}
+				{errorMessage}
+			{/if}
+		{:else}
+			<div class="sign-in">
+				<Heading tag="h3" class="mb-4">
+					<Span gradient>Login required to a create layer!</Span>
+				</Heading>
+			</div>
 		{/if}
 	</div>
 </div>
@@ -139,4 +153,11 @@
 		margin-top: 10px;
 		margin: 0 5px;
 	}
+
+	.sign-in {
+		display: flex;
+		flex-direction: column;
+		text-align: center;
+	}
+
 </style>
