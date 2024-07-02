@@ -7,6 +7,7 @@
         Button,
      } from "flowbite-svelte";
 
+    let username: string = "";
     let usernameInput: string = "";
     let apiKeyNameInput: string = "";
     let user: any;
@@ -45,11 +46,11 @@
     }
 
     async function onChangeUsernameButtonClicked() {
-        let username = usernameInput;
         usernameError = false;
         if (!usernameInput) {
             usernameError = true;
         }
+        username = usernameInput;
         console.log("user name error", usernameError);
         let uri = '/api/users/set-username?username=' + username;
         let response = await fetchAuthorized(uri, "POST");
@@ -180,12 +181,17 @@
                 {#if user != undefined}
                 <div class="setting">
                     <h2>Username</h2>
-                    <Input id="usernameInput" style="width: 450px; margin-right: .5em" bind:value={usernameInput} placeholder="Enter a username..." />
+                    <div class="set-user-form">
+                        <Input id="usernameInput" style="width: 450px; margin-right: .5em" bind:value={usernameInput} placeholder="Enter a username..." />
+                        <Button color="green" on:click={onChangeUsernameButtonClicked} >Save</Button>
+                    </div>
                     <div class="explanation">The username may appear around this MOSS instance where you contribute.</div>
                 </div>
-
-                <Button color="green" on:click={onChangeUsernameButtonClicked} >Save</Button>
                 {/if}
+                <div class="setting">
+                    <h2>Current Username</h2>
+                    <Input id="currentUser" disabled style="width: 450px; margin-right: .5em" bind:value={username} placeholder="Enter a username..." />
+                </div>
 
             </div>
 
@@ -194,4 +200,10 @@
 
     </div>
 </div>
+
+<style>
+    .set-user-form {
+        display: flex;
+    }
+</style>
 
