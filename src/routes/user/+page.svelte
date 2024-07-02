@@ -20,7 +20,7 @@
             user = await response.json();
             usernameInput = user.username;
         } else {
-            user = null;
+            user = {};
         }
     }
 
@@ -59,7 +59,7 @@
         }
     }
 
-   
+
 
     async function fetchAuthorized(uri: string, method: string) : Promise<Response> {
         let session = $page.data.session as any;
@@ -97,11 +97,11 @@
 
         {#if $page.data.session}
         <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
-            
+
 
         {/if}
-            <!-- LOGIN BUTTON 
-        
+            <!-- LOGIN BUTTON
+
 <Heading tag="h4" class="mb-2">Welcome</Heading>
 {#if $page.data.session}
     <UserData userName={$page.data.session.user?.name ?? "User"}></UserData>
@@ -186,11 +186,11 @@
 
                 <Button color="green" on:click={onChangeUsernameButtonClicked} >Save</Button>
                 {/if}
-               
+
             </div>
 
         </div>
-  
+
 
     </div>
 </div>

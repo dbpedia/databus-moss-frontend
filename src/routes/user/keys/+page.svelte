@@ -27,7 +27,7 @@
             user = await response.json();
             usernameInput = user.username;
         } else {
-            user = null;
+            user = {};
         }
     }
 
@@ -76,7 +76,7 @@
             return Response.error();
         }
 
-        let headers: any= {
+        let headers: any = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + session.accessToken
         };
@@ -103,7 +103,7 @@
 
         {#if $page.data.session}
         <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
-            
+
         {:else}
             <!-- LOGIN BUTTON -->
         {/if}
@@ -136,28 +136,30 @@
                     </div>
                 </div>
                 <div class="warn-box"><b>IMPORTANT:</b> This key will only be displayed once. Copy it now and store it somewhere safe.</div>
-                
-                
-             
+
+
+
                 {/if}
                 <h2>Active API Keys</h2>
 
-                {#if user.apiKeys.length == 0}
-                    <div style="color: #999; font-style: italic">No active API keys.</div>                    
-                {/if}
-                {#each user.apiKeys as keyName }
-                <div style="display: flex; align-items: center; border: 1px solid #ddd; width: 500px;
-                    border-radius: 8px; padding-left: 1em; margin-bottom: .5em">
-                    <div style="flex: 1">{keyName}</div>
-                    <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)}
-                        color="red">Revoke</Button>
-                </div>
-                {/each}
+                {#if user.apiKeys }
+                    {#if user.apiKeys.length == 0}
+                        <div style="color: #999; font-style: italic">No active API keys.</div>
+                    {/if}
+                    {#each user?.apiKeys as keyName }
+                    <div style="display: flex; align-items: center; border: 1px solid #ddd; width: 500px;
+                        border-radius: 8px; padding-left: 1em; margin-bottom: .5em">
+                        <div style="flex: 1">{keyName}</div>
+                        <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)}
+                            color="red">Revoke</Button>
+                    </div>
+                    {/each}
+                    {/if}
                 {/if}
             </div>
 
         </div>
-  
+
 
     </div>
 </div>
@@ -222,7 +224,7 @@
 
 <style>
     .warn-box {
-        padding: .5em; 
+        padding: .5em;
         border-radius: 8px;
         border: 1px solid rgb(201, 169, 72);
         color: rgb(113, 97, 9);
@@ -231,4 +233,3 @@
     }
 </style>
 
-   
