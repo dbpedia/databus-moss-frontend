@@ -16,7 +16,7 @@
     } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
-	import { 
+	import {
         CheckCircleOutline,
         ExclamationCircleOutline,
     } from 'flowbite-svelte-icons';
@@ -150,7 +150,7 @@ export async function postDocument(): Promise<Response> {
     <div class="top-bar-container">
         <TopBar segments={data.props.segments}/>
     </div>
-    
+
     {#if !data.props.isDocument}
         <div class="list-container">
             {#if data.props.folders?.length}
@@ -212,16 +212,18 @@ export async function postDocument(): Promise<Response> {
 
 <style>
 
+
 .container {
-    /* display: flex; */
-    /* flex-direction: column; */
-    /* align-items: center; */
-    padding-top: 70px;
+    align-items: center;
+    padding-bottom: 3px;
+    padding-top: 3px;
+    padding-left: 1em;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    padding-left: 3em;
-    /* padding-left: 2em; */
-    /* background-color: blueviolet; */
-    display: inline-block;
 }
 
 .valid-label-container {
