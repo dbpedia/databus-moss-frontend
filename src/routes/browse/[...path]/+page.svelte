@@ -13,6 +13,7 @@
         Button,
         Toast,
         Spinner,
+		Indicator,
     } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
     import { A } from 'flowbite-svelte';
@@ -30,6 +31,8 @@
     let validationErrorMsg = "";
     let displayFeedback = writable(false);
     let displaySave = writable(false);
+    let indicatorColor: "green" | "red" | "none" = "none"
+    let indicatorVisible = writable(false);
 
 
 export async function postDocument(): Promise<Response> {
@@ -38,9 +41,7 @@ export async function postDocument(): Promise<Response> {
         const layerName = MossUtils.getLayerName(currentURI);
         const resourceURI = MossUtils.getResourceURI(currentURI);
 
-
         const url = MossUtils.getSavePath(resourceURI, layerName);
-
 
         const body = data.content;
 
@@ -108,8 +109,18 @@ export async function postDocument(): Promise<Response> {
         return true;
     }
 
+    function setIndicatorColor(responeOk: boolean) {
+        indicatorVisible.set(true);
+        if (responeOk) {
+            indicatorColor = "green";
+            return;
+        }
+        indicatorColor = "red";
+    }
+
     async function onSaveButtonClicked() {
         const valid = await validateLayerHeader(data.content);
+        indicatorColor = "none";
 
         if (!valid) {
             displayFeedback.set(false);
@@ -124,16 +135,10 @@ export async function postDocument(): Promise<Response> {
         let response = await postDocument();
         console.log(response)
 
-        if (response.ok) {
-            buttonName.set("Success");
-        }
-
-        displaySave.set(false);
-
-
         setTimeout(() => {
-            buttonName.set("Save Document");
-        }, 350);
+            setIndicatorColor(response.ok);
+            displaySave.set(false);
+        }, 850);
     }
 
     async function onValidButtonClicked(content: string) {
@@ -191,13 +196,18 @@ export async function postDocument(): Promise<Response> {
                                 {/if}
                             </div>
                         </div>
-                        <Button size="md" class="button-group-size" on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
-                        <Button size="md" class="button-group-size" on:click={onSaveButtonClicked}>
+                        <Button color="alternative" size="md" class="button-group-size" on:click={() => onValidButtonClicked(data.content)}>
+                            Validate
+                        </Button>
+                        <Button color="alternative" size="md" class="button-group-size relative" on:click={onSaveButtonClicked} on:mouseenter={() => indicatorVisible.set(false)}>
                             {#if $displaySave}
-                                <Spinner class="me-3" size="4" color="white" />Saving ...
+                                <Spinner class="me-3" size="4" color="white" />
                             {:else}
-                                {$buttonName}
+                                {#if $indicatorVisible}
+                                    <Indicator color={indicatorColor} size="lg" placement="top-right"/>
+                                {/if}
                             {/if}
+                            {$buttonName}
                         </Button>
                     </div>
                 </div>
