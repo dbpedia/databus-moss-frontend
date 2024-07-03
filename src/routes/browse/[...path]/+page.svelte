@@ -165,46 +165,46 @@ export async function postDocument(): Promise<Response> {
     {#if data.props.isDocument}
         <div class="editor-container">
             <h1 id="title">{MossUtils.getTitle($page.params.path)}</h1>
-                    <div class="valid-label-container">
-                        <div class="feedback">
-                            {#if $displayFeedback}
-                                <Toast dismissable={true} contentClass="flex space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse divide-gray-200 dark:divide-gray-700">
-                                    {#if validationErrorMsg}
-                                        <ExclamationCircleOutline class="w-5 h-5 text-primary-600 dark:text-primary-500" />
-                                    {:else}
-                                        <CheckCircleOutline class="w-5 h-5 text-green-600 dark:text-green-500" />
-                                    {/if}
-                                    <div class="validation ps-4 text-sm font-normal">
+            <div class="buttons">
+                <A href={"./"}>
+                    <Button color="alternative">Go Back</Button>
+                </A>
+                <div class="button-group-right">
+                    <div class="btn-size">
+                        <div class="valid-label-container">
+                            <div class="feedback">
+                                {#if $displayFeedback}
+                                    <Toast class="validation" dismissable={true} divClass="w-full max-w-xs p-2 text-gray-500 bg-white shadow dark:text-gray-400 dark:bg-gray-800 gap-3" contentClass="flex space-x-4 divide-x divide-gray-200 dark:divide-gray-700">
                                         {#if validationErrorMsg}
-                                            <p class="text-primary-600 dark:text-primary-500">{validationErrorMsg}</p>
+                                            <ExclamationCircleOutline class="w-5 h-5 text-primary-600 dark:text-primary-500" />
                                         {:else}
-                                            <p class="text-green-600 dark:text-green-500">Valid Document</p>
+                                            <CheckCircleOutline class="w-5 h-5 text-green-600 dark:text-green-500" />
                                         {/if}
-                                    </div>
-                                </Toast>
-                            {/if}
-                        </div>
-                    </div>
-                    <div class="buttons">
-                        <A href={"./"}>
-                            <Button color="alternative">Go Back</Button>
-                        </A>
-                        <div class="button-group-right">
-                            <div class="button-group-buttons">
-                                <Button on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
-                                <Button on:click={onSaveButtonClicked}>
-                                    {#if $displaySave}
-                                        <Spinner class="me-3" size="4" color="white" />Saving ...
-                                    {:else}
-                                        {$buttonName}
-                                    {/if}
-                                </Button>
+                                        <div class="ps-2 text-sm font-normal">
+                                            {#if validationErrorMsg}
+                                                <p class="text-primary-600 dark:text-primary-500">{validationErrorMsg}</p>
+                                            {:else}
+                                                <p class="text-green-600 dark:text-green-500">Valid Document</p>
+                                            {/if}
+                                        </div>
+                                    </Toast>
+                                {/if}
                             </div>
                         </div>
+                        <Button size="md" class="button-group-size" on:click={() => onValidButtonClicked(data.content)} color="alternative">Validate</Button>
+                        <Button size="md" class="button-group-size" on:click={onSaveButtonClicked}>
+                            {#if $displaySave}
+                                <Spinner class="me-3" size="4" color="white" />Saving ...
+                            {:else}
+                                {$buttonName}
+                            {/if}
+                        </Button>
                     </div>
-                <div class="code-mirror-container">
-                    <CodeMirror bind:value={data.content} />
                 </div>
+            </div>
+            <div class="code-mirror-container">
+                <CodeMirror bind:value={data.content} />
+            </div>
         </div>
     {/if}
 </div>
@@ -212,18 +212,17 @@ export async function postDocument(): Promise<Response> {
 
 <style>
 
-.top-bar-container {
-    margin-top: 2em;
-    margin-bottom: .6em;
-}
-
-
-.valid-label-container {
-    padding-right: 1em;
-}
-
-.feedback {
-    float: right;
+.container {
+    align-items: center;
+    padding-bottom: 3px;
+    padding-top: 3px;
+    padding-left: 1em;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 #title {
@@ -243,13 +242,17 @@ export async function postDocument(): Promise<Response> {
     align-items: right;
 }
 
-
 .buttons {
     display: flex;
     justify-content: space-between;
-    width: 100%;
-    margin-bottom: 0.4em;
-    margin-top: 0.25em;
+}
+
+.btn-size {
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+    gap: 5px;
+    align-items: center;
 }
 
 .button-group-right {
