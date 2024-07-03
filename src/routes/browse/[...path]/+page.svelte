@@ -212,19 +212,11 @@ export async function postDocument(): Promise<Response> {
 
 <style>
 
-
-.container {
-    align-items: center;
-    padding-bottom: 3px;
-    padding-top: 3px;
-    padding-left: 1em;
-    gap: 10px;
-    flex-wrap: nowrap;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+.top-bar-container {
+    margin-top: 2em;
+    margin-bottom: .6em;
 }
+
 
 .valid-label-container {
     padding-right: 1em;
@@ -241,12 +233,7 @@ export async function postDocument(): Promise<Response> {
 
 .list-container {
     display: flex;
-    margin: 50px;
-    width: 80%;
-    display: flex;
     flex-direction: column;
-    margin: 1em 0;
-
 }
 
 .editor-container {
@@ -254,7 +241,6 @@ export async function postDocument(): Promise<Response> {
     flex-direction: column;
     justify-content: center;
     align-items: right;
-    margin: 1em 0;
 }
 
 
@@ -262,10 +248,8 @@ export async function postDocument(): Promise<Response> {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 0.25em;
+    margin-bottom: 0.4em;
     margin-top: 0.25em;
-    padding-left: 0.25em;
-    padding-right: 0.25em;
 }
 
 .button-group-right {

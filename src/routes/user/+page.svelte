@@ -25,33 +25,15 @@
         }
     }
 
-    async function onCreateAPIKeyButtonClicked() {
-        apiKeyNameError = false;
-        if (!apiKeyNameInput) {
-            apiKeyNameError = true;
+    async function onChangeUsernameButtonClicked() {
+
+        if (!usernameInput) {
+            console.log("user name error");
             return;
         }
-        console.log("api name error", apiKeyNameError);
 
-        let uri = '/api/users/create-apikey?name=' + apiKeyNameInput;
-        let response = await fetchAuthorized(uri, 'POST');
-
-        if(response.ok) {
-            let data = await response.json();
-            console.log(data);
-
-            await fetchUserData();
-            apiKeyNameInput = "";
-        }
-    }
-
-    async function onChangeUsernameButtonClicked() {
-        usernameError = false;
-        if (!usernameInput) {
-            usernameError = true;
-        }
         username = usernameInput;
-        console.log("user name error", usernameError);
+        
         let uri = '/api/users/set-username?username=' + username;
         let response = await fetchAuthorized(uri, "POST");
 
@@ -59,8 +41,6 @@
             await fetchUserData();
         }
     }
-
-
 
     async function fetchAuthorized(uri: string, method: string) : Promise<Response> {
         let session = $page.data.session as any;
@@ -85,9 +65,6 @@
         fetchUserData();
     });
 
-    const rowNames  = [
-        "API Keys",
-    ];
 
 </script>
 
@@ -183,15 +160,18 @@
                     <h2>Username</h2>
                     <div class="set-user-form">
                         <Input id="usernameInput" style="width: 450px; margin-right: .5em" bind:value={usernameInput} placeholder="Enter a username..." />
-                        <Button color="green" on:click={onChangeUsernameButtonClicked} >Save</Button>
-                    </div>
+                       </div>
                     <div class="explanation">The username may appear around this MOSS instance where you contribute.</div>
                 </div>
+
+                <Button color="green" on:click={onChangeUsernameButtonClicked} >Save Profile</Button>
+                  
                 {/if}
+                <!--
                 <div class="setting">
                     <h2>Current Username</h2>
                     <Input id="currentUser" disabled style="width: 450px; margin-right: .5em" bind:value={username} placeholder="Enter a username..." />
-                </div>
+                </div>-->
 
             </div>
 
