@@ -9,7 +9,10 @@ export default defineConfig(({command, mode}: any) =>  {
 		plugins: [sveltekit(), routify({})],
 		server: {
 			proxy: {
-				'/api': env.VITE_MOSS_BASE_URL,
+				'/api': {
+					target: env.VITE_MOSS_BASE_URL,
+					changeOrigin: false
+				},
 				'/g': env.VITE_MOSS_BASE_URL,
 				'/layer': env.VITE_MOSS_BASE_URL,
 			},
