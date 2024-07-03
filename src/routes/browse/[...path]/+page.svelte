@@ -233,6 +233,9 @@ export async function postDocument(): Promise<Response> {
 .list-container {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    padding-right: 1em;
+    padding-left: 1em;
 }
 
 .editor-container {
