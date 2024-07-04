@@ -13,7 +13,6 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@roxi/routify": "next",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
