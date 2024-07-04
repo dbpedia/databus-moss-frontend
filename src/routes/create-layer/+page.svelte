@@ -126,20 +126,9 @@
 </div>
 
 <style>
-	.container {
-		align-items: center;
-		padding-bottom: 3px;
-		padding-top: 3px;
-		padding-left: 1em;
-		gap: 10px;
-		flex-wrap: nowrap;
-		margin-top: 20px;
-	}
-
 	.sign-in {
 		display: flex;
 		flex-direction: column;
 		text-align: center;
 	}
-
 </style>
