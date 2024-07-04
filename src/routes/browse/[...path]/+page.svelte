@@ -222,19 +222,6 @@ export async function postDocument(): Promise<Response> {
 
 <style>
 
-.container {
-    align-items: center;
-    padding-bottom: 3px;
-    padding-top: 3px;
-    padding-left: 1em;
-    gap: 10px;
-    flex-wrap: nowrap;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
 #title {
     align-items: center;
     text-align: center;
@@ -244,11 +231,15 @@ export async function postDocument(): Promise<Response> {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding-right: 1em;
-    padding-left: 1em;
+}
+
+.top-bar-container {
+    width: 100%;
+    padding-bottom: .5em;
 }
 
 .editor-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
