@@ -136,24 +136,6 @@
 		margin-top: 20px;
 	}
 
-	.drop-down {
-		margin-bottom: 10px;
-		margin: 0 5px;
-		width: 90%;
-		padding-bottom: 1em;
-	}
-
-	.create-layer {
-		margin-bottom: 10px;
-		width: 90%;
-	}
-
-	.create-layer-button {
-		margin-bottom: 10px;
-		margin-top: 10px;
-		margin: 0 5px;
-	}
-
 	.sign-in {
 		display: flex;
 		flex-direction: column;

@@ -42,11 +42,6 @@
         margin-right: 1em;
     }
 
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-    }
-
     .home-icon {
         margin-right: 0.5em;
         padding-top: 8px;
