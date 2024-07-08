@@ -1,7 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores';
     import { writable } from 'svelte/store';
-
     // @ts-ignore
     import jsonld from "jsonld";
     import CodeMirror from "$lib/components/code-mirror.svelte";
@@ -34,6 +33,7 @@
     let indicatorColor: "green" | "red" | "none" = "none"
     let indicatorVisible = writable(false);
 
+    $: backLink = MossUtils.createListGroupNavigationItems([".."], $page.url.pathname);
 
 export async function postDocument(): Promise<Response> {
         const currentURI = $page.params.path;
@@ -158,6 +158,7 @@ export async function postDocument(): Promise<Response> {
 
     {#if !data.props.isDocument}
         <div class="list-container">
+            <FileList collection={backLink} files={false}></FileList>
             {#if data.props.folders?.length}
                 <FileList collection={data.props.folders} files={false}></FileList>
             {/if}

@@ -4,13 +4,11 @@ import { error } from '@sveltejs/kit';
 
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ url, locals }: any) {	
+export async function load({ url, locals }: any) {
 
-    const parentDir = "..";
     const domain = url.toString();
     const segments = MossUtils.getUriSegments(url.pathname);
 
-    
     let folders;
     let files;
     let isDocument = false;
@@ -29,12 +27,11 @@ export async function load({ url, locals }: any) {
     }
 
     const data = await response.json();
-	
+
     folders = data.folders;
     if (!folders) {
         folders = [];
     }
-    folders.unshift(parentDir);
     files = data.files;
 
     let contentType = response.headers.get("Content-Type");
@@ -58,7 +55,7 @@ export async function load({ url, locals }: any) {
             domain,
             isDocument,
             folders,
-            files
-        }
+            files,
+        },
     };
 }
