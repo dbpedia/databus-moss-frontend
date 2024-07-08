@@ -1,11 +1,8 @@
 <script lang="ts">
     import { FolderOpenOutline, FileOutline } from 'flowbite-svelte-icons';
-    import { 
+    import {
             Listgroup,
-            ListgroupItem,
-            A,
-            type ListGroupItemType,
-           } 
+           }
         from 'flowbite-svelte';
 
     export let collection: any[];

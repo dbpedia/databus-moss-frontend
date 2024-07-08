@@ -1,6 +1,6 @@
 
 export class MossUtils {
-	
+
 
     static encodedHashTag = "%23";
 
@@ -23,7 +23,7 @@ export class MossUtils {
         return result;
     }
 
-   
+
     static getLastPathSegment(uri : string) {
         const segments = uri.split('/');
         return segments.pop() || segments.pop();
@@ -72,7 +72,7 @@ export class MossUtils {
     }
 
     static getResourceURI(currentURI: string) : string {
-        
+
         let result = currentURI;
 
         if (result.includes('/')) {
@@ -104,7 +104,7 @@ export class MossUtils {
         }
         let segments = path.split("/");
         let previous = "";
-    
+
         segments.forEach((segment) => {
             if (segment === '') {
                 return;
@@ -112,7 +112,7 @@ export class MossUtils {
             previous += "/" + segment;
             links.push(previous);
         });
-        
+
         return links;
     }
 
@@ -136,5 +136,5 @@ export class MossUtils {
         url = linkURI + "/" + item;
         return url.replace(/\/{2,}/g, '/');
     }
-    
+
 }
