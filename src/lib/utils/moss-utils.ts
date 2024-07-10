@@ -94,7 +94,7 @@ export class MossUtils {
 
     static getSavePath(resource: string, layerName: string): string {
         resource = resource.replaceAll("#", MossUtils.encodedHashTag);
-        return `/api/save?layer=${layerName}&resource=${resource}`;
+        return `/cmd/save?layer=${layerName}&resource=${resource}`;
     }
 
     static getUriSegments(path: string) {

@@ -29,18 +29,20 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
         return {
           ...token,
           accessToken: account.access_token,
-          refreshToken: account.refresh_token,
+          // refreshToken: account.refresh_token,
         };
       }
 
       return token;
     },
     async session({ session, token }) {
-      let accessToken = await fetchNewAccessToken(token?.refreshToken as string);
-      return { ...session, accessToken: accessToken }
+      //let accessToken = await fetchNewAccessToken(token?.refreshToken as string);
+      return { ...session, accessToken: token.accessToken }
     } 
   }
 });
+
+/*
 
 async function fetchNewAccessToken(refreshToken: string|null): Promise<string|null> {
 
@@ -98,4 +100,4 @@ async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
     clientSecret: "z7feqbX7lGyAFzPzGIaC4LT7vidPqrP5",
     issuer: "https://auth.dbpedia.org/realms/dbpedia"
  */
-   
+  

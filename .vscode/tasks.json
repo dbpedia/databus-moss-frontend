@@ -1,35 +1,30 @@
 {
   "version": "2.0.0",
   "tasks": [
-    {
-      "label": "Serve Frontend",
-      "type": "npm",
-      "script": "start",
-      "isBackground": true,
-      "presentation": {
-        "focus": true,
-        "panel": "dedicated"
-      },
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": {
-        "owner": "typescript",
-        "source": "ts",
-        "applyTo": "closedDocuments",
-        "fileLocation": ["relative", "${cwd}"],
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
-          },
-          "endsPattern": {
-            "regexp": "Compiled |Failed to compile."
-          }
-        }
+      {
+          "label": "npm: dev",
+          "type": "npm",
+          "script": "dev",
+          "isBackground": true,
+          "problemMatcher": [
+              {
+                  "owner": "custom",
+                  "fileLocation": ["relative", "${workspaceFolder}"],
+                  "pattern": [
+                      {
+                          "regexp": ".",
+                          "file": 1,
+                          "location": 2,
+                          "message": 3
+                      }
+                  ],
+                  "background": {
+                      "activeOnStart": true,
+                      "beginsPattern": ".",
+                      "endsPattern": "ready in"
+                  }
+              }
+          ]
       }
-    }
   ]
 }

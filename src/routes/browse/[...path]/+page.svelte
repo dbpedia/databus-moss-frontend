@@ -50,9 +50,9 @@ export async function postDocument(): Promise<Response> {
             'Accept': 'application/json',
         };
 
-        if(data.token != undefined) {
-            headers['Authorization'] = 'Bearer ' + data.token;
-        }
+        //if(data.token != undefined) {
+        //    headers['Authorization'] = 'Bearer ' + data.token;
+        //}
 
         const response = await fetch(url, {
             method: 'POST',
