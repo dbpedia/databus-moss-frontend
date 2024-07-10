@@ -1,6 +1,6 @@
 export { handle } from "./auth"
 
-/** @type {import('@sveltejs/kit').HandleFetch} 
+/** @type {import('@sveltejs/kit').HandleFetch} */
 export async function handleFetch({ request, fetch, event }) {
 	
     console.log("");
@@ -12,4 +12,4 @@ export async function handleFetch({ request, fetch, event }) {
 	}
 
 	return fetch(request);
-}*/
+}

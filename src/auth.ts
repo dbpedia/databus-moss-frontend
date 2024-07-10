@@ -22,27 +22,33 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
   callbacks: {
     async jwt({ token, account }) {
 
-      console.log("JWT CALLBACK");
-      
       // Persist the OAuth refresh token to the token right after signin
       if (account?.provider === "oidc_provider") {
+
+        console.log("JWT CALLBACK");
+        console.log(account);
+
         return {
           ...token,
           accessToken: account.access_token,
-          // refreshToken: account.refresh_token,
+          refreshToken: account.refresh_token,
         };
       }
 
       return token;
     },
     async session({ session, token }) {
-      //let accessToken = await fetchNewAccessToken(token?.refreshToken as string);
-      return { ...session, accessToken: token.accessToken }
+      console.log("gib session");
+      let accessToken = await fetchNewAccessToken(token?.refreshToken as string);
+
+      console.log("got new access token for u.");
+      
+      return { ...session, accessToken: accessToken }
     } 
   }
 });
 
-/*
+
 
 async function fetchNewAccessToken(refreshToken: string|null): Promise<string|null> {
 

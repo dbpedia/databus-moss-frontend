@@ -5,7 +5,7 @@ export const POST: RequestHandler = async ({ request, locals, fetch }) => {
     try {
 
         const session = await locals.auth() as any;
-        console.log(session);
+        // console.log(session);
 
         if (session == null || session.user == undefined) {
             return new Response(null, { status: 401, statusText: "Unauthorized" });
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, locals, fetch }) => {
         url = url.replace("/cmd/", "/api/");
 
         console.log("making request to " + url);
-        console.log(requestOptions);
+        // console.log(requestOptions);
 
         const fetchResponse = await fetch(url, requestOptions);
 
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, locals, fetch }) => {
             headers: fetchResponse.headers
         });
 
-        console.log(response);
+        // console.log(response);
         return response;
 
     } catch(err : any) {
