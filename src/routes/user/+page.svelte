@@ -1,5 +1,4 @@
 <script lang="ts">
-	import UserData from "$lib/components/user-data.svelte";
     import { onMount } from 'svelte';
     import { page } from "$app/stores"
     import {
@@ -34,7 +33,7 @@
         }
 
         username = usernameInput;
-        
+
         let uri = '/api/users/set-username?username=' + username;
         let response = await MossUtils.fetchAuthorized(uri, "POST");
 
@@ -147,7 +146,7 @@
                 </div>
 
                 <Button color="green" on:click={onChangeUsernameButtonClicked} >Save Profile</Button>
-                  
+
                 {/if}
                 <!--
                 <div class="setting">
