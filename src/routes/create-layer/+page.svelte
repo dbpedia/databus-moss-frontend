@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { Input, Button, Select, Heading, Span } from 'flowbite-svelte';
+	import { Input, Button, Select, Heading, Span, GradientButton } from 'flowbite-svelte';
 
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -91,7 +91,7 @@
 				<div class="explanation">Any Databus resource that should be described by the layer.</div>
 			</div>
 
-			<Button name={buttonName} on:click={postDocument}>{buttonName}</Button>
+			<GradientButton color="cyanToBlue" name={buttonName} on:click={postDocument}>{buttonName}</GradientButton>
 			{#if errorMessage}
 				{errorMessage}
 			{/if}
