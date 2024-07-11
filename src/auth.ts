@@ -52,6 +52,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
         let tokenData = await fetchNewAccessToken(token?.refreshToken as string);
         token.accessToken = tokenData.accessToken;
         token.expiresAt = tokenData.expiresAt;
+        token.refreshToken = tokenData.refreshToken;
 
         // const expirationDate = new Date(tokenData.expiresAt * 1000); // Multiply by 1000 to convert to milliseconds
         // console.log('Got new token with expiration date:', expirationDate.toISOString());
@@ -95,7 +96,7 @@ async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
 
   const data = await response.json();
   var token = decodeJWT(data.access_token);
-  return { accessToken: data.access_token, expiresAt: token.exp };
+  return { accessToken: data.access_token, expiresAt: token.exp, refreshToken: token.refresh_token };
 }
 
 function decodeJWT(token: string | undefined): any {

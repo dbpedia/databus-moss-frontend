@@ -20,6 +20,7 @@
         CheckCircleOutline,
         ExclamationCircleOutline,
     } from 'flowbite-svelte-icons';
+	import FeedbackMessage from '$lib/components/feedback-message.svelte';
 
 
     /** @type {import('./$types').PageData} */
@@ -32,6 +33,7 @@
     let displaySave = writable(false);
     let indicatorColor: "green" | "red" | "none" = "none"
     let indicatorVisible = writable(false);
+    let feedback : any;
 
     $: backLink = MossUtils.createListGroupNavigationItems([".."], $page.url.pathname);
 
@@ -99,10 +101,14 @@ export async function postDocument(): Promise<Response> {
     }
 
     async function onSaveButtonClicked() {
+
+        feedback.clearMessage();
         const valid = await validateLayerHeader(data.content);
         indicatorColor = "none";
 
         if (!valid) {
+
+
             displayFeedback.set(false);
             setTimeout(() => {
                 displayFeedback.set(true);
@@ -115,18 +121,29 @@ export async function postDocument(): Promise<Response> {
         let response = await postDocument();
         console.log(response)
 
-        setTimeout(() => {
+        
+        feedback.showMessage("Document Saved!", true);
+        displaySave.set(false);
+        /*setTimeout(() => {
             setIndicatorColor(response.ok);
             displaySave.set(false);
-        }, 850);
+        }, 850);*/
     }
 
     async function onValidButtonClicked(content: string) {
-        displayFeedback.set(false);
-        setTimeout(() => {
-            displayFeedback.set(true);
-        }, 0);
-        validateLayerHeader(content);
+        feedback.clearMessage();
+        // setTimeout(() => {
+        //    displayFeedback.set(true);
+        //}, 0);
+        let result = await validateLayerHeader(content);
+
+        if(result) {
+            feedback.showMessage("Valid MOSS Document!", true);
+        }
+        else {
+            feedback.showMessage(validationErrorMsg, false);
+        }
+
     }
 
 </script>
@@ -177,6 +194,7 @@ export async function postDocument(): Promise<Response> {
                                 {/if}
                             </div>
                         </div>
+                        <FeedbackMessage bind:feedback={feedback}></FeedbackMessage>
                         <Button color="alternative" size="md" class="button-group-size" on:click={() => onValidButtonClicked(data.content)}>
                             Validate
                         </Button>

@@ -1,19 +1,27 @@
 <script lang="ts">
-    export let message: string = '';
-    export let isSuccess: boolean = true;
-  
+    
+    let message: string = '';
+    let isSuccess: boolean = true;
+    let timeout: any;
     let show = false;
-  
-    function showMessage(m: string, s: boolean) {
-      show = true;
-      // Update message and success flag
-      message = m;
-      isSuccess = s;
-  
-      // Hide the message after the animation
-      setTimeout(() => {
-        show = false;
-      }, 2000); // Duration of the animation
+
+    export const feedback = {
+        showMessage(m: string, s: boolean) {
+
+          clearTimeout(timeout);
+
+          show = true;
+          message = m;
+          isSuccess = s;
+      
+          timeout = setTimeout(() => {
+            show = false;
+          }, 2000); // Duration of the animation
+        },
+        clearMessage() {
+          clearTimeout(timeout);
+          show = false;
+        }
     }
   </script>
   
@@ -22,11 +30,11 @@
       opacity: 0;
       transform: translateX(0);
       transition: opacity 0.5s ease, transform 0.5s ease;
-      padding: 10px;
-      border-radius: 5px;
-      position: absolute;
-      top: 10px;
-      left: 10px;
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.25rem ;
+      position: relative;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
     }
   
     .message.show {
@@ -51,7 +59,7 @@
   
     @keyframes moveLeftRight {
       0% { transform: translateX(0); }
-      50% { transform: translateX(-10px); }
+      50% { transform: translateX(-20px); }
       100% { transform: translateX(0); }
     }
   </style>
