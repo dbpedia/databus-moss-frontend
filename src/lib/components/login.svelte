@@ -8,28 +8,24 @@
         ArrowLeftToBracketOutline
     } from "flowbite-svelte-icons";
 
-    const imagePlaceholder = "/profile-picture-5.jpg";
 </script>
 
 
 <div style="display: flex; align-items: center">
 {#if $page.data.session}
-    <div style="margin-right: 1em">Logged in as <a style="color: cadetblue;" href="/user">{$page.data.session.user?.name ?? "User"}</a></div>
+    <div style="margin-right: 1em">Logged in as <a class="user underline" href="/user">{$page.data.session.user?.name ?? "User"}</a></div>
 
     <SignOut>
-        <GradientButton slot="submitButton" outline color="tealToLime">
+        <GradientButton slot="submitButton" outline color="cyanToBlue">
             <span class="spanBase">
-                <span>{$page.data.session.user?.name ?? "User"}</span>
-                 {#if !$page.data.session.user?.image}
-                    <Avatar src={imagePlaceholder} size="xs"/>
-                 {/if}
+                <span>Logout</span>
                 <ArrowLeftToBracketOutline/>
             </span>
         </GradientButton>
     </SignOut>
 {:else}
     <SignIn provider="oidc_provider">
-        <GradientButton slot="submitButton" outline color="tealToLime">
+        <GradientButton slot="submitButton" outline color="pinkToOrange">
             <span>Sign In</span>
             <ArrowRightOutline/>
         </GradientButton>
@@ -43,6 +39,10 @@
     .spanBase {
         display: flex;
         justify-content: space-between;
+    }
+
+    .user {
+        color: cadetblue;
     }
 
 </style>

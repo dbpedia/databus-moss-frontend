@@ -121,7 +121,7 @@ export async function postDocument(): Promise<Response> {
         let response = await postDocument();
         console.log(response)
 
-        
+
         feedback.showMessage("Document Saved!", true);
         displaySave.set(false);
         /*setTimeout(() => {
@@ -143,7 +143,6 @@ export async function postDocument(): Promise<Response> {
         else {
             feedback.showMessage(validationErrorMsg, false);
         }
-
     }
 
 </script>
