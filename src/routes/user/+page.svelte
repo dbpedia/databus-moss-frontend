@@ -6,6 +6,7 @@
         Input,
         Button,
      } from "flowbite-svelte";
+	import { MossUtils } from "$lib/utils/moss-utils";
 
     let username: string = "";
     let usernameInput: string = "";
@@ -15,7 +16,7 @@
     let apiKeyNameError = false;
 
     async function fetchUserData() {
-        let response = await fetchAuthorized('/api/users/get-user', "GET");
+        let response = await MossUtils.fetchAuthorized('/api/users/get-user', "GET");
 
         if (response.ok) {
             user = await response.json();
@@ -35,31 +36,12 @@
         username = usernameInput;
         
         let uri = '/api/users/set-username?username=' + username;
-        let response = await fetchAuthorized(uri, "POST");
+        let response = await MossUtils.fetchAuthorized(uri, "POST");
 
         if (response.ok) {
             await fetchUserData();
         }
     }
-
-    async function fetchAuthorized(uri: string, method: string) : Promise<Response> {
-        let session = $page.data.session as any;
-
-        if (!session || !session.accessToken) {
-            return Response.error();
-        }
-
-        let headers: any= {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + session.accessToken
-        };
-
-        return fetch(uri, {
-            method: method,
-            headers: headers
-        });
-    }
-
 
     onMount(() => {
         fetchUserData();

@@ -1,9 +1,9 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
+import type { JWT } from "next-auth/jwt";
 import { AUTH_OIDC_CLIENT_SECRET, AUTH_OIDC_CLIENT_ID, AUTH_OIDC_ISSUER } from "$env/static/private";
 import type { Provider } from "@auth/sveltekit/providers";
 
 let tokenEndpointUrl: string | null = null;
-
 
 function getProvider() : Provider {
   let provider: any = {};
@@ -25,39 +25,50 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       // Persist the OAuth refresh token to the token right after signin
       if (account?.provider === "oidc_provider") {
 
-        console.log("JWT CALLBACK");
-        console.log(account);
-
         return {
           ...token,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
+          expiresAt: account.expires_at,
         };
       }
 
       return token;
     },
     async session({ session, token }) {
-      console.log("gib session");
-      let accessToken = await fetchNewAccessToken(token?.refreshToken as string);
 
-      console.log("got new access token for u.");
-      
-      return { ...session, accessToken: accessToken }
+      if(token == undefined) {
+        return session;
+      }
+
+      let expiresAtTime: number = token.expiresAt as number;
+      // console.log('Token with expiration date:', new Date(expiresAtTime * 1000).toISOString());
+      // console.log('Now is:', new Date(Date.now()).toISOString());
+
+      if(Date.now() >= expiresAtTime * 1000){
+
+        // console.log("Token expired");
+        
+        let tokenData = await fetchNewAccessToken(token?.refreshToken as string);
+        token.accessToken = tokenData.accessToken;
+        token.expiresAt = tokenData.expiresAt;
+
+        // const expirationDate = new Date(tokenData.expiresAt * 1000); // Multiply by 1000 to convert to milliseconds
+        // console.log('Got new token with expiration date:', expirationDate.toISOString());
+      }
+    
+      return { ...session, accessToken: token.accessToken }
     } 
   }
 });
 
-
-
-async function fetchNewAccessToken(refreshToken: string|null): Promise<string|null> {
+async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
 
   if (refreshToken == null) {
     return null;
   }
 
   let provider = getProvider() as any;
-
   let tokenEndpointUrl = await fetchTokenEndpointUrl(provider.issuer);
 
   if(tokenEndpointUrl == null) {
@@ -83,8 +94,22 @@ async function fetchNewAccessToken(refreshToken: string|null): Promise<string|nu
   }
 
   const data = await response.json();
-  return data.access_token;
+  var token = decodeJWT(data.access_token);
+  return { accessToken: data.access_token, expiresAt: token.exp };
 }
+
+function decodeJWT(token: string | undefined): any {
+
+  if(token == undefined) {
+    return null;
+  }
+
+  const base64Url = token.split('.')[1]; // Get the payload part
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); // Convert Base64Url to Base64
+  const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`).join('')); // Decode Base64 to JSON
+  return JSON.parse(jsonPayload); // Parse JSON payload
+}
+
 
 // Function to fetch the token endpoint URL from OIDC discovery document and cache it
 async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {

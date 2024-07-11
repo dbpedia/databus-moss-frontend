@@ -1,17 +1,11 @@
 <script lang="ts">
-	import UserData from "$lib/components/user-data.svelte";
     import { onMount } from 'svelte';
     import { page } from "$app/stores"
     import {
         Input,
         Button,
-		Select,
-        Popover,
-        Heading,
-        Textarea,
-		Label,
      } from "flowbite-svelte";
-    import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox, TableSearch } from 'flowbite-svelte';
+	import { MossUtils } from "$lib/utils/moss-utils";
 
     let usernameInput: string = "";
     let apiKeyNameInput: string = "";
@@ -21,7 +15,8 @@
 
 
     async function fetchUserData() {
-        let response = await fetchAuthorized('/api/users/get-user', "GET");
+        
+        let response = await MossUtils.fetchAuthorized('/api/users/get-user', "GET", undefined);
 
         if (response.ok) {
             user = await response.json();
@@ -38,7 +33,7 @@
         }
 
         let uri = '/api/users/create-apikey?name=' + apiKeyNameInput;
-        let response = await fetchAuthorized(uri, 'POST');
+        let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
         if(response.ok) {
             let data = await response.json();
@@ -62,29 +57,11 @@
 
     async function onRevokeAPIKeyButtonClicked(keyName: string) {
         let uri = '/api/users/revoke-apikey?name=' + keyName;
-        let response = await fetchAuthorized(uri, 'POST');
+        let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
         if(response.ok) {
             await fetchUserData();
         }
-    }
-
-    async function fetchAuthorized(uri: string, method: string) : Promise<Response> {
-        let session = $page.data.session as any;
-
-        if (!session || !session.accessToken) {
-            return Response.error();
-        }
-
-        let headers: any = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + session.accessToken
-        };
-
-        return fetch(uri, {
-            method: method,
-            headers: headers
-        });
     }
 
 

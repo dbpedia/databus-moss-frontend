@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { Input, Label, Button, Select, Heading, Span } from 'flowbite-svelte';
+	import { Input, Button, Select, Heading, Span } from 'flowbite-svelte';
 
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -31,7 +31,7 @@
 		}
 
 		errorMessage = '';
-		const saveURL = MossUtils.getSavePath(databusResource, layerName);
+		const saveURL = MossUtils.getSaveRequestURL(databusResource, layerName);
 
 		const content = `{
             "@context" : "https://raw.githubusercontent.com/dbpedia/databus-moss/dev/devenv/context2.jsonld",
@@ -48,7 +48,7 @@
 			.replace(layerPlaceholder, layerName)
 			.replace(databusResourcePlaceholder, databusResource);
 
-		const response = await fetchAuthorized(saveURL, 'POST', body);
+		const response = await MossUtils.fetchAuthorized(saveURL, 'POST', body);
 
 		if (response.status == 200) {
 			goto(documentUri.replace('/g/', '/browse/'));
@@ -63,26 +63,6 @@
 			name: layer
 		};
 	});
-
-	async function fetchAuthorized(uri: string, method: string, body: any): Promise<Response> {
-		let session = $page.data.session as any;
-
-		if (!session || !session.accessToken) {
-			return Response.error();
-		}
-
-		let headers: any = {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			Authorization: 'Bearer ' + session.accessToken
-		};
-
-		return fetch(uri, {
-			method: method,
-			headers: headers,
-			body: body
-		});
-	}
 
 	onMount(async () => {
 		const session = $page.data.session;

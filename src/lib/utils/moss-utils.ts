@@ -1,4 +1,3 @@
-
 export class MossUtils {
 
 
@@ -92,9 +91,9 @@ export class MossUtils {
         return result;
 	}
 
-    static getSavePath(resource: string, layerName: string): string {
+    static getSaveRequestURL(resource: string, layerName: string): string {
         resource = resource.replaceAll("#", MossUtils.encodedHashTag);
-        return `/cmd/save?layer=${layerName}&resource=${resource}`;
+        return `/api/save?layer=${layerName}&resource=${resource}`;
     }
 
     static getUriSegments(path: string) {
@@ -135,6 +134,38 @@ export class MossUtils {
         }
         url = linkURI + "/" + item;
         return url.replace(/\/{2,}/g, '/');
+    }
+
+
+    static async fetchAuthorized(uri: string, method: string, body: any = undefined): Promise<Response> {
+        try {
+            // Fetch the access token
+            const tokenResponse = await fetch('/user/token');
+            if (!tokenResponse.ok) {
+                return Response.error();
+            }
+            
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.accessToken;
+
+            // Prepare headers with the fetched access token
+            const headers: any = {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + accessToken
+            };
+
+            // Make the actual request with the authorization header
+            return await fetch(uri, {
+                method: method,
+                headers: headers,
+                body: body
+            });
+
+        } catch (error) {
+            console.error('Error in fetchAuthorized:', error);
+            return Response.error();
+        }
     }
 
 }

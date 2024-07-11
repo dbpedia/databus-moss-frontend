@@ -37,30 +37,10 @@
 
 export async function postDocument(): Promise<Response> {
         const currentURI = $page.params.path;
-
         const layerName = MossUtils.getLayerName(currentURI);
         const resourceURI = MossUtils.getResourceURI(currentURI);
-
-        const url = MossUtils.getSavePath(resourceURI, layerName);
-
-        const body = data.content;
-
-        let headers: any= {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
-
-        //if(data.token != undefined) {
-        //    headers['Authorization'] = 'Bearer ' + data.token;
-        //}
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: headers,
-            body: body,
-        });
-
-        return response;
+        const requestURL = MossUtils.getSaveRequestURL(resourceURI, layerName);
+        return await MossUtils.fetchAuthorized(requestURL, 'POST', data.content);
     }
 
     async function loadGraphs(content: string) {
