@@ -3,8 +3,8 @@
     import SearchResult from "$lib/components/search-result.svelte";
     import AnnotationSearch from "$lib/components/annotation-search.svelte";
     import { MossUtils } from '$lib/utils/moss-utils';
-    import { 
-        Input,
+    import {
+        Input
      } from "flowbite-svelte";
 
     let baseUrl = `/api/search?query=`;
@@ -18,7 +18,7 @@
     let searchInput : string;
 
     function onAnnotationClicked(event : CustomEvent) {
-        
+
         if(event.detail == undefined) {
             return;
         }
@@ -36,7 +36,7 @@
         const data = await fetch(query);
         return await data.json() ?? [];
     }
-    
+
     async function onSearchInputChanged() {
         var results = await query(searchInput, joinField);
         var explanations = await query(searchInput);
@@ -52,7 +52,7 @@
             for(var explanation of explanations.docs) {
                 for(var annotationUri of result.annotation) {
                     if(annotationUri == explanation.id) {
-                    
+
                         explanation.idName = MossUtils.uriToName(explanation.id[0]);
                         result.explanations.push(explanation);
                     }
@@ -68,7 +68,7 @@
 <div class="section">
     <div class="container">
         <div class=columns>
-            <div class="column" style="padding-right: 2em">
+            <div class="column">
                 <Input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
                 <ul>
                     {#each searchResults as result (result.id) }
@@ -91,10 +91,14 @@
     margin: 0;
 }
 
-
 ul {
     list-style-type: none;
     padding: 0;
 }
+
+.column {
+    padding-right: 2em;
+}
+
 </style>
 

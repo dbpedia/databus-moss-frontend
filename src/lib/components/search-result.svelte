@@ -1,5 +1,16 @@
 <script lang="ts">
 	import { MossUtils } from "$lib/utils/moss-utils";
+    import {
+        A,
+        P,
+        Card,
+		Heading,
+		Badge,
+		Secondary,
+		Alert
+    } from "flowbite-svelte";
+
+    const linkColor = "secondary";
 
     export let data : any;
 
@@ -9,33 +20,41 @@
 </script>
 
 <div class="result">
-    <h1>{usedLabel}</h1>
-    <div><a href={used} target="_blank">Download</a></div>
-    <br/>
-    <div><b>Annotations:</b></div>
-    <ul class="explanation-list">
-        {#each explanations as explanation }
-        <li>
-            <div>{@html explanation.label}</div>
-            <div><b>Resource:</b> <a target="_blank" href="{explanation.id}">{explanation.idName}</a></div>
-            <div><b>Layer:</b> <a target="_blank" href="{ data.path }">{ data.modName }</a></div>
-        </li>
-        {/each}
-    </ul>
+    <div class="header">
+        <P class="text-xl underline">{usedLabel}</P>
+        <A href={used} target="_blank" color={linkColor}><Secondary>Download</Secondary></A>
+    </div>
+    <div class="list">
+        <Heading tag=h6>Annotations:</Heading>
+        <ul class="explanation-list">
+            {#each explanations as explanation }
+                <Card class="content items-start">
+                    <Badge class="text-xl font-semibold" color="indigo" border>{explanation.label}</Badge>
+                    <A href={explanation.id} target="_blank" color={linkColor}>
+                        <P class="ms-2"><strong>Resource: </strong>{explanation.idName}</P>
+                    </A>
+                    <A href={data.path} target="_blank" color={linkColor}>
+                        <P class="ms-2"><strong>Layer: </strong>{data.modName}</P>
+                    </A>
+                </Card>
+            {/each}
+        </ul>
+    </div>
 </div>
-<style>
 
+<style lang>
 .result {
     border-bottom: 1px solid #c8c8c8;
     padding-top: 0;
     padding-bottom: 1em;
     margin-bottom: 1em;
+    margin-top: 1em;
+    padding-left: 0.5em;
 }
 
-h1 {
-    font-size: 1.2em;
-    margin: 0;
-    margin-bottom: 0.1em;
+.header {
+    margin-bottom: 1em;
+    margin-top: 1.5em;
 }
 
 .explanation-list {
@@ -46,13 +65,4 @@ h1 {
     margin-bottom: -.4em;
 }
 
-.explanation-list>li {
-    border: 1px solid #dbdbdb;
-    background-color: #fafafa;
-    padding: .7em;
-    border-radius: 8px;
-    margin-right: .4em;
-    margin-bottom: .4em;
-    width: fit-content;
-}
 </style>
