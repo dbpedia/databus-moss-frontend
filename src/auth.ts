@@ -24,7 +24,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
       // Persist the OAuth refresh token to the token right after signin
       if (account?.provider === "oidc_provider") {
-
+        
         return {
           ...token,
           accessToken: account.access_token,
@@ -36,7 +36,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       return token;
     },
     async session({ session, token }) {
-
+      
       if(token == undefined) {
         return session;
       }
@@ -44,6 +44,9 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       let expiresAtTime: number = token.expiresAt as number;
       // console.log('Token with expiration date:', new Date(expiresAtTime * 1000).toISOString());
       // console.log('Now is:', new Date(Date.now()).toISOString());
+
+      // console.log(token.refreshToken);
+      
 
       if(Date.now() >= expiresAtTime * 1000){
 
@@ -65,6 +68,8 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
 async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
 
+  // console.log(refreshToken);
+  
   if (refreshToken == null) {
     return null;
   }
@@ -72,6 +77,8 @@ async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
   let provider = getProvider() as any;
   let tokenEndpointUrl = await fetchTokenEndpointUrl(provider.issuer);
 
+  // console.log(tokenEndpointUrl);
+  
   if(tokenEndpointUrl == null) {
     return null;
   }
@@ -96,7 +103,7 @@ async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
 
   const data = await response.json();
   var token = decodeJWT(data.access_token);
-  return { accessToken: data.access_token, expiresAt: token.exp, refreshToken: token.refresh_token };
+  return { accessToken: data.access_token, expiresAt: token.exp, refreshToken: data.refresh_token };
 }
 
 function decodeJWT(token: string | undefined): any {

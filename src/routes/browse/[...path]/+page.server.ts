@@ -15,7 +15,7 @@ export async function load({ url, locals }: any) {
     let content;
     let endpoint = `${import.meta.env.VITE_MOSS_BASE_URL}${url.pathname}`
 
-    endpoint = endpoint.replace("/browse", "/g");
+    // endpoint = endpoint.replace("/browse", "/g");
 
     //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
     //path here contains a "#" which gets filtered out -> resulting in a 404 from moss

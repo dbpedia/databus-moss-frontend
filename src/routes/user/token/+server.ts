@@ -3,7 +3,9 @@ import type { RequestHandler } from '@sveltejs/kit';
 // Assuming your RequestHandler type expects an event parameter
 export const GET: RequestHandler = async ({ locals }) => {
     try {
+        
         const session = await locals.auth() as any;
+
 
         if (session == null || session.user == undefined) {
             return new Response(null, { status: 401, statusText: "Unauthorized" });
