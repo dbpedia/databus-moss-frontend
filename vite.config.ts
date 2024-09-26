@@ -3,9 +3,9 @@ import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({command, mode}: any) =>  {
 	const env = loadEnv(mode, "./");
-	console.log("VITE_MOSS_BASE_URL: " + env.VITE_MOSS_BASE_URL);
 	return {
 		plugins: [sveltekit()],
+		/*
 		server: {
 			proxy: {
 				'/api': {
@@ -14,8 +14,9 @@ export default defineConfig(({command, mode}: any) =>  {
 				},
 				'/g': env.VITE_MOSS_BASE_URL,
 				'/layer': env.VITE_MOSS_BASE_URL,
+				'/sparql': env.VITE_MOSS_BASE_URL
 			},
-		}
+		}*/
 	}
 });
 

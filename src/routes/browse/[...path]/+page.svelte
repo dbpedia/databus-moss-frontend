@@ -21,6 +21,7 @@
         ExclamationCircleOutline,
     } from 'flowbite-svelte-icons';
 	import FeedbackMessage from '$lib/components/feedback-message.svelte';
+	import { env } from '$env/dynamic/public'
 
 
     /** @type {import('./$types').PageData} */
@@ -37,12 +38,13 @@
 
     $: backLink = MossUtils.createListGroupNavigationItems([".."], $page.url.pathname);
 
-export async function postDocument(): Promise<Response> {
+export async function saveDocument(): Promise<Response> {
         const currentURI = $page.params.path;
         const layerName = MossUtils.getLayerName(currentURI);
         const resourceURI = MossUtils.getResourceURI(currentURI);
+
         const requestURL = MossUtils.getSaveRequestURL(resourceURI, layerName);
-        return await MossUtils.fetchAuthorized(requestURL, 'POST', data.content);
+        return await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + requestURL, 'POST', data.content, data.contentType);
     }
 
     async function loadGraphs(content: string) {
@@ -91,21 +93,13 @@ export async function postDocument(): Promise<Response> {
         return true;
     }
 
-    function setIndicatorColor(responeOk: boolean) {
-        indicatorVisible.set(true);
-        if (responeOk) {
-            indicatorColor = "green";
-            return;
-        }
-        indicatorColor = "red";
-    }
-
     async function onSaveButtonClicked() {
 
         feedback.clearMessage();
-        const valid = await validateLayerHeader(data.content);
+        // const valid = await validateLayerHeader(data.content);
         indicatorColor = "none";
 
+        /*
         if (!valid) {
 
 
@@ -114,15 +108,18 @@ export async function postDocument(): Promise<Response> {
                 displayFeedback.set(true);
             }, 0);
             return;
-        }
+        }*/
 
         displaySave.set(true);
 
-        let response = await postDocument();
+        let response = await saveDocument();
         console.log(response)
 
-
-        feedback.showMessage("Document Saved!", true);
+        if(response.ok) {
+            feedback.showMessage("Document Saved!", true);
+        } else {
+            feedback.showMessage("Failed to save document.", false);
+        }
         displaySave.set(false);
         /*setTimeout(() => {
             setIndicatorColor(response.ok);
@@ -145,6 +142,8 @@ export async function postDocument(): Promise<Response> {
         }
     }
 
+
+    console.log(data.props.headerInfo);
 </script>
 
 <div class="container">
@@ -167,6 +166,18 @@ export async function postDocument(): Promise<Response> {
     {#if data.props.isDocument}
         <div class="editor-container">
             <h1 id="title">{MossUtils.getTitle($page.params.path)}</h1>
+
+            <div class="layer-header">
+                <table class="table">
+                    {#each data.props.headerInfo as info, index}
+                    <tr>
+                        <td>{info.key}</td>
+                        <td>{info.value}</td>
+                    </tr>
+                    {/each}
+                </table>
+            </div>
+
             <div class="buttons">
                 <A href={"./"}>
                     <Button color="alternative">Go Back</Button>
@@ -194,9 +205,7 @@ export async function postDocument(): Promise<Response> {
                             </div>
                         </div>
                         <FeedbackMessage bind:feedback={feedback}></FeedbackMessage>
-                        <Button color="alternative" size="md" class="button-group-size" on:click={() => onValidButtonClicked(data.content)}>
-                            Validate
-                        </Button>
+                        
                         <Button color="alternative" size="md" class="button-group-size relative" on:click={onSaveButtonClicked} on:mouseenter={() => indicatorVisible.set(false)}>
                             {#if $displaySave}
                                 <Spinner class="me-3" size="4" color="white" />
@@ -244,15 +253,36 @@ export async function postDocument(): Promise<Response> {
     align-items: right;
 }
 
+.table {
+    background-color: rgb(249 250 251);
+    width: 100%;
+}
+
+.table tr:first-child {
+    min-width: 200px;
+}
+
+.table td:first-child {
+    font-weight: 600;
+}
+
+.table td {
+    padding: 0.5em;
+}
+
+.layer-header {
+    margin-bottom: 1em;
+}
+
 .buttons {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 1em;
 }
 
 .btn-size {
     display: flex;
     flex-direction: row;
-    padding: 1rem;
     gap: 5px;
     align-items: center;
 }

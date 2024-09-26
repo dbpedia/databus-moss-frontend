@@ -6,6 +6,7 @@
         Button,
      } from "flowbite-svelte";
 	import { MossUtils } from "$lib/utils/moss-utils";
+	import { env } from '$env/dynamic/public'
 
     let username: string = "";
     let usernameInput: string = "";
@@ -15,7 +16,7 @@
     let apiKeyNameError = false;
 
     async function fetchUserData() {
-        let response = await MossUtils.fetchAuthorized('/api/users/get-user', "GET");
+        let response = await MossUtils.fetchAuthorized(`${env.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, "GET");
 
         if (response.ok) {
             user = await response.json();
@@ -34,7 +35,7 @@
 
         username = usernameInput;
 
-        let uri = '/api/users/set-username?username=' + username;
+        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/users/set-username?username=${username}`;
         let response = await MossUtils.fetchAuthorized(uri, "POST");
 
         if (response.ok) {

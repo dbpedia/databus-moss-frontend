@@ -47,14 +47,6 @@
         height: 50vh;
     }
 
-    .full-width-alert {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
     .info {
         display: flex;
         flex-direction: row;

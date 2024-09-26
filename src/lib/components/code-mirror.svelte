@@ -1,3 +1,4 @@
+
 <script lang="ts">
     import CodeMirror from "svelte-codemirror-editor";
     import { json, jsonParseLinter } from "@codemirror/lang-json";

@@ -1,3 +1,4 @@
+
 export class MossUtils {
 
 
@@ -54,14 +55,18 @@ export class MossUtils {
         return extension ? extension : "";
     }
 
-    static getDocumentUri(databusResource : string, layerName : string): string {
+    static getDocumentUri(databusResource : string, layerName : string, format : string): string {
         const reMultiSlash: RegExp = /\/\/+/g;
         const reTrailingSlash: RegExp = /\/+$/g;
         const encodedHashTag = "%23";
         const databusResourceURL = new URL(databusResource);
 
         layerName = layerName.replace(reTrailingSlash, "");
-        let result = databusResourceURL.hostname + databusResourceURL.pathname + databusResourceURL.hash + "/" + layerName;
+        let result = databusResourceURL.hostname 
+            + databusResourceURL.pathname 
+            + databusResourceURL.hash + "/" 
+            + layerName 
+            + "." + format;
 
         result = result
                     .replaceAll(reMultiSlash, "/")
@@ -73,13 +78,22 @@ export class MossUtils {
     static getResourceURI(currentURI: string) : string {
 
         let result = currentURI;
-
+        
         if (result.includes('/')) {
             result = result.substring(0, result.lastIndexOf('/'));
         }
 
+        if(result.startsWith("content/")) {
+            result = result.substring(8);
+        }
+
         return "https://" + result;
 	}
+
+    static getFormat(currentURI: string) : string {
+        return currentURI.substring(currentURI.lastIndexOf('.'));
+	}
+
 
 	static getLayerName(uri: string) {
         let result = uri.substring(uri.lastIndexOf('/') + 1);
@@ -137,7 +151,9 @@ export class MossUtils {
     }
 
 
-    static async fetchAuthorized(uri: string, method: string, body: any = undefined): Promise<Response> {
+    static async fetchAuthorized(uri: string, method: string, body: any = undefined, 
+        contentType: string = "application/ld+json"): Promise<Response> {
+
         try {
             // Fetch the access token
             const tokenResponse = await fetch('/user/token');
@@ -151,7 +167,7 @@ export class MossUtils {
             // Prepare headers with the fetched access token
             const headers: any = {
                 Accept: 'application/json',
-                'Content-Type': 'application/json',
+                'Content-Type': contentType,
                 Authorization: 'Bearer ' + accessToken
             };
 

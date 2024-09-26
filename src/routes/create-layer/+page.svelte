@@ -2,12 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import { Input, Button, Select, Heading, Span, GradientButton } from 'flowbite-svelte';
+	import { env } from '$env/dynamic/public'
 
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import { RdfFormats } from '$lib/utils/rdf-formats.js';
 
-	const layerPlaceholder: string = '%LAYERNAME%';
-	const databusResourcePlaceholder: string = '%DATABUSRESOURCE%';
+	const databusResourcePlaceholder: string = '%DATABUS_RESOURCE%';
 	const buttonName: string = 'Create Layer';
 
 	export let data;
@@ -15,15 +16,22 @@
 	let resourceTestName = 'https://databus.openenergyplatform.org/hu_wu/test_group/';
 	let layerName: string = layerTestName;
 	let databusResource: string = resourceTestName;
-	let layerList: any = data.props.layers;
+	let layerList: any;
+
 	let errorMessage: string = '';
 
-	async function postDocument() {
+	async function createLayer() {
 		// Get the document and see if it exists
-		let documentMossPath = MossUtils.getDocumentUri(databusResource, layerName);
-		let documentUri = `/g/${documentMossPath}`;
+		var layer = data.props.layers.find((layer: any) => layer.name == layerName);
 
-		let getResponse = await fetch(documentUri);
+		if(layer == undefined) {
+			return;
+		}
+
+		
+		let documentMossPath = MossUtils.getDocumentUri(databusResource, layer.name, layer.format);
+		let documentUri = `/g/content/${documentMossPath}`;
+		let getResponse = await fetch(env.PUBLIC_MOSS_BASE_URL + documentUri);
 
 		if (getResponse.status == 200) {
 			errorMessage = `Layer already exists. (${documentUri})`;
@@ -33,34 +41,27 @@
 		errorMessage = '';
 		const saveURL = MossUtils.getSaveRequestURL(databusResource, layerName);
 
-		const content = `{
-            "@context" : "https://raw.githubusercontent.com/dbpedia/databus-moss/dev/devenv/context2.jsonld",
-            "@id" : "${databusResourcePlaceholder}",
-            "isExtendedBy" :  {
-                "@id" : "#layer",
-                "@type" : "DatabusMetadataLayer",
-                "layerName": "${layerPlaceholder}",
-                "created" : "2024-03-01 14:37:32"
-            }
-        }`;
+		console.log(saveURL);
+		
+		let format = RdfFormats.getFormatByExtension(layer.format);
+		const content = layer.template;
 
 		let body = content
-			.replace(layerPlaceholder, layerName)
 			.replace(databusResourcePlaceholder, databusResource);
 
-		const response = await MossUtils.fetchAuthorized(saveURL, 'POST', body);
+		const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', body, format.contentType);
 
 		if (response.status == 200) {
-			goto(documentUri.replace('/g/', '/browse/'));
+			goto(documentUri.replace('/g/content/', '/browse/'));
 		}
 
 		return response;
 	}
 
-	layerList = layerList.map((layer: string) => {
+	layerList = data.props.layers.map((layer: any) => {
 		return {
-			value: layer,
-			name: layer
+			value: layer.name,
+			name: layer.name
 		};
 	});
 
@@ -91,7 +92,7 @@
 				<div class="explanation">Any Databus resource that should be described by the layer.</div>
 			</div>
 
-			<GradientButton color="cyanToBlue" name={buttonName} on:click={postDocument}>{buttonName}</GradientButton>
+			<GradientButton color="cyanToBlue" name={buttonName} on:click={createLayer}>{buttonName}</GradientButton>
 			{#if errorMessage}
 				{errorMessage}
 			{/if}

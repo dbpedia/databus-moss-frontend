@@ -1,5 +1,4 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
-import type { JWT } from "next-auth/jwt";
 import { AUTH_OIDC_CLIENT_SECRET, AUTH_OIDC_CLIENT_ID, AUTH_OIDC_ISSUER } from "$env/static/private";
 import type { Provider } from "@auth/sveltekit/providers";
 
@@ -17,6 +16,7 @@ function getProvider() : Provider {
 }
 
 export const { handle, signIn, signOut  } = SvelteKitAuth({
+  trustHost: true,
   providers: [ getProvider() ],
   secret: "isna",
   callbacks: {
@@ -42,23 +42,13 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       }
 
       let expiresAtTime: number = token.expiresAt as number;
-      // console.log('Token with expiration date:', new Date(expiresAtTime * 1000).toISOString());
-      // console.log('Now is:', new Date(Date.now()).toISOString());
-
-      // console.log(token.refreshToken);
-      
 
       if(Date.now() >= expiresAtTime * 1000){
-
-        // console.log("Token expired");
         
         let tokenData = await fetchNewAccessToken(token?.refreshToken as string);
         token.accessToken = tokenData.accessToken;
         token.expiresAt = tokenData.expiresAt;
         token.refreshToken = tokenData.refreshToken;
-
-        // const expirationDate = new Date(tokenData.expiresAt * 1000); // Multiply by 1000 to convert to milliseconds
-        // console.log('Got new token with expiration date:', expirationDate.toISOString());
       }
     
       return { ...session, accessToken: token.accessToken }

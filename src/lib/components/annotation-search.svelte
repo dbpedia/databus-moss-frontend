@@ -82,10 +82,6 @@
         flex: 1;
     }
 
-    .flex-none {
-        flex: none;
-    }
-
     .mr-2 {
         margin-right: 0.5rem;
     }
