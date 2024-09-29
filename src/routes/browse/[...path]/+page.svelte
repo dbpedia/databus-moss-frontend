@@ -41,7 +41,7 @@
 export async function saveDocument(): Promise<Response> {
         const currentURI = $page.params.path;
         const layerName = MossUtils.getLayerName(currentURI);
-        const resourceURI = MossUtils.getResourceURI(currentURI);
+        const resourceURI = MossUtils.getResourceURI($page.data.props.layerUri);
 
         const requestURL = MossUtils.getSaveRequestURL(resourceURI, layerName);
         return await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + requestURL, 'POST', data.content, data.contentType);
@@ -143,7 +143,6 @@ export async function saveDocument(): Promise<Response> {
     }
 
 
-    console.log(data.props.headerInfo);
 </script>
 
 <div class="container">

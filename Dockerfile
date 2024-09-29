@@ -11,9 +11,9 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy the rest of the application files
-COPY . .
+COPY ./build ./build
 
-EXPOSE 5173
+EXPOSE 3000
 
 # Start the server
-CMD npm run dev -- --host
+CMD node build

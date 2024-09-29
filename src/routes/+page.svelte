@@ -6,8 +6,9 @@
     import {
         Input
      } from "flowbite-svelte";
+     import { env } from '$env/dynamic/public'
 
-    let baseUrl = `/api/search?query=`;
+    let baseUrl = `${env.PUBLIC_MOSS_BASE_URL}/api/search?query=`;
     let joinSuffix = `&join=`;
     let joinField = "annotation";
 
@@ -45,8 +46,9 @@
             result.expanded = true;
             result.explanations = [];
 
+            result.used = MossUtils.getResourceURI(result.id[0]);
             result.path = new URL(result.id[0]).pathname;
-            result.usedName = MossUtils.uriToName(result.used[0]);
+            // result.usedName = MossUtils.uriToName(result.used[0]);
             result.modName = MossUtils.uriToName(result.path);
 
             for(var explanation of explanations.docs) {

@@ -15,14 +15,14 @@
     export let data : any;
 
     let used = data.used;
-    let usedLabel = MossUtils.getLastPathSegment(used[0]);
+    let usedLabel = MossUtils.getLastPathSegment(used);
     let explanations = data.explanations;
 </script>
 
 <div class="result">
     <div class="header">
-        <P class="text-xl underline">{usedLabel}</P>
-        <A href={used} target="_blank" color={linkColor}><Secondary>Download</Secondary></A>
+        <P class="text-xl">Databus Resource: {usedLabel}</P>
+        <A href={used} target="_blank" color={linkColor}><Secondary>{used}</Secondary></A>
     </div>
     <div class="list">
         <Heading tag=h6>Annotations:</Heading>

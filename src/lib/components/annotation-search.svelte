@@ -10,12 +10,13 @@
 		Listgroup,
 		P,
      } from 'flowbite-svelte';
-
+    import { env } from '$env/dynamic/public'
 
 	const dispatch = createEventDispatcher();
 
     let searchInput = "";
-    let baseUrl = `/api/search?type=class&query=`;
+    
+    let baseUrl = `${env.PUBLIC_MOSS_BASE_URL}/api/search?type=class&query=`;
     let annotatedCountSuffix = "&annotatedCount=1,1000000";
     let searchResults : any;
     let hideUnused : boolean;

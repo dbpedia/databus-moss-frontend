@@ -8,12 +8,10 @@ import { env } from '$env/dynamic/public'
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url, locals }: any) {
 
-    console.log(url);
     
     const domain = url.toString();
     const segments = MossUtils.getUriSegments(url.pathname);
 
-    console.log(domain);
     
     let folders;
     let files;
@@ -34,6 +32,7 @@ export async function load({ url, locals }: any) {
     }
 
     let contentType = response.headers.get("Content-Type");
+    let layerUri = undefined;
 
     if(contentType != "application/json") {
         isDocument = true;
@@ -41,7 +40,7 @@ export async function load({ url, locals }: any) {
 
         // Fetch layer info
         var graphURI = env.PUBLIC_MOSS_BASE_URL + url.pathname.replace("/browse", "/g/content");
-
+       
         var query = `SELECT ?s ?p ?o WHERE {
             ?s ?p ?o .
             ?s a <http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayer> .
@@ -63,6 +62,10 @@ export async function load({ url, locals }: any) {
         headerInfo = []; 
 
         for(const binding of result.results.bindings) {
+            if(layerUri == undefined) {
+                layerUri = binding.s.value;
+            }
+
             headerInfo.push({
                 key : RdfUris.compact(binding.p.value),
                 value: RdfUris.compact(binding.o.value)
@@ -93,6 +96,7 @@ export async function load({ url, locals }: any) {
         contentType: contentType,
         token: session?.accessToken,
         props: {
+            layerUri: layerUri,
             segments,
             domain,
             isDocument,

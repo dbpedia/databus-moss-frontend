@@ -13,7 +13,7 @@
 
 	export let data;
 	let layerTestName = 'simple';
-	let resourceTestName = 'https://databus.openenergyplatform.org/hu_wu/test_group/';
+	let resourceTestName = 'https://databus.openenergyplatform.org/hu_wu/test_group';
 	let layerName: string = layerTestName;
 	let databusResource: string = resourceTestName;
 	let layerList: any;

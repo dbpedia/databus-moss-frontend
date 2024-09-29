@@ -75,16 +75,17 @@ export class MossUtils {
         return result;
     }
 
-    static getResourceURI(currentURI: string) : string {
+    static getResourceURI(layerURI: string) : string {
 
-        let result = currentURI;
+        let url = new URL(layerURI);
+        let result = url.pathname;
         
         if (result.includes('/')) {
             result = result.substring(0, result.lastIndexOf('/'));
         }
 
-        if(result.startsWith("content/")) {
-            result = result.substring(8);
+        if(result.startsWith("/g/header/")) {
+            result = result.substring(10);
         }
 
         return "https://" + result;

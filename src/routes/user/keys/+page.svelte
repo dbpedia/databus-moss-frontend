@@ -33,7 +33,7 @@
             return;
         }
 
-        let uri = '/api/users/create-apikey?name=' + apiKeyNameInput;
+        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/users/create-apikey?name=${apiKeyNameInput}`;
         let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
         if(response.ok) {
@@ -57,7 +57,7 @@
 
 
     async function onRevokeAPIKeyButtonClicked(keyName: string) {
-        let uri = '/api/users/revoke-apikey?name=' + keyName;
+        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/users/revoke-apikey?name=${keyName}`;
         let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
         if(response.ok) {
