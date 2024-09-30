@@ -18,7 +18,7 @@ function getProvider() : Provider {
 export const { handle, signIn, signOut  } = SvelteKitAuth({
   trustHost: true,
   providers: [ getProvider() ],
-  secret: "isna",
+  secret: "EuLZ0ierX7kl53a90sF6fGU/fCdSp3TTpjKRmD8oVSY=",
   callbacks: {
     async jwt({ token, account }) {
 

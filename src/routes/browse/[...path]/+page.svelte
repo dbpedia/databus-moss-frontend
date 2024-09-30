@@ -22,6 +22,7 @@
     } from 'flowbite-svelte-icons';
 	import FeedbackMessage from '$lib/components/feedback-message.svelte';
 	import { env } from '$env/dynamic/public'
+	import { RdfUris } from '$lib/utils/rdf-uris';
 
 
     /** @type {import('./$types').PageData} */
@@ -38,7 +39,9 @@
 
     $: backLink = MossUtils.createListGroupNavigationItems([".."], $page.url.pathname);
 
-export async function saveDocument(): Promise<Response> {
+    export async function saveDocument(): Promise<Response> {
+
+
         const currentURI = $page.params.path;
         const layerName = MossUtils.getLayerName(currentURI);
         const resourceURI = MossUtils.getResourceURI($page.data.props.layerUri);
@@ -171,7 +174,11 @@ export async function saveDocument(): Promise<Response> {
                     {#each data.props.headerInfo as info, index}
                     <tr>
                         <td>{info.key}</td>
-                        <td>{info.value}</td>
+                        {#if info.type == "uri"}
+                            <td><a target="_blank" href="{info.value}">{RdfUris.compact(info.value)}</a></td>
+                        {:else}
+                            <td>{info.value}</td>
+                        {/if}
                     </tr>
                     {/each}
                 </table>
@@ -267,6 +274,10 @@ export async function saveDocument(): Promise<Response> {
 
 .table td {
     padding: 0.5em;
+}
+
+.table td a {
+    text-decoration: underline;
 }
 
 .layer-header {

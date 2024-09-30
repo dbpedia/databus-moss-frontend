@@ -64,11 +64,18 @@ export async function load({ url, locals }: any) {
         for(const binding of result.results.bindings) {
             if(layerUri == undefined) {
                 layerUri = binding.s.value;
+
+                headerInfo.push({
+                    key: "id",
+                    value: layerUri,
+                    type: "uri"
+                });
             }
 
             headerInfo.push({
                 key : RdfUris.compact(binding.p.value),
-                value: RdfUris.compact(binding.o.value)
+                value: binding.o.value,
+                type: binding.o.type
             })
         }
 
