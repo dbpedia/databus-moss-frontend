@@ -18,8 +18,10 @@ export async function load({ url, locals }: any) {
     let isDocument = false;
     let content;
     let headerInfo;
-    let endpoint = `${env.PUBLIC_MOSS_BASE_URL}${url.pathname}`
+    let endpoint = `${env.PUBLIC_MOSS_BASE_URL}${url.pathname.replace("/browse", "/file")}`
 
+    console.log(endpoint);
+    
     // endpoint = endpoint.replace("/browse", "/g");
 
     //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
@@ -27,7 +29,10 @@ export async function load({ url, locals }: any) {
     // which is then not properly return or so.
     let response = await fetch(endpoint);
 
-    if (response.status === 404) {
+
+    if (response.status === 404 || response.status === 500) {
+        console.log("throwing up");
+        
         throw error(response.status, response.statusText);
     }
 
@@ -47,9 +52,6 @@ export async function load({ url, locals }: any) {
             ?s <http://dataid.dbpedia.org/ns/moss#content> <${graphURI}> . 
         }`;
 
-        console.log(query);
-        
-        
         var sparqlRequestURL = `${env.PUBLIC_MOSS_BASE_URL}/sparql?query=${encodeURIComponent(query)}`;
         let sparqlResponse = await fetch(sparqlRequestURL, {
             method: 'GET', // or 'POST', 'PUT', etc.
