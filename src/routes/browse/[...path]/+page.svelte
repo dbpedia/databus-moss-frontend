@@ -36,6 +36,9 @@
     let indicatorColor: "green" | "red" | "none" = "none"
     let indicatorVisible = writable(false);
     let feedback : any;
+    let errors : any;
+
+    errors = [];
 
     $: backLink = MossUtils.createListGroupNavigationItems([".."], $page.url.pathname);
 
@@ -98,6 +101,7 @@
 
     async function onSaveButtonClicked() {
 
+        errors = [];
         feedback.clearMessage();
         // const valid = await validateLayerHeader(data.content);
         indicatorColor = "none";
@@ -121,7 +125,11 @@
         if(response.ok) {
             feedback.showMessage("Document Saved!", true);
         } else {
+            let data = await response.json();
             feedback.showMessage("Failed to save document.", false);
+
+            errors.push(data.message);
+            errors = [...errors];
         }
         displaySave.set(false);
         /*setTimeout(() => {
@@ -129,22 +137,6 @@
             displaySave.set(false);
         }, 850);*/
     }
-
-    async function onValidButtonClicked(content: string) {
-        feedback.clearMessage();
-        // setTimeout(() => {
-        //    displayFeedback.set(true);
-        //}, 0);
-        let result = await validateLayerHeader(content);
-
-        if(result) {
-            feedback.showMessage("Valid MOSS Document!", true);
-        }
-        else {
-            feedback.showMessage(validationErrorMsg, false);
-        }
-    }
-
 
 </script>
 
@@ -225,6 +217,9 @@
                     </div>
                 </div>
             </div>
+            {#each errors as error}
+                <div class="error-box">{error}</div>
+            {/each}
             <div class="code-mirror-container">
                 <CodeMirror bind:value={data.content} />
             </div>
@@ -238,6 +233,15 @@
 #title {
     align-items: center;
     text-align: center;
+}
+
+.error-box {
+    padding: 1em 1.5em; 
+    background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 8px;
+      margin-bottom: 1em;
 }
 
 .list-container {

@@ -21,25 +21,22 @@
 
 <div class="result">
     <div class="header">
-        <P class="text-xl">Databus Resource: {usedLabel}</P>
-        <A href={used} target="_blank" color={linkColor}><Secondary>{used}</Secondary></A>
+        <h2 class="text-xl">{usedLabel}</h2>
+        <div><strong>Resource:</strong> <A href={used} target="_blank" color={linkColor}>{used}</A></div>
+        <div><strong>Layer:</strong>  {data.layer}</div>
+
     </div>
+    
+    {#if explanations.length > 0 }
     <div class="list">
-        <Heading tag=h6>Annotations:</Heading>
+        <div>Annotations:</div>
         <ul class="explanation-list">
             {#each explanations as explanation }
-                <Card class="content items-start">
-                    <Badge class="text-xl font-semibold" color="indigo" border>{explanation.label}</Badge>
-                    <A href={explanation.id} target="_blank" color={linkColor}>
-                        <P class="ms-2"><strong>Resource: </strong>{explanation.idName}</P>
-                    </A>
-                    <A href={data.path} target="_blank" color={linkColor}>
-                        <P class="ms-2"><strong>Layer: </strong>{data.modName}</P>
-                    </A>
-                </Card>
+            <Badge class="text-xl font-semibold" color="indigo" border>{explanation.label}</Badge>
             {/each}
         </ul>
     </div>
+    {/if}
 </div>
 
 <style lang>

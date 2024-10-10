@@ -56,7 +56,7 @@
 <Input id="searchInput" bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search Annotations..." class="block w-full p-2.5"/>
 
 <Label for="hideUnusedCheckbox" class="inline-flex items-center mt-2">
-    <Checkbox class="text-sky-400" id="hideUnusedCheckbox" bind:checked={hideUnused} />
+    <Checkbox class="text-sky-400" id="hideUnusedCheckbox" bind:checked={hideUnused} on:change={onSearchInputChanged} />
     <span class="ml-2">Hide unused</span>
 </Label>
 
