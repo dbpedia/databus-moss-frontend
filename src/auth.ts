@@ -5,6 +5,16 @@ import type { Provider } from "@auth/sveltekit/providers";
 let tokenEndpointUrl: string | null = null;
 
 function getProvider() : Provider {
+
+  console.log(`AUTH_OIDC_CLIENT_ID: ${AUTH_OIDC_CLIENT_ID}`);
+  console.log(`AUTH_OIDC_CLIENT_SECRET: ${AUTH_OIDC_CLIENT_SECRET != undefined ? "SECRET IS SET BUT SECRET!" : undefined}`);
+  console.log(`AUTH_OIDC_ISSUER: ${AUTH_OIDC_ISSUER}`);
+
+  if (!AUTH_OIDC_CLIENT_ID || !AUTH_OIDC_CLIENT_SECRET || !AUTH_OIDC_ISSUER) {
+    console.error("OIDC configuration is missing environment variables.");
+    throw new Error("Missing OIDC environment variables");
+  }
+
   let provider: any = {};
   provider.id = "oidc_provider";
   provider.name = "OIDC Provider";
@@ -12,6 +22,7 @@ function getProvider() : Provider {
   provider.clientId = AUTH_OIDC_CLIENT_ID;
   provider.clientSecret = AUTH_OIDC_CLIENT_SECRET;
   provider.issuer = AUTH_OIDC_ISSUER;
+  provider.scope
   return provider;
 }
 
