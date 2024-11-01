@@ -33,9 +33,12 @@
         }
 
         // Get the annotation tag from the event
+        let label = event.detail.label[0];
+        label = label.replace("<B>", "").replace("</B>", "");
+
         var annotationTag = {
             id: event.detail.id[0],
-            label: event.detail.label[0]
+            label: label
         };
 
         // Avoid duplicates based on `id`
