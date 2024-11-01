@@ -12,8 +12,8 @@
 	const buttonName: string = 'Create Layer';
 
 	export let data;
-	let layerTestName = 'simple';
-	let resourceTestName = 'https://databus.openenergyplatform.org/hu_wu/test_group';
+	let layerTestName = '';
+	let resourceTestName = '';
 	let layerName: string = layerTestName;
 	let databusResource: string = resourceTestName;
 	let layerList: any;
@@ -46,8 +46,7 @@
 		let format = RdfFormats.getFormatByExtension(layer.format);
 		const content = layer.template;
 
-		let body = content
-			.replace(databusResourcePlaceholder, databusResource);
+		let body = content.replace(new RegExp(databusResourcePlaceholder, 'g'), databusResource);
 
 		const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', body, format.contentType);
 

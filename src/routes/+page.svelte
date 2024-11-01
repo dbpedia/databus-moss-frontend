@@ -7,19 +7,24 @@
         Input
      } from "flowbite-svelte";
      import { env } from '$env/dynamic/public'
+     import jsonld from 'jsonld';
+	import { JsonldUtils } from "$lib/utils/jsonld-utils";
+	import { RdfUris } from "$lib/utils/rdf-uris";
 
     let baseUrl = `${env.PUBLIC_MOSS_BASE_URL}/api/search?query=`;
     let joinSuffix = `&join=`;
     let joinField = "annotation";
 
-    let searchResults : any;
+    let searchResults : { [key: string]: any };
     let annotationTags : any;
 
     annotationTags = [];
-    searchResults = [];
+    searchResults = {};
 
     let searchInput : string;
     searchInput = "";
+
+  
 
     function onAnnotationClicked(event : CustomEvent) {
 
@@ -66,6 +71,34 @@
         return await data.json() ?? [];
     }
 
+
+    function generateSearchExplanation(doc: any, searchTerm: string): any {
+       
+        let matchedFields: any = {};
+
+        // Check each field in the document for the <B> tags indicating a match.
+        for (const [field, value] of Object.entries(doc)) {
+            if (!Array.isArray(value)) {
+                continue;
+            }
+            
+            for(let val of value) {
+                if(!val.includes("<B>")) {
+                    continue;
+                }
+
+                if(matchedFields[field] == undefined) {
+                    matchedFields[field] = [];
+                }
+                
+                matchedFields[field].push({ label: val });
+            }
+        }
+
+        return matchedFields;
+    }
+
+
     async function onSearchInputChanged() {
 
         let q = searchInput;
@@ -78,11 +111,8 @@
             }
         }
 
-        var results = await query(q);
-
-        let r = [];
-
-        var explanations = await query(searchInput);
+        const results: { docs: any } = await query(q);
+        const resultMap: Record<string, SearchResult> = {};
 
         for(var result of results.docs) {
 
@@ -92,27 +122,70 @@
                 continue;
             }
 
+            try {
+                var response = await fetch(id, {
+                    headers: {
+                        'Accept': 'application/ld+json'
+                    }
+                });
 
-            result.expanded = true;
-            result.explanations = [];
+                let layerGraphs = await jsonld.expand(await response.json());
+                let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_LAYER);
+                var databusResourceUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_EXTENDS);
 
-            result.used = MossUtils.getResourceURI(result.id[0]);
-            result.path = new URL(result.id[0]).pathname;
-            result.layer = result.id[0];
+                if(resultMap[databusResourceUri] == undefined) {
+                    try {
+                        var response = await fetch(databusResourceUri, {
+                            headers: {
+                                'Accept': 'application/ld+json'
+                            }
+                        });
+
+                        var resourceGraphs = await jsonld.expand(await response.json());
+                        var resourceGraph = JsonldUtils.getGraphById(resourceGraphs, databusResourceUri)
+
+                        var databusResourceData : any = {};
+                        databusResourceData.uri = databusResourceUri;
+                        databusResourceData.title = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_TITLE);
+                        databusResourceData.abstract = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_ABSTRACT);
+                        databusResourceData.description = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_DESCRIPTION);
+                        databusResourceData.layers = [];
+
+                        resultMap[databusResourceUri] = databusResourceData;
+                    } catch(e) {
+                        console.log(e);
+                    }
+                }
+
+                if(resultMap[databusResourceUri] == undefined) {
+                    continue;
+                }
+
+                result.uri = result.id[0];
+                result.name =  JsonldUtils.getValue(layerGraph, RdfUris.MOSS_LAYERNAME);
+                result.explanations = generateSearchExplanation(result, searchInput);
+                resultMap[databusResourceUri].layers.push(result);
+
+            } catch(e) {
+                console.log(e);
+            }
+
             
-            if( result.annotation != undefined) {
+            if(result.annotation != undefined) {
                 
                 for(var annotationUri of result.annotation) {
                     for(let tag of annotationTags) {
                         if(annotationUri == tag.id) {
+                            if(result.explanations["annotation"] == undefined) {
+                                result.explanations["annotation"] = [];
+                            }
 
-                            result.explanations.push(tag);
+                            result.explanations["annotation"].push({ label: tag.label, uri: tag.id });
                         }
                     }
                 }
             }
 
-            r.push(result);
             // result.usedName = MossUtils.uriToName(result.used[0]);
             /*
             result.modName = MossUtils.uriToName(result.path);
@@ -129,7 +202,25 @@
                 */
         }
 
-        searchResults = r;
+        // Create hashes for each entry in resultMap
+        for (const [uri, data] of Object.entries(resultMap) as [string, any][]) {
+            // Concatenate the base uri with all layer uris
+            const layerUris = data.layers.map((layer: any) => layer.uri).join(','); // Using 'any' for layer
+            const hashInput = uri + layerUris + searchInput + annotationTags.length; // Create a string to hash
+            data.hash = createHash(hashInput); // Assign the hash to a new property
+        }
+        
+        searchResults = resultMap;
+    }
+
+    function createHash(input : string) {
+        // In a real application, consider using a library like 'crypto-js' or the SubtleCrypto API
+        let hash = 0;
+        for (let i = 0; i < input.length; i++) {
+            hash = (hash << 5) - hash + input.charCodeAt(i);
+            hash = hash | 0; // Convert to 32bit integer
+        }
+        return hash.toString();
     }
 
 </script>
@@ -143,14 +234,14 @@
                 {#each annotationTags as tag }
                 <li>
                     <div class="tag-box">
-                      {tag.label}
+                      {@html tag.label}
                       <button class="close-btn" on:click={() => removeTag(tag)}>x</button>
                     </div>
                   </li>
                 {/each}
                 </ul>
                 <ul>
-                    {#each searchResults as result (result.id) }
+                    {#each Object.entries(searchResults) as [key, result] (result.hash)}
                         <li>
                             <SearchResult data={result} />
                         </li>
@@ -177,6 +268,11 @@ ul {
 
 .column {
     padding-right: 2em;
+}
+
+.column.medium {
+    min-width: 256px;
+    width: 256px;
 }
 
 .tag-list {

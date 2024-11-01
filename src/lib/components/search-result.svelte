@@ -6,40 +6,86 @@
         Card,
 		Heading,
 		Badge,
+        Button,
 		Secondary,
 		Alert
     } from "flowbite-svelte";
 
     const linkColor = "secondary";
 
-    export let data : any;
+    export let data : SearchResult;
 
-    let used = data.used;
-    let usedLabel = MossUtils.getLastPathSegment(used);
-    let explanations = data.explanations;
+    let resource = data.uri;
+    let title = data.title;
+    let abstract = data.abstract;
+    let layers = data.layers;
+
+    for(let layer of layers) {
+        let url = new URL(layer.uri);
+        layer.browseLink = url.pathname.replace("/g/header/", "/browse/");
+    }
+
+    if(title == undefined) {
+        title = MossUtils.getLastPathSegment(resource);
+    }
+
+    function getExplanationValue(result : any) {
+        let exp = "";
+        for(var r of result) {
+            exp += r.value;
+        }
+
+        return exp;
+    }
+    
 </script>
 
 <div class="result">
     <div class="header">
-        <h2 class="text-xl">{usedLabel}</h2>
-        <div><strong>Resource:</strong> <A href={used} target="_blank" color={linkColor}>{used}</A></div>
-        <div><strong>Layer:</strong>  {data.layer}</div>
+        <div style="display: flex">
+        <div class="title">
+            <h1>{title}</h1>
+            <h2><a href={resource} target="_blank">{resource}</a></h2>
+        </div>
+        <!--<Button style="max-height: 45px" href={browseLink} target="_blank" color="light">
+            View Layer
+        </Button>-->
+        </div>
 
+
+        <div class="desc">{abstract ? abstract : "No description available" }</div>
     </div>
     
-    {#if explanations.length > 0 }
     <div class="list">
-        <div>Annotations:</div>
-        <ul class="explanation-list">
-            {#each explanations as explanation }
-            <Badge class="text-xl font-semibold" color="indigo" border>{explanation.label}</Badge>
-            {/each}
-        </ul>
+        <div class="explanation-list">
+        {#each layers as layer }
+        <a href="{layer.browseLink}">
+            <div class="layer">
+                <h1>{layer.name}</h1>
+                {#each Object.entries(layer.explanations) as [key, entries] (key)}
+                <div><span style="padding-right: .3em;">{key}:</span>
+                    {#each entries as entry, index}
+                        {#if entry.uri}
+                            <span><a style="text-decoration: underline;" href={entry.uri} target="_blank">{entry.label}</a></span>
+                        {:else}
+                            <span>{@html entry.label}</span>
+                        {/if}
+                        {#if index < entries.length - 1}<span style="padding-right: .3em;">, </span>{/if}
+                    {/each}
+                </div>
+                {/each}
+            </div>
+        </a>
+        {/each}
+        
+        </div>
     </div>
-    {/if}
 </div>
 
 <style lang>
+
+
+
 .result {
     border-bottom: 1px solid #c8c8c8;
     padding-top: 0;
@@ -54,6 +100,46 @@
     margin-top: 1.5em;
 }
 
+.layer {
+    border: 1px solid #dbdbdb;
+    background-color: #fafafa;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.layer h1 {
+    font-size: 1em;
+    margin: 0;
+    margin-bottom: 0.1em;
+    background-color: #eeeeee;
+    padding: 0.4em;
+    text-align: left;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.layer div {
+    margin: 0;
+    padding: 0.4em;
+    display: flex;
+    min-width: 300px;
+}
+
+.title h1 {
+    font-size:  1.5em;
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+}
+
+.title h2 {
+    margin: 0;
+    font-weight: 400;
+}
+
+.title {
+    flex: 1;
+    margin-bottom: 1em;
+}
 .explanation-list {
     padding: 0;
     display: flex;
