@@ -11,7 +11,7 @@
 	const databusResourcePlaceholder: string = '%DATABUS_RESOURCE%';
 	const buttonName: string = 'Create Layer';
 
-	export let data;
+	export let data : any;
 	let layerTestName = '';
 	let resourceTestName = '';
 	let layerName: string = layerTestName;
@@ -19,6 +19,12 @@
 	let layerList: any;
 
 	let errorMessage: string = '';
+	let activeLayer: any = null;
+
+	
+	function onLayerChange() {
+		activeLayer = data.props.layers.find((layer: any) => layer.name == layerName);
+	}
 
 	async function createLayer() {
 		// Get the document and see if it exists
@@ -29,7 +35,7 @@
 		}
 
 		
-		let documentMossPath = MossUtils.getDocumentUri(databusResource, layer.name, layer.format);
+		let documentMossPath = MossUtils.getDocumentUri(databusResource, layer.name, layer.formatExtension);
 		let documentUri = `/g/content/${documentMossPath}`;
 		let getResponse = await fetch(env.PUBLIC_MOSS_BASE_URL + documentUri);
 
@@ -42,19 +48,34 @@
 		const saveURL = MossUtils.getSaveRequestURL(databusResource, layerName);
 
 		console.log(saveURL);
-		
-		let format = RdfFormats.getFormatByExtension(layer.format);
-		const content = layer.template;
+		let body = "";
 
-		let body = content.replace(new RegExp(databusResourcePlaceholder, 'g'), databusResource);
+		try {
+			let templateResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/get-template?layerName=${layer.name}`);
 
-		const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', body, format.contentType);
-
-		if (response.status == 200) {
-			goto(documentUri.replace('/g/content/', '/browse/'));
+			if (templateResponse.status == 200) {
+				
+				let templateContent = await templateResponse.text();
+				body = templateContent.replace(new RegExp(databusResourcePlaceholder, 'g'), databusResource);
+			}
+		} catch(e : any) {
+			console.log(e);
 		}
+		
+		try {
+			const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', body, layer.format);
 
-		return response;
+			if (response.status == 200) {
+				goto(documentUri.replace('/g/content/', '/browse/'));
+			}
+			else {
+				let responseBody = await response.json();
+				errorMessage = responseBody.message;
+			}
+		} catch(e : any) {
+			console.log(e);
+			errorMessage = e.message;
+		}
 	}
 
 	layerList = data.props.layers.map((layer: any) => {
@@ -64,51 +85,108 @@
 		};
 	});
 
-	onMount(async () => {
-		const session = $page.data.session;
-		const user = $page.data.session?.user;
 
-	})
 </script>
 
 <div class="section">
 	<div class="settings container">
-		{#if $page.data.session?.user}
+		{#if data.props.userData?.username}
 			<h1>Create Layer</h1>
 			<div class="setting">
 				<h2>Layer Name</h2>
 				<div>
-					<Select bind:value={layerName} items={layerList} />
+					<Select bind:value={layerName} items={layerList} on:change={onLayerChange} />
 				</div>
 				<div class="explanation">The name of the layer. The admin of the MOSS instance can add more layer types.</div>
 			</div>
+			{#if activeLayer}
+				<h2>Layer Info</h2>
+				<table class="layer-info">
+					<tr>
+						<td>Resource Type</td>
+						<td>{ activeLayer.resourceType }</td>
+					</tr>
+					<tr>
+						<td>Format</td>
+						<td>{ activeLayer.format }</td>
+					</tr>
+					{#if activeLayer.hasTemplate}
+					<tr>
+						<td>Template</td>
+						<td><a target="_blank" href="{env.PUBLIC_MOSS_BASE_URL}/api/layers/get-template?layerName={activeLayer.name}">View Template</a></td>
+					</tr>
+					{/if}
+					{#if activeLayer.hasSHACL}
+					<tr>
+						<td>SHACL</td>
+						<td><a target="_blank" href="{env.PUBLIC_MOSS_BASE_URL}/api/layers/get-shacl?layerName={activeLayer.name}">View SHACL</a></td>
+					</tr>
+					{/if}
+					
+				</table>
+			{/if}
 			<div class="setting">
 				<h2>Databus Resource</h2>
 				<Input
 				bind:value={databusResource}
 				class="input"
-				placeholder={databusResourcePlaceholder}/>
+				placeholder="Databus Resource URI"/>
 				<div class="explanation">Any Databus resource that should be described by the layer.</div>
 			</div>
 
 			<GradientButton color="cyanToBlue" name={buttonName} on:click={createLayer}>{buttonName}</GradientButton>
 			{#if errorMessage}
-				{errorMessage}
+			<div class="error-box" style="margin-top: 1em">
+				{@html errorMessage}
+			</div>
 			{/if}
 		{:else}
 			<div class="sign-in">
-				<Heading tag="h3" class="mb-4">
-					<Span gradient>Login required to a create layer!</Span>
-				</Heading>
+				{#if data.props.userData}
+					<Heading tag="h3" class="mb-4">
+						<Span gradient>Specify a username in the account settings to create a layer!</Span>
+					</Heading>
+				{:else}
+					<Heading tag="h3" class="mb-4">
+						<Span gradient>Login required to a create layer!</Span>
+					</Heading>
+				{/if}
+				
 			</div>
 		{/if}
 	</div>
 </div>
 
 <style>
-	.sign-in {
-		display: flex;
-		flex-direction: column;
-		text-align: center;
-	}
+.sign-in {
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+}
+
+.layer-info {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 2em;
+}
+
+.layer-info td {
+	padding: 8px;
+	text-align: left;
+	border: 1px solid #ddd;
+}
+
+.layer-info a {
+	color:cadetblue;
+	text-decoration: underline;
+}
+
+.error-box {
+	padding: 1em 1.5em; 
+	background-color: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c6cb;
+	border-radius: 8px;
+	margin-bottom: 1em;
+}
 </style>

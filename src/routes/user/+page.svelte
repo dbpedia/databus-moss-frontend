@@ -10,10 +10,7 @@
 
     let username: string = "";
     let usernameInput: string = "";
-    let apiKeyNameInput: string = "";
     let user: any;
-    let usernameError = false;
-    let apiKeyNameError = false;
 
     async function fetchUserData() {
         let response = await MossUtils.fetchAuthorized(`${env.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, "GET");
