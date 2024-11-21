@@ -103,8 +103,12 @@
 				<h2>Layer Info</h2>
 				<table class="layer-info">
 					<tr>
-						<td>Resource Type</td>
-						<td>{ activeLayer.resourceType }</td>
+						<td>Resource Type(s)</td>
+						<td>
+							{#each activeLayer.resourceTypes as resourceType}
+								<div><a href="{resourceType}" target="_blank">{resourceType}</a></div>
+							{/each}
+						</td>
 					</tr>
 					<tr>
 						<td>Format</td>
