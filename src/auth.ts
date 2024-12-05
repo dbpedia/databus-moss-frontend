@@ -123,17 +123,23 @@ function decodeJWT(token: string | undefined): any {
 
 // Function to fetch the token endpoint URL from OIDC discovery document and cache it
 async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
-  if (tokenEndpointUrl) {
-    return tokenEndpointUrl;
-  }
 
-  const response = await fetch(`${issuer}/.well-known/openid-configuration`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch OIDC discovery document');
+  try {
+    if (tokenEndpointUrl) {
+      return tokenEndpointUrl;
+    }
+
+    const response = await fetch(`${issuer}/.well-known/openid-configuration`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch OIDC discovery document');
+    }
+    const data = await response.json();
+    tokenEndpointUrl = data.token_endpoint;
+    return tokenEndpointUrl;
+  } catch(e) {
+    console.log(e);
+    return null;
   }
-  const data = await response.json();
-  tokenEndpointUrl = data.token_endpoint;
-  return tokenEndpointUrl;
 }
 
 /**
