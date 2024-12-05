@@ -1,16 +1,16 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
-import { AUTH_OIDC_CLIENT_SECRET, AUTH_OIDC_CLIENT_ID, AUTH_OIDC_ISSUER } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { Provider } from "@auth/sveltekit/providers";
 
 let tokenEndpointUrl: string | null = null;
 
 function getProvider() : Provider {
 
-  console.log(`AUTH_OIDC_CLIENT_ID: ${AUTH_OIDC_CLIENT_ID}`);
-  console.log(`AUTH_OIDC_CLIENT_SECRET: ${AUTH_OIDC_CLIENT_SECRET != undefined ? "SECRET IS SET BUT SECRET!" : undefined}`);
-  console.log(`AUTH_OIDC_ISSUER: ${AUTH_OIDC_ISSUER}`);
+  console.log(`AUTH_OIDC_CLIENT_ID: ${env.AUTH_OIDC_CLIENT_ID}`);
+  console.log(`AUTH_OIDC_CLIENT_SECRET: ${env.AUTH_OIDC_CLIENT_SECRET != undefined ? "SECRET IS SET BUT SECRET!" : undefined}`);
+  console.log(`AUTH_OIDC_ISSUER: ${env.AUTH_OIDC_ISSUER}`);
 
-  if (!AUTH_OIDC_CLIENT_ID || !AUTH_OIDC_CLIENT_SECRET || !AUTH_OIDC_ISSUER) {
+  if (!env.AUTH_OIDC_CLIENT_ID || !env.AUTH_OIDC_CLIENT_SECRET || !env.AUTH_OIDC_ISSUER) {
     console.error("OIDC configuration is missing environment variables.");
     throw new Error("Missing OIDC environment variables");
   }
@@ -19,15 +19,16 @@ function getProvider() : Provider {
   provider.id = "oidc_provider";
   provider.name = "OIDC Provider";
   provider.type = "oidc";
-  provider.clientId = AUTH_OIDC_CLIENT_ID;
-  provider.clientSecret = AUTH_OIDC_CLIENT_SECRET;
-  provider.issuer = AUTH_OIDC_ISSUER;
-  provider.scope
+  provider.clientId = env.AUTH_OIDC_CLIENT_ID;
+  provider.clientSecret = env.AUTH_OIDC_CLIENT_SECRET;
+  provider.issuer = env.AUTH_OIDC_ISSUER;
+  provider.scope = env.AUTH_OIDC_CLIENT_SCOPE;
   return provider;
 }
 
 export const { handle, signIn, signOut  } = SvelteKitAuth({
   trustHost: true,
+  debug: env.AUTH_DEBUG == "true",
   providers: [ getProvider() ],
   secret: "EuLZ0ierX7kl53a90sF6fGU/fCdSp3TTpjKRmD8oVSY=",
   callbacks: {
