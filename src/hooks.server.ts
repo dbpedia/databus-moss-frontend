@@ -17,6 +17,7 @@ const originalFetch = fetch;
 
 // Override fetch globally
 (global as any).fetch = async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
+    console.log(url);
     const options = agent ? { ...init, agent } : init;
     return originalFetch(url, options) as any;
 };
