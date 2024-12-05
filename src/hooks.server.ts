@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import type { RequestInit, RequestInfo } from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
-const proxy = process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
+const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
 
 if (proxy) {
     console.log(`Using proxy: ${proxy}`);
