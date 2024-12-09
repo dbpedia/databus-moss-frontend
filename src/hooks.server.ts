@@ -7,7 +7,7 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
  * Modify fetch in case a HTTPS_PROXY environment variable is set
  */
 
-const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+const proxy = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
 
 if (proxy) {
     console.log(`Using proxy: ${proxy}`);
