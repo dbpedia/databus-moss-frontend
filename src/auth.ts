@@ -1,10 +1,14 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
 import { env } from "$env/dynamic/private";
 import type { Provider } from "@auth/sveltekit/providers";
+import { setupFetchProxy } from "$lib/fetch-proxy";
+
 
 let tokenEndpointUrl: string | null = null;
 
 async function getProvider() : Promise<Provider> {
+
+  setupFetchProxy();
 
   console.log(`AUTH_OIDC_CLIENT_ID: ${env.AUTH_OIDC_CLIENT_ID}`);
   console.log(`AUTH_OIDC_CLIENT_SECRET: ${env.AUTH_OIDC_CLIENT_SECRET != undefined ? "SECRET IS SET BUT SECRET!" : undefined}`);
