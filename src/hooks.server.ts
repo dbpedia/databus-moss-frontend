@@ -1,4 +1,4 @@
-export { handle } from "./auth"
+
 import fetch from 'node-fetch';
 import type { RequestInit, RequestInfo } from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -26,3 +26,4 @@ const originalFetch = fetch;
 };
 
 
+export { handle } from "./auth"
