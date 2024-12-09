@@ -166,10 +166,12 @@ async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
 async function setupOidcProvider(provider: any, discoveryUrl : string) {
 
   // Fetch the discovery document
-  const response = await fetch(discoveryUrl);
+  const response = await fetch(discoveryUrl, { redirect: "follow" });
+
   if (!response.ok) {
     throw new Error(`Failed to fetch discovery document: ${response.statusText}`);
   }
+
   const discoveryDoc = await response.json();
 
   // Ensure required fields are present in the discovery document
