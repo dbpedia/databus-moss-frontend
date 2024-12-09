@@ -55,10 +55,9 @@
 
     // Callback function when 'x' is clicked
     function removeTag(tag: { id: string; label: string }) {
-        console.log(`Tag removed: ${tag.label}`);
         
         // Remove the tag based on `id`
-        annotationTags = annotationTags.filter(t => t.id !== tag.id);
+        annotationTags = annotationTags.filter((t: any) => t.id !== tag.id);
 
         // Trigger the search input change or any other logic
         onSearchInputChanged();
@@ -189,20 +188,6 @@
                 }
             }
 
-            // result.usedName = MossUtils.uriToName(result.used[0]);
-            /*
-            result.modName = MossUtils.uriToName(result.path);
-
-            for(var explanation of explanations.docs) {
-                for(var annotationUri of result.annotation) {
-                    if(annotationUri == explanation.id) {
-
-                        explanation.idName = MossUtils.uriToName(explanation.id[0]);
-                        result.explanations.push(explanation);
-                    }
-                }
-            }
-                */
         }
 
         // Create hashes for each entry in resultMap

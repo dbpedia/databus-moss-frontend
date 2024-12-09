@@ -4,7 +4,7 @@ import type { Provider } from "@auth/sveltekit/providers";
 
 let tokenEndpointUrl: string | null = null;
 
-function getProvider() : Provider {
+async function getProvider() : Promise<Provider> {
 
   console.log(`AUTH_OIDC_CLIENT_ID: ${env.AUTH_OIDC_CLIENT_ID}`);
   console.log(`AUTH_OIDC_CLIENT_SECRET: ${env.AUTH_OIDC_CLIENT_SECRET != undefined ? "SECRET IS SET BUT SECRET!" : undefined}`);
@@ -23,13 +23,19 @@ function getProvider() : Provider {
   provider.clientSecret = env.AUTH_OIDC_CLIENT_SECRET;
   provider.issuer = env.AUTH_OIDC_ISSUER;
   provider.scope = env.AUTH_OIDC_CLIENT_SCOPE;
+
+  if(env.AUTH_OIDC_DISCOVERY_URL != null) {
+    console.log("AUTH_OIDC_DISCOVERY_URL: " + env.AUTH_OIDC_DISCOVERY_URL);
+    provider = await setupOidcProvider(provider, env.AUTH_OIDC_DISCOVERY_URL);
+  }
+  
   return provider;
 }
 
 export const { handle, signIn, signOut  } = SvelteKitAuth({
   trustHost: true,
   debug: env.AUTH_DEBUG == "true",
-  providers: [ getProvider() ],
+  providers: [ await getProvider() ],
   secret: "EuLZ0ierX7kl53a90sF6fGU/fCdSp3TTpjKRmD8oVSY=",
   callbacks: {
     async jwt({ token, account }) {
@@ -148,3 +154,76 @@ async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
     issuer: "https://auth.dbpedia.org/realms/dbpedia"
  */
   
+
+/**
+ * Fetches and sets up an OIDC provider dynamically from its discovery document.
+ *
+ * @param {string} providerId - The ID for the provider (e.g., "custom_oidc").
+ * @param {string} discoveryUrl - The URL to the provider's discovery document.
+ * @param {object} options - Additional options like clientId, clientSecret, scopes, etc.
+ * @returns {object} - The dynamically created provider configuration.
+ */
+async function setupOidcProvider(provider: any, discoveryUrl : string) {
+
+  // Fetch the discovery document
+  const response = await fetch(discoveryUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch discovery document: ${response.statusText}`);
+  }
+  const discoveryDoc = await response.json();
+
+  // Ensure required fields are present in the discovery document
+  const requiredFields = ["authorization_endpoint", "token_endpoint", "userinfo_endpoint"];
+  requiredFields.forEach((field) => {
+    if (!discoveryDoc[field]) {
+      throw new Error(`Missing ${field} in discovery document.`);
+    }
+  });
+
+  // Build the provider configuration dynamically
+  return {
+    ...provider,
+    authorization: {
+      url: new URL(discoveryDoc.authorization_endpoint),
+      params: {
+        scope: provider.scope || "openid profile email",
+      },
+    },
+    token: {
+      url: new URL(discoveryDoc.token_endpoint),
+      conform: (response: any): boolean => {
+        // Basic validation for the token response
+        return (
+          response.access_token &&
+          response.token_type &&
+          response.token_type.toLowerCase() === "bearer"
+        );
+      },
+    },
+    userinfo: {
+      url: new URL(discoveryDoc.userinfo_endpoint),
+      request: async (context: any): Promise<any> => {
+        // Fetch userinfo using the access token
+        const userResponse = await fetch(discoveryDoc.userinfo_endpoint, {
+          headers: {
+            Authorization: `Bearer ${context.tokens.accessToken}`,
+          },
+        });
+        if (!userResponse.ok) {
+          throw new Error("Failed to fetch user info.");
+        }
+       
+        return userResponse.json();
+      },
+    },
+    profile: (profile: any): Record<string, any> => {
+      // Map the user profile fields
+      return {
+        id: profile.sub,
+        name: profile.name,
+        email: profile.email,
+        image: profile.picture,
+      };
+    }
+  }
+}
