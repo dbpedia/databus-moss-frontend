@@ -25,8 +25,13 @@ async function getProvider() : Promise<Provider> {
   provider.scope = env.AUTH_OIDC_CLIENT_SCOPE;
 
   if(env.AUTH_OIDC_DISCOVERY_URL != null) {
-    console.log("AUTH_OIDC_DISCOVERY_URL: " + env.AUTH_OIDC_DISCOVERY_URL);
-    provider = await setupOidcProvider(provider, env.AUTH_OIDC_DISCOVERY_URL);
+    try {
+      console.log("AUTH_OIDC_DISCOVERY_URL: " + env.AUTH_OIDC_DISCOVERY_URL);
+      provider = await setupOidcProvider(provider, env.AUTH_OIDC_DISCOVERY_URL);
+    } catch(e) {
+      console.log("Failed to set up OIDC provider.");
+      console.log(e);
+    }
   }
   
   return provider;
