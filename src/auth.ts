@@ -45,10 +45,21 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
   trustHost: true,
   debug: env.AUTH_DEBUG == "true",
   providers: [ await getProvider() ],
+  session:  {
+    strategy: "jwt"
+  },
   secret: "EuLZ0ierX7kl53a90sF6fGU/fCdSp3TTpjKRmD8oVSY=",
   callbacks: {
     async jwt({ token, account }) {
-
+      
+      console.log("AUTH.JS JWT CALLBACK");
+      
+      console.log("========= TOKEN ============");
+      console.log(token);
+      
+      console.log("========= ACCOUNT ============");
+      console.log(account);
+      
       // Persist the OAuth refresh token to the token right after signin
       if (account?.provider === "oidc_provider") {
         
@@ -63,6 +74,15 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       return token;
     },
     async session({ session, token }) {
+      
+        
+      console.log("AUTH.JS SESSION CALLBACK");
+      
+      console.log("========= TOKEN ============");
+      console.log(token);
+      
+      console.log("========= SESSION ============");
+      console.log(session);
       
       if(token == undefined) {
         return session;
@@ -144,7 +164,15 @@ async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
       return tokenEndpointUrl;
     }
 
-    const response = await fetch(`${issuer}/.well-known/openid-configuration`);
+    let discoveryURL;
+
+    if(env.AUTH_OIDC_DISCOVERY_URL != null) {
+      discoveryURL = env.AUTH_OIDC_DISCOVERY_URL;
+    } else {
+      discoveryURL = `${issuer}/.well-known/openid-configuration`;
+    }
+
+    const response = await fetch(discoveryURL);
     if (!response.ok) {
       throw new Error('Failed to fetch OIDC discovery document');
     }
