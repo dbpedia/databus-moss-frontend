@@ -6,6 +6,8 @@ import { setupFetchProxy } from "$lib/fetch-proxy";
 
 let tokenEndpointUrl: string | null = null;
 
+let providers : any = {};
+
 async function getProvider() : Promise<Provider> {
 
   setupFetchProxy();
@@ -38,6 +40,7 @@ async function getProvider() : Promise<Provider> {
     }
   }
   
+  providers[provider.id] = provider;
   return provider;
 }
 
@@ -63,7 +66,6 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
       console.log("========= PROFILE ============");
       console.log(profile);
-      
 
       if (profile) {
 
@@ -73,6 +75,40 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
         if(token.name == undefined) {
           token.name = profile.name;
+        }
+      
+        if(account != null) {
+
+          var provider = providers[account.provider];
+
+          if(provider != null && provider.userinfo != null) {
+
+            var context = { 
+              tokens: {
+                accessToken : account.access_token
+              }
+            };
+
+            var userinfo = await provider.userinfo.request(context);
+
+            console.log("========= USER INFO ============");
+            console.log(userinfo);
+
+
+            if(userinfo != null) {
+              if(token.email == undefined) {
+                token.email = userinfo.email;
+              }
+      
+              if(token.name == undefined) {
+                token.name = userinfo.name;
+              }
+            }
+          }
+        }
+
+        if(token.name == undefined) {
+          token.name = profile.sub;
         }
       }
 
@@ -92,6 +128,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
     },
     async session({ session, token }) {
       
+      //console.log("AUTH.JS SESSION CALLBACK");
 
 /*      console.log("AUTH.JS SESSION CALLBACK");
       
@@ -181,8 +218,6 @@ function decodeJWT(token: string | undefined): any {
 // Function to fetch the token endpoint URL from OIDC discovery document and cache it
 async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
 
-  console.log(issuer);
-  
   try {
     if (tokenEndpointUrl) {
       return tokenEndpointUrl;
@@ -235,6 +270,9 @@ async function setupOidcProvider(provider: any, discoveryUrl : string) {
 
   const discoveryDoc = await response.json();
 
+  console.log(discoveryDoc);
+  
+
   // Ensure required fields are present in the discovery document
   const requiredFields = ["authorization_endpoint", "token_endpoint", "userinfo_endpoint"];
   requiredFields.forEach((field) => {
@@ -276,7 +314,8 @@ async function setupOidcProvider(provider: any, discoveryUrl : string) {
           throw new Error("Failed to fetch user info.");
         }
        
-        return userResponse.json();
+        var res = userResponse.json();
+        return res;
       },
     },
     profile: (profile: any): Record<string, any> => {
