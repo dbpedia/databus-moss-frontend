@@ -45,12 +45,10 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
   trustHost: true,
   debug: env.AUTH_DEBUG == "true",
   providers: [ await getProvider() ],
-  session:  {
-    strategy: "jwt"
-  },
   secret: "EuLZ0ierX7kl53a90sF6fGU/fCdSp3TTpjKRmD8oVSY=",
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, user, account, profile }) {
+      
       
       console.log("AUTH.JS JWT CALLBACK");
       
@@ -59,7 +57,26 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       
       console.log("========= ACCOUNT ============");
       console.log(account);
+
+      console.log("========= USER ============");
+      console.log(user);
+
+      console.log("========= PROFILE ============");
+      console.log(profile);
       
+
+      if (profile) {
+
+        if(token.email == undefined) {
+          token.email = profile.email;
+        }
+
+        if(token.name == undefined) {
+          token.name = profile.name;
+        }
+      }
+
+  
       // Persist the OAuth refresh token to the token right after signin
       if (account?.provider === "oidc_provider") {
         
@@ -75,17 +92,25 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
     },
     async session({ session, token }) {
       
-        
-      console.log("AUTH.JS SESSION CALLBACK");
+
+/*      console.log("AUTH.JS SESSION CALLBACK");
       
       console.log("========= TOKEN ============");
       console.log(token);
-      
       console.log("========= SESSION ============");
       console.log(session);
+*/
       
       if(token == undefined) {
         return session;
+      }
+
+      if(token.email) {
+        session.user = {
+          ...session.user,
+          email: token.email as string,
+          name: token.name,
+        };
       }
 
       let expiresAtTime: number = token.expiresAt as number;
@@ -105,17 +130,13 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
 async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
 
-  // console.log(refreshToken);
-  
   if (refreshToken == null) {
     return null;
   }
 
-  let provider = getProvider() as any;
+  let provider = await getProvider() as any;
   let tokenEndpointUrl = await fetchTokenEndpointUrl(provider.issuer);
 
-  // console.log(tokenEndpointUrl);
-  
   if(tokenEndpointUrl == null) {
     return null;
   }
@@ -135,6 +156,7 @@ async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
   });
 
   if (!response.ok) {
+    console.log(response);
     throw new Error('Failed to refresh access token');
   }
 
@@ -159,6 +181,8 @@ function decodeJWT(token: string | undefined): any {
 // Function to fetch the token endpoint URL from OIDC discovery document and cache it
 async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
 
+  console.log(issuer);
+  
   try {
     if (tokenEndpointUrl) {
       return tokenEndpointUrl;
