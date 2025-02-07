@@ -3,11 +3,12 @@ import { MossUtils } from '$lib/utils/moss-utils';
 import { RdfUris } from '$lib/utils/rdf-uris';
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public'
-import { noProxyFetch } from '$lib/no-proxy-fetch';
+
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url, locals }: any) {
 
+    
     const domain = url.toString();
     const segments = MossUtils.getUriSegments(url.pathname);
     
@@ -16,9 +17,10 @@ export async function load({ url, locals }: any) {
     let isDocument = false;
     let content;
     let headerInfo;
+    let endpoint = `${env.PUBLIC_MOSS_BASE_URL}${url.pathname.replace("/browse", "/file")}`
 
-    let endpoint = `${url.pathname.replace("/browse", "/file")}`
-    let response = await noProxyFetch(endpoint);
+    let response = await fetch(endpoint);
+
 
     if (response.status === 404 || response.status === 500) {
         throw error(response.status, response.statusText);
@@ -40,11 +42,11 @@ export async function load({ url, locals }: any) {
             ?s <http://dataid.dbpedia.org/ns/moss#content> <${graphURI}> . 
         }`;
 
-        var sparqlRequestURL = `/sparql?query=${encodeURIComponent(query)}`;
-        let sparqlResponse = await noProxyFetch(sparqlRequestURL, {
-            method: 'GET', 
+        var sparqlRequestURL = `${env.PUBLIC_MOSS_BASE_URL}/sparql?query=${encodeURIComponent(query)}`;
+        let sparqlResponse = await fetch(sparqlRequestURL, {
+            method: 'GET', // or 'POST', 'PUT', etc.
             headers: {
-                'Accept': 'application/json',
+                'Accept': 'application/json', // You can specify other formats as needed
             },
         });
         
