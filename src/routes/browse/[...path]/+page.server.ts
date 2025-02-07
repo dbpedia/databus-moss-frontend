@@ -3,15 +3,15 @@ import { MossUtils } from '$lib/utils/moss-utils';
 import { RdfUris } from '$lib/utils/rdf-uris';
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public'
-
+import { Agent as HttpAgent } from "http";
+import { Agent as HttpsAgent } from "https";
+import { noProxyFetch } from '$lib/no-proxy-fetch';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url, locals }: any) {
 
-    
     const domain = url.toString();
     const segments = MossUtils.getUriSegments(url.pathname);
-
     
     let folders;
     let files;
@@ -19,20 +19,9 @@ export async function load({ url, locals }: any) {
     let content;
     let headerInfo;
     let endpoint = `${env.PUBLIC_MOSS_BASE_URL}${url.pathname.replace("/browse", "/file")}`
-
-    console.log(endpoint);
-    
-    // endpoint = endpoint.replace("/browse", "/g");
-
-    //FIXME: possibly useful info -> https://github.com/sveltejs/kit/issues/3069
-    //path here contains a "#" which gets filtered out -> resulting in a 404 from moss
-    // which is then not properly return or so.
-    let response = await fetch(endpoint);
-
+    let response = await noProxyFetch(endpoint);
 
     if (response.status === 404 || response.status === 500) {
-        console.log("throwing up");
-        
         throw error(response.status, response.statusText);
     }
 
@@ -53,10 +42,10 @@ export async function load({ url, locals }: any) {
         }`;
 
         var sparqlRequestURL = `${env.PUBLIC_MOSS_BASE_URL}/sparql?query=${encodeURIComponent(query)}`;
-        let sparqlResponse = await fetch(sparqlRequestURL, {
-            method: 'GET', // or 'POST', 'PUT', etc.
+        let sparqlResponse = await noProxyFetch(sparqlRequestURL, {
+            method: 'GET', 
             headers: {
-                'Accept': 'application/json', // You can specify other formats as needed
+                'Accept': 'application/json',
             },
         });
         

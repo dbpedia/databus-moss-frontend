@@ -52,7 +52,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
   callbacks: {
     async jwt({ token, user, account, profile }) {
       
-      
+      /*
       console.log("AUTH.JS JWT CALLBACK");
       
       console.log("========= TOKEN ============");
@@ -66,6 +66,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
       console.log("========= PROFILE ============");
       console.log(profile);
+      */
 
       if (profile) {
 
@@ -91,9 +92,10 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
             var userinfo = await provider.userinfo.request(context);
 
+            /*
             console.log("========= USER INFO ============");
             console.log(userinfo);
-
+            */
 
             if(userinfo != null) {
               if(token.email == undefined) {
@@ -127,16 +129,14 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       return token;
     },
     async session({ session, token }) {
-      
-      //console.log("AUTH.JS SESSION CALLBACK");
-
-/*      console.log("AUTH.JS SESSION CALLBACK");
-      
+      /*    
+      console.log("AUTH.JS SESSION CALLBACK");
+      console.log("AUTH.JS SESSION CALLBACK");
       console.log("========= TOKEN ============");
       console.log(token);
       console.log("========= SESSION ============");
       console.log(session);
-*/
+      */
       
       if(token == undefined) {
         return session;
@@ -208,9 +208,12 @@ function decodeJWT(token: string | undefined): any {
     return null;
   }
 
-  const base64Url = token.split('.')[1]; // Get the payload part
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); // Convert Base64Url to Base64
-  const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`).join('')); // Decode Base64 to JSON
+  // Get the payload part
+  const base64Url = token.split('.')[1];
+   // Convert Base64Url to Base64
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  // Decode Base64 to JSON
+  const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`).join('')); 
   return JSON.parse(jsonPayload); // Parse JSON payload
 }
 
@@ -270,7 +273,7 @@ async function setupOidcProvider(provider: any, discoveryUrl : string) {
 
   const discoveryDoc = await response.json();
 
-  console.log(discoveryDoc);
+  // console.log(discoveryDoc);
   
 
   // Ensure required fields are present in the discovery document

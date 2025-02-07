@@ -22,7 +22,21 @@ export function setupFetchProxy() {
     const originalFetch = fetch;
   
     // Override fetch globally
-    (global as any).fetch = async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
+    (global as any).fetch = async (
+        url: RequestInfo,
+        init?: RequestInit & { noProxy?: boolean } // Custom flag
+    ): Promise<Response> => {
+        // If noProxy flag is set, remove the agent
+        if (init?.noProxy) {
+            // Get init without proxy setting
+            console.log("Server-side request WITHOUT proxy: " + url);
+            const { noProxy, ...noProxyInit } = init; 
+            return originalFetch(url, noProxyInit) as any;
+        }
+
+        
+        console.log("Server-side request WITH proxy: " + url);
+        // Otherwise, use the proxy agent
         const options = agent ? { ...init, agent } : init;
         return originalFetch(url, options) as any;
     };

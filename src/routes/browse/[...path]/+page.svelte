@@ -53,51 +53,8 @@
         return await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + requestURL, 'POST', data.content, data.contentType);
     }
 
-    async function loadGraphs(content: string) {
-        const graph = JSON.parse(content);
-        const exp = await jsonld.expand(graph, {base: baseURL});
-        const flt = await jsonld.flatten(exp);
-        return flt;
-    }
 
-    async function validateLayerHeader(content: string): Promise<boolean> {
-        let graph;
-        try {
-            const loadedGraph = await loadGraphs(content);
-            graph = loadedGraph;
-        } catch (error) {
-            validationErrorMsg = `${error}`
-            return false;
-        }
-
-        const headerGraph = JsonldUtils.getTypedGraph(graph, MossUris.MOSS_DATABUS_METADATA_LAYER);
-        if (!headerGraph) {
-            validationErrorMsg = "No layer header!";
-            return false;
-        }
-
-        const layerName = JsonldUtils.getValue(headerGraph, MossUris.MOSS_LAYER_NAME);
-        if (layerName === null) {
-            validationErrorMsg = "Layer name not defined!";
-            return false;
-        }
-
-        const path = $page.params.path;
-        const expectedLayerName = MossUtils.uriToName(path);
-
-        if (Array.isArray(layerName)) {
-            validationErrorMsg = `Multiple Layers not allowed!`;
-            return false;
-        } else {
-            if (expectedLayerName !==  layerName) {
-                validationErrorMsg = `Layer ${expectedLayerName} not found!`;
-                return false;
-            }
-        }
-        validationErrorMsg = "";
-
-        return true;
-    }
+  
 
     async function onSaveButtonClicked() {
 

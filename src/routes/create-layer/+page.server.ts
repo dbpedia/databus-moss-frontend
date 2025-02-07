@@ -1,5 +1,6 @@
 import { MossUtils } from "$lib/utils/moss-utils";
 import { env } from '$env/dynamic/public'
+import { noProxyFetch } from "$lib/no-proxy-fetch";
 
 async function fetchUserData(session : any) {
     
@@ -15,7 +16,7 @@ async function fetchUserData(session : any) {
     };
 
     // Make the actual request with the authorization header
-    let response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, {
+    let response = await noProxyFetch(`${env.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, {
         method: "GET",
         headers: headers,
     });
@@ -37,7 +38,7 @@ export async function load({ locals }: any) {
 
     try {
 
-        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/list`);
+        const response = await noProxyFetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/list`);
         const data = await response.json();
         layers = data.layers;
         
