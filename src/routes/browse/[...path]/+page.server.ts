@@ -53,6 +53,8 @@ export async function load({ url, locals }: any) {
         let result = await sparqlResponse.json();
         headerInfo = []; 
 
+        console.log(result);
+
         for(const binding of result.results.bindings) {
             if(layerUri == undefined) {
                 layerUri = binding.s.value;

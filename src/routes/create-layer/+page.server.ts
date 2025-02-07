@@ -37,7 +37,7 @@ export async function load({ locals }: any) {
 
     try {
 
-        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/list`);
+        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
         const data = await response.json();
         layers = data.layers;
         
