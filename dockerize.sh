@@ -1,1 +1,1 @@
-docker build -t dbpedia/databus-moss-client:dev .
+docker build -t dbpedia/databus-moss-frontend:dev .

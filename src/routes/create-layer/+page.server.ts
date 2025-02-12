@@ -1,4 +1,3 @@
-import { MossUtils } from "$lib/utils/moss-utils";
 import { env } from '$env/dynamic/public'
 
 async function fetchUserData(session : any) {
@@ -37,7 +36,7 @@ export async function load({ locals }: any) {
 
     try {
 
-        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
+        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/list`);
         const data = await response.json();
         layers = data.layers;
         

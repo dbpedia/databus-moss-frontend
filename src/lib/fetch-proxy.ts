@@ -1,59 +1,64 @@
-import { env } from "$env/dynamic/private"; // Assuming environment variables are here
-import { fetch as undiciFetch } from 'undici'; // Importing fetch from undici
-import { URL } from 'url';
+import { env } from "$env/dynamic/private";
+import fetch from 'node-fetch';
+import type { RequestInit, RequestInfo } from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { HttpProxyAgent } from 'http-proxy-agent';
 
-// Function to handle fetch requests with proxy support
 export function setupFetchProxy() {
     const httpsProxy = env.HTTPS_PROXY || env.https_proxy;
     const httpProxy = env.HTTP_PROXY || env.http_proxy;
     const noProxy = env.NO_PROXY || env.no_proxy;
-    const noProxyList = noProxy ? noProxy.split(',').map(domain => domain.trim().toLowerCase()) : undefined;
+
     console.log(`HTTPS_PROXY: ${httpsProxy}`);
     console.log(`HTTP_PROXY: ${httpProxy}`);
-    console.log(`NO_PROXY: ${noProxyList}`);
+    console.log(`NO_PROXY: ${noProxy}`);
 
-    if(!httpsProxy && !httpProxy) {
-        console.log(`No Proxy Specified.`);
-        return;
+    // If both HTTP and HTTPS proxies are set, prioritize HTTPS for HTTPS requests.
+    const proxy = httpsProxy || httpProxy;
+
+    if (proxy) {
+        console.log(`Using Proxy: ${proxy}`);
     }
 
-    // Check if we should bypass the proxy for certain domains
-    const shouldBypassProxy = (url: string): boolean => {
-        if (!noProxyList) return false;
-        const urlHost = new URL(url).hostname.toLowerCase();
-        return noProxyList.some(domain => urlHost.endsWith(domain));
-    };
+    // Check if the URL matches any of the domains in the NO_PROXY list
+    function shouldBypassProxy(url: string): boolean {
+        if (!noProxy) return false;
 
-    // Function to create the proxy agent
+        const noProxyList = noProxy.split(',').map(domain => domain.trim().toLowerCase());
+        const urlHost = new URL(url).hostname.toLowerCase();
+
+        // Check if the hostname matches any of the domains in NO_PROXY list
+        return noProxyList.some(domain => urlHost.endsWith(domain));
+    }
+
+    // Create the appropriate proxy agent based on the protocol (http or https)
     const getProxyAgent = (url: string) => {
         const isHttps = url.toLowerCase().startsWith('https://');
-        const proxy = isHttps ? httpsProxy : httpProxy;
-
-        if (proxy) {
-            // Configure proxy using undici options
-            return {
-                agent: {
-                    proxy: proxy
-                }
-            };
+        if (isHttps && httpsProxy) {
+            return new HttpsProxyAgent(httpsProxy);
         }
-
+        if (!isHttps && httpProxy) {
+            return new HttpProxyAgent(httpProxy);
+        }
         return undefined;
     };
 
-    // Override global fetch
-    (global as any).fetch = async (url: string, init?: any) => {
-        if (shouldBypassProxy(url)) {
+    // Define a global fetch function with proxy support
+    const originalFetch = fetch;
+
+    // Override fetch globally
+    (global as any).fetch = async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
+        if (shouldBypassProxy(url as string)) {
             console.log(`Bypassing proxy for: ${url}`);
-            return undiciFetch(url, init);
+            return originalFetch(url, init) as any;
         }
 
-        const proxyAgent = getProxyAgent(url);
-        const options = proxyAgent ? { ...init, ...proxyAgent } : init;
+        const proxyAgent = getProxyAgent(url as string);
 
-        console.log(`Fetching with proxy for: ${url}`);
-        return undiciFetch(url, options);
+        // Set the correct agent based on the request type
+        const options = proxyAgent ? { ...init, agent: proxyAgent } : init;
+        
+        console.log(`Using proxy for: ${url}`);
+        return originalFetch(url, options) as any;
     };
-
-    console.log('Global fetch has been overridden with undici fetch and proxy support.');
 }
