@@ -23,6 +23,7 @@
         <NavLi href="/">Home</NavLi>
         <NavLi href="/browse">Browse</NavLi>
         <NavLi href="/create-layer">Create Layer</NavLi>
+        <NavLi href="/admin">Admin</NavLi>
     </NavUl>
 
     <Login/>

@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { RdfFormats } from '$lib/utils/rdf-formats.js';
+	import { RdfUris } from '$lib/utils/rdf-uris';
 
 	const databusResourcePlaceholder: string = '%DATABUS_RESOURCE%';
 	const buttonName: string = 'Create Layer';
@@ -23,12 +24,15 @@
 
 	
 	function onLayerChange() {
-		activeLayer = data.props.layers.find((layer: any) => layer.name == layerName);
+		activeLayer = data.props.layers.find((layer: any) => layer.id == layerName);
+
+		console.log(activeLayer);
+		
 	}
 
 	async function createLayer() {
 		// Get the document and see if it exists
-		var layer = data.props.layers.find((layer: any) => layer.name == layerName);
+		var layer = data.props.layers.find((layer: any) => layer.id == layerName);
 
 		if(layer == undefined) {
 			return;
@@ -78,10 +82,12 @@
 		}
 	}
 
+	console.log(data.props.layers);
+	
 	layerList = data.props.layers.map((layer: any) => {
 		return {
-			value: layer.name,
-			name: layer.name
+			value: layer.id,
+			name: layer.id
 		};
 	});
 
@@ -105,14 +111,14 @@
 					<tr>
 						<td>Resource Type(s)</td>
 						<td>
-							{#each activeLayer.resourceTypes as resourceType}
+							{#each activeLayer.resourceTypes ?? [] as resourceType}
 								<div><a href="{resourceType}" target="_blank">{resourceType}</a></div>
 							{/each}
 						</td>
 					</tr>
 					<tr>
 						<td>Format</td>
-						<td>{ activeLayer.format }</td>
+						<td>{ activeLayer.formatMimeType }</td>
 					</tr>
 					{#if activeLayer.hasTemplate}
 					<tr>

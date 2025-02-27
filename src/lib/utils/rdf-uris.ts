@@ -3,6 +3,8 @@
 export class RdfUris {
 
     static JSONLD_VALUE: string = "@value";
+    static JSONLD_GRAPH: string = "@graph";
+    static JSONLD_CONTEXT: string = "@context";
     static JSONLD_TYPE: string = "@type";
     static JSONLD_ID: string = "@id";
     static NS_MOSS : string = "http://dataid.dbpedia.org/ns/moss#";
@@ -12,7 +14,9 @@ export class RdfUris {
     // MOSS
     static MOSS_EXTENDS : string = "http://dataid.dbpedia.org/ns/moss#extends";
     static MOSS_LAYER : string = "http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayer";
-    static MOSS_LAYERNAME : string = "http://dataid.dbpedia.org/ns/moss#layerName";
+    static MOSS_LAYER_TYPE : string = "http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayerType";
+    static MOSS_LAYER_NAME : string = "http://dataid.dbpedia.org/ns/moss#layerName";
+    static MOSS_MIME_TYPE : string = "http://dataid.dbpedia.org/ns/moss#mimeType";
 
     // DCT
     static DCT_PUBLISHER : string = 'http://purl.org/dc/terms/publisher';

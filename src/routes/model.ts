@@ -4,10 +4,6 @@ interface AnnotationTag {
 }
 
 
-    interface Layer {
-        uri: string;
-    }
-
     interface SearchResultLayer {
         uri: string,
         name: string,

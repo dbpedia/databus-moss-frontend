@@ -4,7 +4,7 @@ export class MossUtils {
 
     static encodedHashTag = "%23";
 
-    static uriToName(uri : string) {
+    static uriToName(uri : string) : string|null {
         if (uri == null) {
             return null;
         }

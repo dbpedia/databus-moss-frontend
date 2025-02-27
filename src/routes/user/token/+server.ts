@@ -6,7 +6,6 @@ export const GET: RequestHandler = async ({ locals }) => {
         
         const session = await locals.auth() as any;
 
-
         if (session == null || session.user == undefined) {
             return new Response(null, { status: 401, statusText: "Unauthorized" });
         }

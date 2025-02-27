@@ -1,5 +1,7 @@
 import { env } from '$env/dynamic/public'
-
+import type { Layer } from '$lib/types';
+import { MossUtils } from '$lib/utils/moss-utils';
+import { RdfUris } from '$lib/utils/rdf-uris';
 async function fetchUserData(session : any) {
     
     if (session == null || session.user == undefined) {
@@ -31,15 +33,25 @@ export async function load({ locals }: any) {
     
     const session = await locals.auth() as any;
 
-    let layers = [];
+    let layers : Layer[] = [];
     let userData : any;
 
     try {
 
-        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/list`);
+        const response = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
         const data = await response.json();
-        layers = data.layers;
         
+        let layerGraphs = data[RdfUris.JSONLD_GRAPH];
+
+        for(var layerGraph of  layerGraphs) {
+
+            layers.push({
+                id: layerGraph[RdfUris.JSONLD_ID],
+                formatMimeType: layerGraph.formatMimeType,
+                indexers: layerGraph.indexers,
+                resourceTypes: layerGraph.resourceTypes
+            });
+        }
 
     } catch(error) {
         console.error("Error fetching available layers:", error);
@@ -50,7 +62,7 @@ export async function load({ locals }: any) {
     } catch(error) {
         console.error("Error fetching user data:", error);
     }
-
+    
     return { 
         props: {    
             layers,

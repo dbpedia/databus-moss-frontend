@@ -164,7 +164,7 @@
                 }
 
                 result.uri = result.id[0];
-                result.name =  JsonldUtils.getValue(layerGraph, RdfUris.MOSS_LAYERNAME);
+                result.name =  JsonldUtils.getValue(layerGraph, RdfUris.MOSS_LAYER_NAME);
                 result.explanations = generateSearchExplanation(result, searchInput);
                 resultMap[databusResourceUri].layers.push(result);
 

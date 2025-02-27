@@ -19,6 +19,10 @@ export function setupFetchProxy() {
     if (proxy) {
         console.log(`Using Proxy: ${proxy}`);
     }
+    else {
+        console.log(`NO PROXY IN USE`);
+        return;
+    }
 
     // Check if the URL matches any of the domains in the NO_PROXY list
     function shouldBypassProxy(url: string): boolean {
