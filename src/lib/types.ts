@@ -8,3 +8,8 @@ export interface Layer {
 export interface Indexer {
     id: string;
 }
+
+export interface RdfFormatInfo {
+    extensions: string[];
+    mimeType: string;
+}

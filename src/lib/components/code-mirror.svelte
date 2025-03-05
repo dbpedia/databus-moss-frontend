@@ -3,19 +3,32 @@
     import { json, jsonParseLinter } from "@codemirror/lang-json";
     import { yaml } from "@codemirror/lang-yaml";
     import { linter } from "@codemirror/lint";
+	import type { LanguageSupport } from "@codemirror/language";
+	import type { Extension } from "@codemirror/state";
 
     export let value: string;
-    export let format: 'json' | 'turtle' | 'yaml' | 'none' = 'json'; // Default to JSON
+    export let format: string | null;
 
-    // Function to determine language and extensions based on format
-    function getLanguageAndExtensions() {
+    let lang : LanguageSupport | null;
+    let extensions : Extension[] | undefined = [];
+
+      // Use $: to make these reactive
+    $: {
+        const config = getLanguageAndExtensions(format);
+        lang = config.lang;
+        extensions = config.extensions;
+    }
+
+
+    function getLanguageAndExtensions(format : string | null) {
         switch (format) {
-            case 'json':
+            case 'application/json':
+            case 'application/ld+json':
                 return {
                     lang: json(),
                     extensions: [linter(jsonParseLinter())]
                 };
-            case 'turtle':
+            case 'text/turtle':
                 return {
                     lang: null,
                     extensions: [] // Add Turtle linter here if needed
@@ -37,9 +50,6 @@
                 };
         }
     }
-
-    // Get the current language and extensions
-    let { lang, extensions } = getLanguageAndExtensions();
 
     function onCodeChanged(e: CustomEvent<string>) {
         value = e.detail;

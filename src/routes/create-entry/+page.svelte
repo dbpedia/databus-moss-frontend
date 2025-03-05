@@ -5,72 +5,58 @@
 	import { env } from '$env/dynamic/public'
 
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
-	import { RdfFormats } from '$lib/utils/rdf-formats.js';
+	import CodeMirror from '$lib/components/code-mirror.svelte';
+	import { writable } from 'svelte/store';
 	import { RdfUris } from '$lib/utils/rdf-uris';
 
 	const databusResourcePlaceholder: string = '%DATABUS_RESOURCE%';
-	const buttonName: string = 'Create Layer';
+	const buttonName: string = 'Create Entry';
 
-	export let data : any;
 	let layerTestName = '';
 	let resourceTestName = '';
-	let layerName: string = layerTestName;
+	let layerId: string = layerTestName;
 	let databusResource: string = resourceTestName;
+	let content: string = '';
 	let layerList: any;
 
 	let errorMessage: string = '';
 	let activeLayer: any = null;
 
+	let layerFormat = writable<string|null>(null);
 	
 	function onLayerChange() {
-		activeLayer = data.props.layers.find((layer: any) => layer.id == layerName);
-
-		console.log(activeLayer);
-		
+		activeLayer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
+		layerFormat.set(activeLayer?.formatMimeType);
 	}
 
 	async function createLayer() {
 		// Get the document and see if it exists
-		var layer = data.props.layers.find((layer: any) => layer.id == layerName);
+		var layer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
 
 		if(layer == undefined) {
 			return;
 		}
 
-		
-		let documentMossPath = MossUtils.getDocumentUri(databusResource, layer.name, layer.formatExtension);
-		let documentUri = `/g/content/${documentMossPath}`;
-		let getResponse = await fetch(env.PUBLIC_MOSS_BASE_URL + documentUri);
+		let layerURI = MossUtils.getLayerURI(env.PUBLIC_MOSS_BASE_URL, databusResource, layer[RdfUris.JSONLD_ID]);
+		let getResponse = await fetch(layerURI);
 
 		if (getResponse.status == 200) {
-			errorMessage = `Layer already exists. (${documentUri})`;
+			errorMessage = `Layer already exists. (${layerURI})`;
 			return;
 		}
 
 		errorMessage = '';
-		const saveURL = MossUtils.getSaveRequestURL(databusResource, layerName);
-
-		console.log(saveURL);
-		let body = "";
-
-		try {
-			let templateResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/get-template?layerName=${layer.name}`);
-
-			if (templateResponse.status == 200) {
-				
-				let templateContent = await templateResponse.text();
-				body = templateContent.replace(new RegExp(databusResourcePlaceholder, 'g'), databusResource);
-			}
-		} catch(e : any) {
-			console.log(e);
-		}
+		
 		
 		try {
-			const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', body, layer.format);
+			const saveURL = MossUtils.getSaveRequestURL(databusResource, layerId);
+			const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', content, layer.formatMimeType);
 
 			if (response.status == 200) {
-				goto(documentUri.replace('/g/content/', '/browse/'));
+				var responseData = await response.json();
+
+				console.log(responseData);
+				 goto(`/browse/${responseData.path}`);
 			}
 			else {
 				let responseBody = await response.json();
@@ -81,13 +67,11 @@
 			errorMessage = e.message;
 		}
 	}
-
-	console.log(data.props.layers);
 	
-	layerList = data.props.layers.map((layer: any) => {
+	layerList = $page.data.layers[RdfUris.JSONLD_GRAPH].map((layer: any) => {
 		return {
-			value: layer.id,
-			name: layer.id
+			value: layer[RdfUris.JSONLD_ID],
+			name: layer[RdfUris.JSONLD_ID]
 		};
 	});
 
@@ -96,18 +80,18 @@
 
 <div class="section">
 	<div class="settings container">
-		{#if data.props.userData?.username}
-			<h1>Create Layer</h1>
+		{#if $page.data.userData}
+			<h1>Create Entry</h1>
 			<div class="setting">
-				<h2>Layer Name</h2>
+				<h2>Layer Type</h2>
 				<div>
-					<Select bind:value={layerName} items={layerList} on:change={onLayerChange} />
+					<Select bind:value={layerId} items={layerList} on:change={onLayerChange} />
 				</div>
 				<div class="explanation">The name of the layer. The admin of the MOSS instance can add more layer types.</div>
 			</div>
 			{#if activeLayer}
-				<h2>Layer Info</h2>
 				<table class="layer-info">
+					<!--
 					<tr>
 						<td>Resource Type(s)</td>
 						<td>
@@ -115,7 +99,7 @@
 								<div><a href="{resourceType}" target="_blank">{resourceType}</a></div>
 							{/each}
 						</td>
-					</tr>
+					</tr>-->
 					<tr>
 						<td>Format</td>
 						<td>{ activeLayer.formatMimeType }</td>
@@ -144,6 +128,12 @@
 				<div class="explanation">Any Databus resource that should be described by the layer.</div>
 			</div>
 
+			<div class="setting">
+				<h2>Content</h2>
+                <CodeMirror format={$layerFormat}  bind:value={content} />
+			</div>
+
+
 			<GradientButton color="cyanToBlue" name={buttonName} on:click={createLayer}>{buttonName}</GradientButton>
 			{#if errorMessage}
 			<div class="error-box" style="margin-top: 1em">
@@ -152,13 +142,13 @@
 			{/if}
 		{:else}
 			<div class="sign-in">
-				{#if data.props.userData}
+				{#if !$page.data.userData}
 					<Heading tag="h3" class="mb-4">
 						<Span gradient>Specify a username in the account settings to create a layer!</Span>
 					</Heading>
 				{:else}
 					<Heading tag="h3" class="mb-4">
-						<Span gradient>Login required to a create layer!</Span>
+						<Span gradient>Login required to a create metadata!</Span>
 					</Heading>
 				{/if}
 				

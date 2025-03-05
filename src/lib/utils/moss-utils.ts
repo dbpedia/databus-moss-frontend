@@ -1,3 +1,4 @@
+import { env } from "$env/dynamic/public";
 
 export class MossUtils {
 
@@ -55,6 +56,48 @@ export class MossUtils {
         return extension ? extension : "";
     }
 
+    static getEntryURIFromBrowsePath(baseUrl: string, browsePath: string) {
+        // Remove the static part of the browse path
+        const prefix = '/browse/';
+
+        if (!browsePath.startsWith(prefix)) {
+            throw new Error("Invalid browse path");
+        }
+
+        // Extract the relevant part of the browse path
+        const relevantPart = browsePath.substring(prefix.length); // Get the part after '/browse/'
+        
+        // Remove the file extension (if any)
+        const formatExtensionIndex = relevantPart.lastIndexOf('.');
+        const layerURI = formatExtensionIndex !== -1 ? relevantPart.substring(0, formatExtensionIndex) : relevantPart;
+        return `${baseUrl}/res/${layerURI}`;
+    }
+
+    static getLayerName(layerId : string) : string {
+        const parts = layerId.split(':');
+        return parts.length > 1 ? parts[1] : layerId;
+    }
+
+    static getLayerURI(baseUrl: string, resource: string, layerId: string): string {
+        const layerName = MossUtils.getLayerName(layerId);
+        const databusResourceURIFragments = MossUtils.getMossDocumentUriFragments(resource);
+        return `${baseUrl}/res/${databusResourceURIFragments}/${layerName}`;
+      }
+    
+      static getMossDocumentUriFragments(resourceURI: string): string {
+        // Replace # with its encoded equivalent
+        resourceURI = resourceURI.replace("#", "%23");
+    
+        try {
+          const resourceURL = new URL(resourceURI);
+          const host = resourceURL.host;
+          const path = resourceURL.pathname;
+          return `${host}${path}`;
+        } catch (error) {
+          throw new Error(`Invalid URL: ${resourceURI}`);
+        }
+      }
+
     static getDocumentUri(databusResource : string, layerName : string, format : string): string {
         const reMultiSlash: RegExp = /\/\/+/g;
         const reTrailingSlash: RegExp = /\/+$/g;
@@ -96,15 +139,6 @@ export class MossUtils {
 	}
 
 
-	static getLayerName(uri: string) {
-        let result = uri.substring(uri.lastIndexOf('/') + 1);
-
-        if (result.includes('.')) {
-            result = result.substring(0, result.lastIndexOf('.'));
-        }
-
-        return result;
-	}
 
     static getSaveRequestURL(resource: string, layerName: string): string {
         resource = resource.replaceAll("#", MossUtils.encodedHashTag);

@@ -30,28 +30,24 @@ async function hasAdminRole(accessToken : any) {
 }
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals }: any) {	
+export async function load({ locals, parent }: any) {	
     
-    const session = await locals.auth() as any;
-    if (session == null || session.user == undefined) {
+    const parentData = await parent();
+
+    if(parentData == null || !parentData.userData.isAdmin) {
+        
         return null;
     }
     
-    if(!hasAdminRole(session.accessToken)) {
-        return null;
-    }
-
-
     const layerListResponse = await fetch(`${ENV.PUBLIC_MOSS_BASE_URL}/api/layers`);
     const layerData = await layerListResponse.json();
 
     const indexerListResponse = await fetch(`${ENV.PUBLIC_MOSS_BASE_URL}/api/indexers`);
     const indexerData = await indexerListResponse.json();
 
-    console.log(JSON.stringify(indexerData, null, 3));
     
     return {  
-        isAdmin: true,
+        ...parentData,
         layers: layerData,
         indexers: indexerData
     }

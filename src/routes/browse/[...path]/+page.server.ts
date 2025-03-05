@@ -9,6 +9,8 @@ import { env } from '$env/dynamic/public'
 export async function load({ url, locals }: any) {
 
     
+    
+    
     const domain = url.toString();
     const segments = MossUtils.getUriSegments(url.pathname);
     
@@ -27,19 +29,25 @@ export async function load({ url, locals }: any) {
     }
 
     let contentType = response.headers.get("Content-Type");
-    let layerUri = undefined;
+    let extensionURI = null;
+
+    let entryData : any = {};
+    let layerData: any = {};
 
     if(contentType != "application/json") {
-        isDocument = true;
+
         content = await response.text();
 
+        isDocument = true;
+        entryData.uri = MossUtils.getEntryURIFromBrowsePath(env.PUBLIC_MOSS_BASE_URL, url.pathname);
+
+        console.log(entryData.uri);
+        
         // Fetch layer info
-        var graphURI = env.PUBLIC_MOSS_BASE_URL + url.pathname.replace("/browse", "/g/content");
+        // var graphURI = env.PUBLIC_MOSS_BASE_URL + url.pathname.replace("/browse", "/g/content");
        
-        var query = `SELECT ?s ?p ?o WHERE {
-            ?s ?p ?o .
-            ?s a <http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayer> .
-            ?s <http://dataid.dbpedia.org/ns/moss#content> <${graphURI}> . 
+        var query = `SELECT ?p ?o WHERE {
+            <${entryData.uri}> ?p ?o .
         }`;
 
         var sparqlRequestURL = `${env.PUBLIC_MOSS_BASE_URL}/sparql?query=${encodeURIComponent(query)}`;
@@ -53,25 +61,34 @@ export async function load({ url, locals }: any) {
         let result = await sparqlResponse.json();
         headerInfo = []; 
 
-        console.log(result);
-
         for(const binding of result.results.bindings) {
-            if(layerUri == undefined) {
-                layerUri = binding.s.value;
 
-                headerInfo.push({
-                    key: "id",
-                    value: layerUri,
-                    type: "uri"
-                });
+            if(binding.p.value == RdfUris.MOSS_INSTANCE_OF) {
+                entryData.layerURI = binding.o.value;
+            }
+
+            if(binding.p.value == RdfUris.MOSS_EXTENDS) {
+                entryData.databusResourceURI = binding.o.value;
             }
 
             headerInfo.push({
                 key : RdfUris.compact(binding.p.value),
                 value: binding.o.value,
                 type: binding.o.type
-            })
+            });
         }
+
+        console.log(entryData.layerURI);
+        
+
+        try {
+            layerData = await(await fetch(entryData.layerURI)).json();
+        }
+        catch(e) {
+            console.log("ERROR LOADING LAYER DATA");
+            
+        }
+        
 
 
     } else {
@@ -97,7 +114,8 @@ export async function load({ url, locals }: any) {
         contentType: contentType,
         token: session?.accessToken,
         props: {
-            layerUri: layerUri,
+            extensionData: entryData,
+            layerData: layerData,
             segments,
             domain,
             isDocument,

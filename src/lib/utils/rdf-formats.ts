@@ -1,20 +1,25 @@
+import type { RdfFormatInfo } from "$lib/types";
 
 
 export class RdfFormats {
 
-    static JSONLD: any = { 
-        "extensions" : [ "jsonld" ],
-        "contentType" : "application/ld+json"
+    static JSONLD: RdfFormatInfo = { 
+        extensions : [ "jsonld" ],
+        mimeType : "application/ld+json"
     };
 
-    static TURTLE: any = {
-        "extensions" : [ "ttl" ],
-        "contentType" : "text/turtle"
+    static TURTLE: RdfFormatInfo = {
+        extensions : [ "ttl" ],
+        mimeType : "text/turtle"
     }
 
-    
-	static getFormatByExtension(extension: string) {
+	static getFormatByExtension(extension: string) : RdfFormatInfo | undefined {
         const formats = [ RdfFormats.JSONLD, RdfFormats.TURTLE ];
         return formats.find(format => format.extensions.includes(extension));
+    }
+
+    static getFormatByMimeType(mimeType: string) : RdfFormatInfo | undefined  {
+        const formats = [ RdfFormats.JSONLD, RdfFormats.TURTLE ];
+        return formats.find(format => format.mimeType === mimeType);
     }
 }

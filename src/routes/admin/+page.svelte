@@ -56,10 +56,15 @@
         window.location.hash = "indexers-edit";
     }
 
+    function onCreateIndexer() {
+        indexerForm = { id: '' };;
+        window.location.hash = "indexers-edit";
+    }
+
     async function sendDeleteRequest() {
 
         if(activeLayer == null || activeLayer !== layerToDelete) {
-            cancelForm();
+            cancelLayerForm();
             return;
         }
 
@@ -68,7 +73,7 @@
         if (!response.ok) {
             const error = await response.json();
             console.error("Error:", error);
-            cancelForm();
+            cancelLayerForm();
             return;
         }
 
@@ -76,7 +81,7 @@
         let layerResponse = await layerListResponse.json();
         layers.set(layerResponse);
 
-        cancelForm();
+        cancelLayerForm();
     }
 
     async function deleteLayer(event: CustomEvent<string>) {
@@ -133,10 +138,10 @@
 
        
 
-        cancelForm();
+        cancelLayerForm();
     }
 
-    async function cancelForm() {
+    async function cancelLayerForm() {
 
         const layerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
         let layerResponse = await layerListResponse.json();
@@ -153,7 +158,7 @@
 <div class="section">
     <div class="container">
 
-        {#if $page.data.isAdmin}
+        {#if $page.data.userData.isAdmin}
         <h1>MOSS Admin Settings</h1>
 
         <div class="columns">
@@ -164,9 +169,9 @@
                 <a class="sidebar-link" class:active={$activeTab.startsWith("indexers")} href="#indexers">
                     Indexers
                 </a>
-                <a class="sidebar-link" class:active={$activeTab.startsWith("shapes")} href="#shapes">
+                <!--a class="sidebar-link" class:active={$activeTab.startsWith("shapes")} href="#shapes">
                     Shapes
-                </a>
+                </a>-->
             </div>
             <div class="column settings">
                
@@ -176,7 +181,7 @@
                 {/if}
                 
                 {#if $activeTab === "layers-create"}
-                    <LayerForm form={layerForm} {isEditing} on:cancel={cancelForm} />
+                    <LayerForm form={layerForm} {isEditing} on:cancel={cancelLayerForm} />
                 {/if}
 
                 {#if $activeTab === "layers-delete"}
@@ -184,22 +189,22 @@
                         <p>Delete {activeLayer} </p>
                         <input type="text" bind:value={layerToDelete} placeholder="Retype layer name..." required />
                         <button type="submit">Delete</button>
-                        <button type="button" on:click={cancelForm}>Cancel</button>
+                        <button type="button" on:click={cancelLayerForm}>Cancel</button>
                     </form>
                 {/if}
                 
                 {#if $activeTab === "layers-edit"}
-                    <LayerForm form={layerForm} {isEditing} on:submit={submitForm} on:cancel={cancelForm} />
+                    <LayerForm form={layerForm} {isEditing} on:submit={submitForm} on:cancel={cancelLayerForm} />
                 {/if}
 
                 {#if $activeTab === "indexers"}
                     <h2>Indexers</h2>
-                    <IndexerTable on:edit={onEditIndexer} />
+                    <IndexerTable on:edit={onEditIndexer} on:create={onCreateIndexer} />
                 {/if}
 
                 
                 {#if $activeTab === "indexers-edit"}
-                    <IndexerForm form={layerForm} {isEditing}  />
+                    <IndexerForm form={indexerForm}  />
                 {/if}
                 <!--
                 <div class="setting">
@@ -217,29 +222,11 @@
 </div>
 
 <style>
-    .set-user-form {
-        display: flex;
-    }
-
+   
     h2 {
         font-size: 1.3em;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1em;
-    }
-
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #f4f4f4;
-    }
 
     button {
         padding: .5em 1em;
@@ -249,5 +236,8 @@
         margin-right: 2px;
         cursor: pointer;
     }
+
+    
+
 </style>
 

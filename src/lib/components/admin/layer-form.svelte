@@ -159,6 +159,9 @@
             <button type="button" on:click={addIndexer}>Add Indexer</button>
         </div>
 
+        
+        <!--
+     
         <h3>Resource Types</h3>
 
         <table>
@@ -179,7 +182,6 @@
         </table>
 
 
-     
         <div class="resource-type-input">
             <select bind:value={selectedResourceType}>
                 <option value="" disabled selected>Select a resource type</option>
@@ -188,10 +190,12 @@
                 {/each}
             </select>
             <button type="button" on:click={addResourceType}>Add Resource Type</button>
-        </div>
+        </div>-->
 
-        <button type="submit">{isEditing ? 'Update' : 'Create'}</button>
-        <button type="button" on:click={cancelForm}>Cancel</button>
+        <div style="margin-top: 1em">
+            <button type="submit">{isEditing ? 'Update' : 'Create'}</button>
+            <button type="button" on:click={cancelForm}>Cancel</button>
+        </div>
     </form>
 </div>
 

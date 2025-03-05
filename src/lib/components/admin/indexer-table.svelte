@@ -1,33 +1,45 @@
 <script lang="ts">
     import type { Indexer } from '$lib/types';
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
 	import { JsonldUtils } from '$lib/utils/jsonld-utils';
     import jsonld from 'jsonld';
 	import { RdfUris } from '$lib/utils/rdf-uris';
     import { writable } from 'svelte/store';
     import { page } from "$app/stores"
+	import { env } from '$env/dynamic/public';
 
-    
-    let indexerList : Indexer[] = [];
+    let indexerStore = writable<Indexer[]>([]);
 
-    for(let item of $page.data.indexers[RdfUris.JSONLD_GRAPH]) {
-        indexerList.push({
-            id: item[RdfUris.JSONLD_ID]
-        });
-    }
+    onMount(async () => {
+        let indexers = [];
+        const indexerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/indexers`);
+        const indexerData = await indexerListResponse.json();
 
-    let indexers = writable<Indexer[]>(indexerList);
+        for(let item of indexerData[RdfUris.JSONLD_GRAPH]) {
+            indexers.push({
+                id: item[RdfUris.JSONLD_ID]
+            });
+        }
+
+        indexerStore.set(indexers);
+    });
 
     const dispatch = createEventDispatcher();
 
-    function editLayer(indexer: Indexer) {
+    function editIndexer(indexer: Indexer) {
         dispatch('edit', indexer);
     }
+
+    function createIndexer() {
+        dispatch('create');
+    }
+
 
 
     function deleteLayer(id: string) {
         
-    }
+    } 
+    
 
     
 </script>
@@ -40,11 +52,11 @@
         </tr>
     </thead>
     <tbody>
-        {#each $indexers as indexer}
+        {#each $indexerStore as indexer}
             <tr>
                 <td>{indexer.id}</td>
                 <td>
-                    <button on:click={() => editLayer(indexer)}>Edit</button>
+                    <button on:click={() => editIndexer(indexer)}>Edit</button>
                     <button on:click={() => deleteLayer(indexer.id)}>Delete</button>
                 </td>
             </tr>
@@ -52,7 +64,7 @@
     </tbody>
 </table>
 
-<button on:click={() => dispatch('create')}>Create New Indexer</button>
+<button on:click={createIndexer}>Create New Indexer</button>
 
 <style>
     table {

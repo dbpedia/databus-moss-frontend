@@ -7,6 +7,7 @@
         ArrowLeftToBracketOutline
     } from "flowbite-svelte-icons";
 
+
     // Function to handle sign-in manually
     async function handleSignIn() {
         try {
@@ -27,11 +28,11 @@
 </script>
 
 <div style="display: flex; align-items: center">
-    {#if $page.data.session}
+    {#if $page.data.userData}
         <div style="margin-right: 1em">
             Logged in as 
             <a class="user underline" href="/user">
-                {$page.data.session.user?.name ?? "User"}
+                {$page.data.userData.username ?? "User"}
             </a>
         </div>
         <GradientButton outline color="cyanToBlue" on:click={handleSignOut}>

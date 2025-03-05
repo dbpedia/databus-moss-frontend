@@ -29,7 +29,6 @@
 	export let data: any;
 
     let buttonName = writable("Save Document");
-    let baseURL: string;
     let validationErrorMsg = "";
     let displayFeedback = writable(false);
     let displaySave = writable(false);
@@ -43,17 +42,21 @@
     $: backLink = MossUtils.createListGroupNavigationItems([".."], $page.url.pathname);
 
     export async function saveDocument(): Promise<Response> {
+        
+        let layerData : any = $page.data.props.layerData;
+        let layerId = layerData[RdfUris.JSONLD_ID];
 
+        let extensionData: any = $page.data.props.extensionData;
+        const requestURL = MossUtils.getSaveRequestURL(extensionData.databusResourceURI, layerId);
 
-        const currentURI = $page.params.path;
-        const layerName = MossUtils.getLayerName(currentURI);
-        const resourceURI = MossUtils.getResourceURI($page.data.props.layerUri);
+        // Prune the last newline if it exists
+        let content = data.content;
+        while (content.endsWith('\n') || content.endsWith('\r')) {
+            content = content.slice(0, -1);  // Remove the last character (newline)
+        }
 
-        const requestURL = MossUtils.getSaveRequestURL(resourceURI, layerName);
-        return await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + requestURL, 'POST', data.content, data.contentType);
+        return await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + requestURL, 'POST', content, data.contentType);
     }
-
-
   
 
     async function onSaveButtonClicked() {
@@ -178,7 +181,7 @@
                 <div class="error-box">{error}</div>
             {/each}
             <div class="code-mirror-container">
-                <CodeMirror bind:value={data.content} />
+                <CodeMirror format={null} bind:value={data.content} />
             </div>
         </div>
     {/if}

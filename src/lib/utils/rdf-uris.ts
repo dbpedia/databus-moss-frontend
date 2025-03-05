@@ -13,10 +13,12 @@ export class RdfUris {
 
     // MOSS
     static MOSS_EXTENDS : string = "http://dataid.dbpedia.org/ns/moss#extends";
-    static MOSS_LAYER : string = "http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayer";
-    static MOSS_LAYER_TYPE : string = "http://dataid.dbpedia.org/ns/moss#DatabusMetadataLayerType";
+    static MOSS_INSTANCE_OF : string = "http://dataid.dbpedia.org/ns/moss#instanceOf";
+    static MOSS_ENTRY : string = "http://dataid.dbpedia.org/ns/moss#MetadataEntry";
+    static MOSS_LAYER : string = "http://dataid.dbpedia.org/ns/moss#MetadataLayer";
     static MOSS_LAYER_NAME : string = "http://dataid.dbpedia.org/ns/moss#layerName";
     static MOSS_MIME_TYPE : string = "http://dataid.dbpedia.org/ns/moss#mimeType";
+    static MOSS_LAYER_PROPERTY : string = "http://dataid.dbpedia.org/ns/moss#layer";
 
     // DCT
     static DCT_PUBLISHER : string = 'http://purl.org/dc/terms/publisher';
@@ -36,6 +38,9 @@ export class RdfUris {
     static DCAT_DOWNLOAD_URL : string = 'http://www.w3.org/ns/dcat#downloadURL';
     static DCAT_BYTESIZE : string = 'http://www.w3.org/ns/dcat#byteSize';
     static DCAT_DISTRIBUTION : string = 'http://www.w3.org/ns/dcat#distribution';
+
+    // RDF
+    static RDF_TYPE : string = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 
     static compact(uri : string) : string {
         uri = uri.replace(this.NS_MOSS, "moss:");

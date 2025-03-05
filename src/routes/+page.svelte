@@ -132,7 +132,7 @@
                 });
 
                 let layerGraphs = await jsonld.expand(await response.json());
-                let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_LAYER);
+                let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_ENTRY);
                 var databusResourceUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_EXTENDS);
 
                 if(resultMap[databusResourceUri] == undefined) {

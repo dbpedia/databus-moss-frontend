@@ -33,7 +33,7 @@
                 layerList.push({
                     id: item[RdfUris.JSONLD_ID],
                     formatMimeType: item.formatMimeType,
-                    indexers: item.indexers?.map((indexer : any) => indexer.replace(/^indexer:/, '')) || [],
+                    indexers: item.indexers ?? [],
                     resourceTypes: item.resourceTypes ?? []
                 });
             }
