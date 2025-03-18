@@ -19,6 +19,8 @@ export class RdfUris {
     static MOSS_LAYER_NAME : string = "http://dataid.dbpedia.org/ns/moss#layerName";
     static MOSS_MIME_TYPE : string = "http://dataid.dbpedia.org/ns/moss#mimeType";
     static MOSS_LAYER_PROPERTY : string = "http://dataid.dbpedia.org/ns/moss#layer";
+    static MOSS_CONTENT : string = "http://dataid.dbpedia.org/ns/moss#content";
+    
 
     // DCT
     static DCT_PUBLISHER : string = 'http://purl.org/dc/terms/publisher';

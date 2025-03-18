@@ -1,24 +1,34 @@
 <script lang="ts">
-    import { createEventDispatcher, onMount } from 'svelte';
-    import type { Indexer, Layer } from '$lib/types';
+    import { onMount } from 'svelte';
+    import type { Indexer } from '$lib/types';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import { env } from '$env/dynamic/public';
 	import CodeMirror from '../code-mirror.svelte';
-    import yaml from 'js-yaml';
-    import { writable } from 'svelte/store';
+    // @ts-ignore
+    import  yaml from 'js-yaml';
+	import { page } from '$app/stores';
+    import { writable, type Writable } from 'svelte/store';
+	import { RdfUris } from '$lib/utils/rdf-uris';
+	import Index from '../../../routes/index.svelte';
 
-    export let form: Indexer = { 
+    let form: Indexer = { 
         id: '', 
+        layers: []
     };
 
-    
+    let isEditing : Writable<boolean> = writable<boolean>(false);
     let testResultStore = writable<any[]>([]);
 
     let configInput : string = '';
     let indexerNameInput : string = '';
     let testEntryURI : string = '';
 
-    let isEditing = form.id !== '';
+    let availableLayers : string[] = [];
+    let selectedLayer = '';
+
+    for(let item of $page.data.layers[RdfUris.JSONLD_GRAPH]) {
+        availableLayers.push(item[RdfUris.JSONLD_ID]);
+    }
 
     async function fetchConfiguration(id : string) {
         if (!id) return;
@@ -35,14 +45,29 @@
         configInput = await response.text();
     }
 
-    onMount(() => {
-        if (isEditing) {
+    onMount(async () => {
+       
+
+        const params = new URLSearchParams(window.location.hash.split('?')[1]);
+        const indexerId : string | null = params.get("id");
+
+        if (indexerId) {
+            form.id = indexerId;
+            isEditing.set(true);
+        } else {
+            isEditing.set(false);
+        }
+
+        if (indexerId) {
+            let indexerName = MossUtils.getResourceNameFromId(indexerId);
+            const indexerDataResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/indexers/${indexerName}`);
+            const indexerData = await indexerDataResponse.json();
+
+            form.layers = indexerData.layers;
             fetchConfiguration(form.id);
         }
     });
 
-
-    const dispatch = createEventDispatcher();
 
     async function executeQuery(endpoint: string, field: any) : Promise<any[]> {
 
@@ -111,8 +136,6 @@
             console.error("Error parsing YAML:", error);
         }
 
-        console.log(results);
-        
         testResultStore.set(results);
     }
 
@@ -163,13 +186,28 @@
 
     async function submitForm() {
 
-        if(isEditing) {
+        if($isEditing) {
             await updateIndexer(form);
         } else {
             await createIndexer(form);
         }
 
         cancelForm();
+    }
+
+    function addLayer() {
+        if(form.layers == null) {
+            form.layers = [];
+        }
+        // Only add if the selected indexer is valid and not already in the list
+        if (selectedLayer && !form.layers.includes(selectedLayer)) {
+            form.layers = [...form.layers, selectedLayer]; // Create a new array to trigger reactivity
+            selectedLayer = ''; // Reset selection
+        }
+    }
+
+    function removeLayer(index: number) {
+        form.layers = form.layers.filter((_, i) => i !== index); // Create a new array to trigger reactivity
     }
 
     function cancelForm() {
@@ -179,52 +217,81 @@
 </script>
 
 <div>
-    <h2>{isEditing ? 'Edit Layer' : 'Add Layer'}</h2>
-    <form on:submit|preventDefault={submitForm}>
+    <h2>{$isEditing ? 'Edit Indexer' : 'Add Indexer'}</h2>
+    <form on:submit|preventDefault={submitForm} style="margin-bottom: 3em;">
         
-        {#if isEditing}
+        {#if $isEditing}
         <h3>Id</h3>
-        <input disabled type="text" bind:value={form.id} placeholder="Layer Name" required />
+        <input disabled type="text" bind:value={form.id} placeholder="Indexer Name" required />
         {/if}
 
-        {#if !isEditing}
+        {#if !$isEditing}
         <h3>Name</h3>
-        <input type="text" bind:value={indexerNameInput} placeholder="Layer Name" required />
+        <input type="text" bind:value={indexerNameInput} placeholder="Indexer Name" required />
         {/if}
+
+        <h3>Layers</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {#each form.layers ?? [] as layer, i}
+                    <tr>
+                        <td>{layer}</td>
+                        <td><button type="button" on:click={() => removeLayer(i)}>Remove</button></td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+
+        <div class="indexer-input">
+            <select bind:value={selectedLayer}>
+                <option value="" disabled selected>Select a layer</option>
+                {#each availableLayers as availableLayer}
+                    <option value={availableLayer}>{availableLayer}</option>
+                {/each}
+            </select>
+            <button type="button" on:click={addLayer}>Add Layer</button>
+        </div>
+
         <h3>Configuration</h3>
         <CodeMirror format='yaml' bind:value={configInput} />
 
         <div style="margin-top: 1em">
-            <button type="submit">{isEditing ? 'Update' : 'Create'}</button>
+            <button type="submit">{$isEditing ? 'Update' : 'Create'}</button>
             <button type="button" on:click={cancelForm}>Cancel</button>
         </div>
     </form>
 
-    <form on:submit|preventDefault={runTest}>
-        <h3>Test</h3>
-        <input type="text" bind:value={testEntryURI} placeholder="Entry URI for testing" required />
-        <div style="margin-top: 1em">
+    <div style="margin-bottom: 5em;">
+        <form on:submit|preventDefault={runTest}>
+            <h3>Test</h3>
+            <input type="text" bind:value={testEntryURI} placeholder="Entry URI for testing" required />
             <button type="submit">Send Test Queries</button>
-        </div>
-    </form>
+        </form>
 
-    <table style="margin-top: 1em">
-        <thead>
-            <tr>
-                <th>Document</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each $testResultStore as pair}
+        <table style="margin-top: 1em">
+            <thead>
                 <tr>
-                    <td>{pair.document}</td>
-                    <td>{pair.value}</td>
+                    <th>Document</th>
+                    <th>Value</th>
                 </tr>
-            {/each}
-        </tbody>
-    </table>
-
+            </thead>
+            <tbody>
+                {#each $testResultStore as pair}
+                    <tr>
+                        <td>{pair.document}</td>
+                        <td>{pair.value}</td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+    </div>
         
 </div>
 

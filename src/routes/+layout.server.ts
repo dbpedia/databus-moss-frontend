@@ -55,19 +55,20 @@ async function hasAdminRole(accessToken : any) {
 
 export const load: LayoutServerLoad = async (event) => {
 
-  const session = await event.locals.auth() as any;
-  let userData = null;
+    let userData = null;
 
-  try {
-      userData = await fetchUserData(session);
-  } catch(error) {
-      console.error("Error fetching user data:", error);
-  }
+    try {
+        const session = await event.locals.auth() as any;
+        userData = await fetchUserData(session);
 
-  if(userData != null) {
-    userData.isAdmin = await hasAdminRole(session.accessToken);
-  }
-  
+        if(userData != null) {
+            userData.isAdmin = await hasAdminRole(session.accessToken);
+        }
+
+    } catch(error) {
+        console.error("Error fetching user data:", error);
+    }
+
   return {
     userData: userData
   };

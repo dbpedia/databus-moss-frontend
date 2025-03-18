@@ -1,60 +1,54 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
     import type { Indexer, Layer } from '$lib/types';
-	import { RdfUris } from '$lib/utils/rdf-uris';
-	import { page } from '$app/stores';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import { env } from '$env/dynamic/public';
+	import { writable, type Writable } from 'svelte/store';
+	import CodeMirror from '../code-mirror.svelte';
 
-    export let form: Layer = { 
-        id: '', 
-        formatMimeType: '', 
-        indexers: [], 
-        resourceTypes: [] 
-    };
-
-    export let isEditing = false;
-
+    let isEditing : Writable<boolean> = writable<boolean>(false);
     const dispatch = createEventDispatcher();
 
-    // Fixed values for dropdowns
-    let availableIndexers : string[] = [];
+    let form: Layer = { 
+        id: '', 
+        formatMimeType: '', 
+        resourceTypes: [],
+    };
 
-
-    for(let item of $page.data.indexers[RdfUris.JSONLD_GRAPH]) {
-        availableIndexers.push(item[RdfUris.JSONLD_ID]);
-    }
+    let templatePath : string = '';
+    let templateInput : string = '';
     
     const availableResourceTypes = ['Type1', 'Type2', 'Type3'];
 
-    let selectedIndexer = '';
+    
     let selectedResourceType = '';
     let layerNameInput : string = '';
 
-    async function createLayer(layer : Layer) {
+    async function fetchTemplate(templateId : string) {
+        
+        let uri = `${templateId.replace(`layer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/layers/`)}`;
 
-        if(layerNameInput === '') {
-            return;
-        }
-
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/layers/${layerNameInput}`
-
-        const response = await MossUtils.fetchAuthorized(uri, 'PUT', 
-            JSON.stringify(layer), "application/json");
+        const response = await fetch(uri);
 
         if (!response.ok) {
             const error = await response.json();
-            console.error("Error:", error);
+            console.error("Error fetching configuration:", error);
             return;
         }
 
-        return await response.json();
+        templateInput = await response.text();
+        console.log(templateInput);
+        
     }
 
     async function updateLayer(layer : Layer) {
+
+        if(layer.id == '') {
+            layer.id = `layer:${layerNameInput}`;
+        }
+
         let uri = layer.id.replace(`layer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/layers/`);
-        const response = await MossUtils.fetchAuthorized(uri, 'PUT',
-            JSON.stringify(layer), "application/json");
+        let response = await MossUtils.fetchAuthorized(uri, 'PUT', JSON.stringify(layer), "application/json");
 
         if (!response.ok) {
             const error = await response.json();
@@ -62,16 +56,18 @@
             return;
         }
 
-        return await response.json();
+        let templateUri = `${templatePath.replace(`layer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/layers/`)}`;
+        response = await MossUtils.fetchAuthorized(templateUri, 'PUT', templateInput, "text/plain");
+
+        if (!response.ok) {
+            const error = await response.json();
+            console.error("Error:", error);
+            return;
+        }
     }
 
     async function submitForm() {
-
-        if(isEditing) {
-            await updateLayer(form);
-        } else {
-            await createLayer(form);
-        }
+        await updateLayer(form);
 
         cancelForm();
     }
@@ -80,20 +76,28 @@
         dispatch('cancel');
     }
 
-    function addIndexer() {
-        if(form.indexers == null) {
-            form.indexers = [];
-        }
-        // Only add if the selected indexer is valid and not already in the list
-        if (selectedIndexer && !form.indexers.includes(selectedIndexer)) {
-            form.indexers = [...form.indexers, selectedIndexer]; // Create a new array to trigger reactivity
-            selectedIndexer = ''; // Reset selection
-        }
-    }
+    onMount(async () => {
 
-    function removeIndexer(index: number) {
-        form.indexers = form.indexers.filter((_, i) => i !== index); // Create a new array to trigger reactivity
-    }
+        const params = new URLSearchParams(window.location.hash.split('?')[1]);
+        const layerId = params.get("id");
+
+        if (layerId) {
+            form.id = layerId;
+            isEditing.set(true);
+        }
+
+        if (layerId) {
+            let layerName = MossUtils.getResourceNameFromId(layerId);
+            const indexerDataResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/${layerName}`);
+            const indexerData = await indexerDataResponse.json();
+
+            form.formatMimeType = indexerData.formatMimeType;
+            templatePath = indexerData.template;
+
+            fetchTemplate(templatePath);
+        }
+    });
+    
 
     function addResourceType() {
         if(form.resourceTypes == null) {
@@ -112,15 +116,15 @@
 </script>
 
 <div>
-    <h2>{isEditing ? 'Edit Layer' : 'Add Layer'}</h2>
+    <h2>{$isEditing ? 'Edit Layer' : 'Add Layer'}</h2>
     <form on:submit|preventDefault={submitForm}>
         
-        {#if isEditing}
+        {#if $isEditing}
         <h3>Id</h3>
         <input disabled type="text" bind:value={form.id} placeholder="Layer Name" required />
         {/if}
 
-        {#if !isEditing}
+        {#if !$isEditing}
         <h3>Name</h3>
         <input type="text" bind:value={layerNameInput} placeholder="Layer Name" required />
         {/if}
@@ -128,37 +132,9 @@
         <h3>Format Mime Type</h3>
         <input type="text" bind:value={form.formatMimeType} placeholder="Mime Type" required />
         
-        <h3>Indexers</h3>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {#each form.indexers ?? [] as indexer, i}
-                    <tr>
-                        <td>{indexer}</td>
-                        <td><button type="button" on:click={() => removeIndexer(i)}>Remove</button></td>
-                    </tr>
-                {/each}
-            </tbody>
-        </table>
-
-
-      
-        <div class="indexer-input">
-            <select bind:value={selectedIndexer}>
-                <option value="" disabled selected>Select an indexer</option>
-                {#each availableIndexers as availableIndexer}
-                    <option value={availableIndexer}>{availableIndexer}</option>
-                {/each}
-            </select>
-            <button type="button" on:click={addIndexer}>Add Indexer</button>
-        </div>
-
+        
+        <h3>Template</h3>
+        <CodeMirror format={form.formatMimeType} bind:value={templateInput} />
         
         <!--
      
@@ -193,7 +169,7 @@
         </div>-->
 
         <div style="margin-top: 1em">
-            <button type="submit">{isEditing ? 'Update' : 'Create'}</button>
+            <button type="submit">{$isEditing ? 'Update' : 'Create'}</button>
             <button type="button" on:click={cancelForm}>Cancel</button>
         </div>
     </form>
@@ -219,21 +195,6 @@
         margin-top: 1em;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1em;
-    }
-
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #f4f4f4;
-    }
 
     button {
         padding: .5em 1em;
@@ -245,7 +206,4 @@
     }
 
  
-    select {
-        margin-right: 0.5em;
-    }
 </style>

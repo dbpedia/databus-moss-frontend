@@ -29,46 +29,44 @@
     
 
     let layers = writable($page.data.layers);
-    let layerForm : Layer = { id: '', formatMimeType: '', indexers: [], resourceTypes: [] };
-    let indexerForm : Indexer = { id: '' };
+    let indexerForm : Indexer = { id: '', layers: [] };
 
     let isEditing = false;
-    let activeLayer : string|null = null;
+    let activeLayerId : string|null = null;
     let activeIndexer : Indexer|null = null;
     let layerToDelete : string|null = null;
 
     function onCreateLayer() {
         isEditing = false;
-        layerForm = { id: '', formatMimeType: '', indexers: [], resourceTypes: [] };
         window.location.hash = "layers-create";
     }
 
     function onEditLayer(event: CustomEvent<Layer>) {
         isEditing = true;
-        layerForm = { ...event.detail };
-        activeLayer = event.detail.id;
-        window.location.hash = "layers-edit";
+        activeLayerId = event.detail.id;
+        window.location.hash = `layers-edit?id=${encodeURIComponent(event.detail.id)}`;
     }
 
     function onEditIndexer(event: CustomEvent<Indexer>) {
         activeIndexer = event.detail;
         indexerForm = { ...event.detail };
-        window.location.hash = "indexers-edit";
+        window.location.hash = `indexers-edit?id=${encodeURIComponent(event.detail.id)}`;
     }
 
     function onCreateIndexer() {
-        indexerForm = { id: '' };;
+        indexerForm = { id: '', layers: [] };;
         window.location.hash = "indexers-edit";
     }
 
     async function sendDeleteRequest() {
 
-        if(activeLayer == null || activeLayer !== layerToDelete) {
+        if(activeLayerId == null || activeLayerId !== layerToDelete) {
             cancelLayerForm();
             return;
         }
 
-        const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + "/api/layers/" + activeLayer, 'DELETE');
+        let layerName = MossUtils.getResourceNameFromId(activeLayerId);
+            const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + "/api/layers/" + layerName, 'DELETE');
 
         if (!response.ok) {
             const error = await response.json();
@@ -87,59 +85,9 @@
     async function deleteLayer(event: CustomEvent<string>) {
         layerToDelete = "";
         window.location.hash = "layers-delete";
-        activeLayer = event.detail;
+        activeLayerId = event.detail;
     }
 
-    async function createLayer(layer : Layer) {
-        const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + "/api/layers", 'POST', 
-            JSON.stringify(layer), "application/json");
-
-        if (!response.ok) {
-            const error = await response.json();
-            console.error("Error:", error);
-            return;
-        }
-
-        return await response.json();
-    }
-
-    async function updateLayer(layer : Layer) {
-        const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + "/api/layers/" + activeLayer, 'PUT',
-            JSON.stringify(layer), "application/json");
-
-        if (!response.ok) {
-            const error = await response.json();
-            console.error("Error:", error);
-            return;
-        }
-
-        return await response.json();
-    }
-
-    async function submitForm(event: CustomEvent<Layer>) {
-        try {
-
-            if(activeLayer == null) {
-                await createLayer(event.detail);
-            } else {
-                await updateLayer(event.detail);
-            }
-
-            const layerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
-            let layerResponse = await layerListResponse.json();
-
-            console.log(layerResponse);
-            
-            layers.set(layerResponse);
-
-        } catch (error) {
-            console.error("Request failed:", error);
-        }
-
-       
-
-        cancelLayerForm();
-    }
 
     async function cancelLayerForm() {
 
@@ -147,7 +95,7 @@
         let layerResponse = await layerListResponse.json();
         layers.set(layerResponse);
 
-        activeLayer = null;
+        activeLayerId = null;
         window.location.hash = "layers";
     }
     
@@ -180,21 +128,25 @@
                     <LayerTable layerData={$layers} on:edit={onEditLayer} on:delete={deleteLayer} on:create={onCreateLayer} />
                 {/if}
                 
-                {#if $activeTab === "layers-create"}
-                    <LayerForm form={layerForm} {isEditing} on:cancel={cancelLayerForm} />
+                {#if $activeTab.startsWith("layers-create")}
+                    <LayerForm on:cancel={cancelLayerForm} />
                 {/if}
 
-                {#if $activeTab === "layers-delete"}
+                {#if $activeTab.startsWith("layers-delete")}
                     <form on:submit|preventDefault={sendDeleteRequest}>
-                        <p>Delete {activeLayer} </p>
+                        <p>Delete {activeLayerId} </p>
                         <input type="text" bind:value={layerToDelete} placeholder="Retype layer name..." required />
                         <button type="submit">Delete</button>
                         <button type="button" on:click={cancelLayerForm}>Cancel</button>
                     </form>
                 {/if}
                 
-                {#if $activeTab === "layers-edit"}
-                    <LayerForm form={layerForm} {isEditing} on:submit={submitForm} on:cancel={cancelLayerForm} />
+                {#if $activeTab.startsWith("layers-edit")}
+                    <LayerForm on:cancel={cancelLayerForm} />
+                {/if}
+
+                {#if $activeTab.startsWith("indexers-edit")}
+                    <IndexerForm   />
                 {/if}
 
                 {#if $activeTab === "indexers"}
@@ -203,9 +155,7 @@
                 {/if}
 
                 
-                {#if $activeTab === "indexers-edit"}
-                    <IndexerForm form={indexerForm}  />
-                {/if}
+               
                 <!--
                 <div class="setting">
                     <h2>Current Username</h2>

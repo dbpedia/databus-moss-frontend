@@ -1,23 +1,21 @@
 <script lang="ts">
-    import type { Indexer } from '$lib/types';
+    import type { Indexer, Layer } from '$lib/types';
     import { createEventDispatcher, onMount } from 'svelte';
-	import { JsonldUtils } from '$lib/utils/jsonld-utils';
-    import jsonld from 'jsonld';
 	import { RdfUris } from '$lib/utils/rdf-uris';
     import { writable } from 'svelte/store';
-    import { page } from "$app/stores"
 	import { env } from '$env/dynamic/public';
 
     let indexerStore = writable<Indexer[]>([]);
 
     onMount(async () => {
-        let indexers = [];
+        let indexers : Indexer[] = [];
         const indexerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/indexers`);
         const indexerData = await indexerListResponse.json();
-
+        
         for(let item of indexerData[RdfUris.JSONLD_GRAPH]) {
             indexers.push({
-                id: item[RdfUris.JSONLD_ID]
+                id: item[RdfUris.JSONLD_ID],
+                layers: item.layers ?? [],
             });
         }
 

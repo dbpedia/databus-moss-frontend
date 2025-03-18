@@ -24,6 +24,9 @@
     let searchInput : string;
     searchInput = "";
 
+    let searchRequestIndexCounter = 0;
+    let isSearching = false;
+
   
 
     function onAnnotationClicked(event : CustomEvent) {
@@ -104,6 +107,10 @@
     async function onSearchInputChanged() {
 
         let q = searchInput;
+        searchRequestIndexCounter++;
+        isSearching = true;
+
+        let requestIndex = searchRequestIndexCounter;
 
         if(annotationTags.length > 0) {
 
@@ -116,13 +123,19 @@
         const results: { docs: any } = await query(q);
         const resultMap: Record<string, SearchResult> = {};
 
+        
+        searchResults = resultMap;
+
         for(var result of results.docs) {
+
+            
 
             let id : string = result.id[0];
 
             if(!id.startsWith(env.PUBLIC_MOSS_BASE_URL)) {
                 continue;
             }
+            
 
             try {
                 var response = await fetch(id, {
@@ -132,6 +145,11 @@
                 });
 
                 let layerGraphs = await jsonld.expand(await response.json());
+
+                if(requestIndex != searchRequestIndexCounter) {
+                    return;
+                }
+
                 let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_ENTRY);
                 var databusResourceUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_EXTENDS);
 
@@ -144,6 +162,11 @@
                         });
 
                         var resourceGraphs = await jsonld.expand(await response.json());
+
+                        if(requestIndex != searchRequestIndexCounter) {
+                            return;
+                        }
+
                         var resourceGraph = JsonldUtils.getGraphById(resourceGraphs, databusResourceUri)
 
                         var databusResourceData : any = {};
@@ -164,7 +187,8 @@
                 }
 
                 result.uri = result.id[0];
-                result.name =  JsonldUtils.getValue(layerGraph, RdfUris.MOSS_LAYER_NAME);
+                result.name =  MossUtils.uriToName(result.uri);
+                result.contentUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_CONTENT);
                 result.explanations = generateSearchExplanation(result, searchInput);
                 resultMap[databusResourceUri].layers.push(result);
 
@@ -188,8 +212,23 @@
                 }
             }
 
+            const layerUris = resultMap[databusResourceUri].layers.map((layer: any) => layer.uri).join(','); // Using 'any' for layer
+            const hashInput = databusResourceUri + layerUris + searchInput + annotationTags.length; // Create a string to hash
+            resultMap[databusResourceUri].hash = createHash(hashInput); // Assign the hash to a new property
+
+            
+            if(requestIndex != searchRequestIndexCounter) {
+                return;
+            }
+
+            searchResults = resultMap;
         }
 
+        
+        searchResults = resultMap;
+        isSearching = false;
+        /*
+         
         // Create hashes for each entry in resultMap
         for (const [uri, data] of Object.entries(resultMap) as [string, any][]) {
             // Concatenate the base uri with all layer uris
@@ -198,7 +237,7 @@
             data.hash = createHash(hashInput); // Assign the hash to a new property
         }
         
-        searchResults = resultMap;
+        */
     }
 
     function createHash(input : string) {
@@ -229,6 +268,9 @@
                 {/each}
                 </ul>
                 <ul>
+                    {#if isSearching} 
+                        <p>Searching...</p>
+                    {/if}
                     {#each Object.entries(searchResults) as [key, result] (result.hash)}
                         <li>
                             <SearchResult data={result} />

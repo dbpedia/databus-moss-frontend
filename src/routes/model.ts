@@ -8,6 +8,7 @@ interface AnnotationTag {
         uri: string,
         name: string,
         browseLink: string;
+        contentUri: string;
         explanations: Record<string, any[]>;
     }
 

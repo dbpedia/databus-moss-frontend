@@ -154,10 +154,14 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
 
       if(Date.now() >= expiresAtTime * 1000){
         
-        let tokenData = await fetchNewAccessToken(token?.refreshToken as string);
-        token.accessToken = tokenData.accessToken;
-        token.expiresAt = tokenData.expiresAt;
-        token.refreshToken = tokenData.refreshToken;
+        try {
+          let tokenData = await fetchNewAccessToken(token?.refreshToken as string);
+          token.accessToken = tokenData.accessToken;
+          token.expiresAt = tokenData.expiresAt;
+          token.refreshToken = tokenData.refreshToken;
+        } catch(err) {
+          console.log(err);
+        }
       }
     
       return { ...session, accessToken: token.accessToken }

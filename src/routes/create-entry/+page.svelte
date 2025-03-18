@@ -5,11 +5,9 @@
 	import { env } from '$env/dynamic/public'
 
 	import { page } from '$app/stores';
-	import CodeMirror from '$lib/components/code-mirror.svelte';
 	import { writable } from 'svelte/store';
 	import { RdfUris } from '$lib/utils/rdf-uris';
 
-	const databusResourcePlaceholder: string = '%DATABUS_RESOURCE%';
 	const buttonName: string = 'Create Entry';
 
 	let layerTestName = '';
@@ -24,9 +22,10 @@
 
 	let layerFormat = writable<string|null>(null);
 	
-	function onLayerChange() {
+	async function onLayerChange() {
 		activeLayer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
 		layerFormat.set(activeLayer?.formatMimeType);
+
 	}
 
 	async function createLayer() {
@@ -50,7 +49,7 @@
 		
 		try {
 			const saveURL = MossUtils.getSaveRequestURL(databusResource, layerId);
-			const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', content, layer.formatMimeType);
+			const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', null, layer.formatMimeType);
 
 			if (response.status == 200) {
 				var responseData = await response.json();
@@ -128,10 +127,6 @@
 				<div class="explanation">Any Databus resource that should be described by the layer.</div>
 			</div>
 
-			<div class="setting">
-				<h2>Content</h2>
-                <CodeMirror format={$layerFormat}  bind:value={content} />
-			</div>
 
 
 			<GradientButton color="cyanToBlue" name={buttonName} on:click={createLayer}>{buttonName}</GradientButton>

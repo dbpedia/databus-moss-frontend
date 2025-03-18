@@ -61,6 +61,12 @@ export async function load({ url, locals }: any) {
         let result = await sparqlResponse.json();
         headerInfo = []; 
 
+        headerInfo.push({
+            key : "id",
+            type: "uri",
+            value: entryData.uri,
+        });
+        
         for(const binding of result.results.bindings) {
 
             if(binding.p.value == RdfUris.MOSS_INSTANCE_OF) {
@@ -77,6 +83,8 @@ export async function load({ url, locals }: any) {
                 type: binding.o.type
             });
         }
+
+       
 
         console.log(entryData.layerURI);
         

@@ -21,8 +21,8 @@
     let layers = data.layers;
 
     for(let layer of layers) {
-        let url = new URL(layer.uri);
-        layer.browseLink = url.pathname.replace("/g/header/", "/browse/");
+        let url = new URL(layer.contentUri);
+        layer.browseLink = url.pathname.replace("/g/content/", "/browse/");
     }
 
     if(title == undefined) {

@@ -73,13 +73,13 @@ export class MossUtils {
         return `${baseUrl}/res/${layerURI}`;
     }
 
-    static getLayerName(layerId : string) : string {
+    static getResourceNameFromId(layerId : string) : string {
         const parts = layerId.split(':');
         return parts.length > 1 ? parts[1] : layerId;
     }
 
     static getLayerURI(baseUrl: string, resource: string, layerId: string): string {
-        const layerName = MossUtils.getLayerName(layerId);
+        const layerName = MossUtils.getResourceNameFromId(layerId);
         const databusResourceURIFragments = MossUtils.getMossDocumentUriFragments(resource);
         return `${baseUrl}/res/${databusResourceURIFragments}/${layerName}`;
       }
