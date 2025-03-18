@@ -1,4 +1,5 @@
 import { env } from "$env/dynamic/public";
+import { RdfUris } from "./rdf-uris";
 
 export class MossUtils {
 
@@ -76,6 +77,21 @@ export class MossUtils {
     static getResourceNameFromId(layerId : string) : string {
         const parts = layerId.split(':');
         return parts.length > 1 ? parts[1] : layerId;
+    }
+
+    static getGraphList(data : any) {
+        let items = data[RdfUris.JSONLD_GRAPH];
+
+        if(items == null) {
+            
+            items = [];
+            
+            if(data[RdfUris.JSONLD_ID] != null) {
+                items.push(data);
+            }
+        }
+
+        return items;
     }
 
     static getLayerURI(baseUrl: string, resource: string, layerId: string): string {

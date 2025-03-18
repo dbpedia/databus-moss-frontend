@@ -26,7 +26,10 @@
     let availableLayers : string[] = [];
     let selectedLayer = '';
 
-    for(let item of $page.data.layers[RdfUris.JSONLD_GRAPH]) {
+
+    let items = MossUtils.getGraphList($page.data.layers);
+	
+    for(let item of items) {
         availableLayers.push(item[RdfUris.JSONLD_ID]);
     }
 

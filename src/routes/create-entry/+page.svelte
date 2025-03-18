@@ -21,6 +21,8 @@
 	let activeLayer: any = null;
 
 	let layerFormat = writable<string|null>(null);
+	let graphList = MossUtils.getGraphList($page.data.layers);
+	
 	
 	async function onLayerChange() {
 		activeLayer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
@@ -29,10 +31,14 @@
 	}
 
 	async function createLayer() {
+
+		let graphList = MossUtils.getGraphList($page.data.layers);
+
 		// Get the document and see if it exists
-		var layer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
+		var layer = graphList.find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
 
 		if(layer == undefined) {
+			errorMessage = `No such layer found.`;
 			return;
 		}
 
@@ -66,8 +72,9 @@
 			errorMessage = e.message;
 		}
 	}
+
 	
-	layerList = $page.data.layers[RdfUris.JSONLD_GRAPH].map((layer: any) => {
+	layerList = graphList.map((layer: any) => {
 		return {
 			value: layer[RdfUris.JSONLD_ID],
 			name: layer[RdfUris.JSONLD_ID]

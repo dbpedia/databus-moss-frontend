@@ -12,7 +12,16 @@
         const indexerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/indexers`);
         const indexerData = await indexerListResponse.json();
         
-        for(let item of indexerData[RdfUris.JSONLD_GRAPH]) {
+        let items = indexerData[RdfUris.JSONLD_GRAPH];
+
+        if(items == null) {
+            if(indexerData[RdfUris.JSONLD_ID] != null) {
+                items = [];
+                items.push(indexerData);
+            }
+        }
+
+        for(let item of items) {
             indexers.push({
                 id: item[RdfUris.JSONLD_ID],
                 layers: item.layers ?? [],

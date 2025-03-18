@@ -27,6 +27,14 @@
         try {
 
             let items = layerData[RdfUris.JSONLD_GRAPH];
+
+            if(items == null) {
+                if(layerData[RdfUris.JSONLD_ID] != null) {
+                    items = [];
+                    items.push(layerData);
+                }
+            }
+
             var layerList : Layer[] = [];
 
             for(let item of items) {
