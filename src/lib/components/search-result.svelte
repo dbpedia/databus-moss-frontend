@@ -19,6 +19,7 @@
     let title = data.title;
     let abstract = data.abstract;
     let layers = data.layers;
+    let browseLink = data.browseLink;
 
     for(let layer of layers) {
         let url = new URL(layer.contentUri);
@@ -44,8 +45,12 @@
     <div class="header">
         <div style="display: flex">
         <div class="title">
-            <h1>{title}</h1>
-            <h2><a href={resource} target="_blank">{resource}</a></h2>
+            <h1 class="result-header">{title}</h1>
+            <div style="display: flex;">
+                <div><a class="quick-button databus" href={resource} target="_blank">View on Databus</a></div>
+                <div><a class="quick-button default" href={browseLink}>View in MOSS Browser</a></div>
+                <div><a class="quick-button new" href="create-entry?databusResource={encodeURIComponent(resource)}">Create Entry</a></div>
+            </div>
         </div>
         <!--<Button style="max-height: 45px" href={browseLink} target="_blank" color="light">
             View Layer
@@ -59,9 +64,9 @@
     <div class="list">
         <div class="explanation-list">
         {#each layers as layer }
-        <a href="{layer.browseLink}">
+        <a href="{layer.browseLink}" style="margin-right: 0.2em;">
             <div class="layer">
-                <h1>{layer.name}</h1>
+                <h1>layer:{layer.name}</h1>
                 {#each Object.entries(layer.explanations) as [key, entries] (key)}
                 <div><span style="padding-right: .3em;">{key}:</span>
                     {#each entries as entry, index}
@@ -84,12 +89,48 @@
 
 <style lang>
 
+.quick-button {
+  
+    border-radius: 4px;
+    padding: 0.2em .4em;
+    display: flex;
+    align-items: center;
+    margin-right: .2em;
+}
 
+.quick-button.default {
+    border: 1px solid #d4d4d4;
+    color:#747474;
+    background-color: #efefef;
+}
+
+
+.quick-button.databus {
+    border: 1px solid #a3c9d3;
+    color:#476871;
+    background-color: #bce3ee;
+}
+
+
+.quick-button.new {
+    border: 1px solid #b6d3a3;
+    color:#47714e;
+    background-color: #d1eebc;
+}
+
+
+.result-header {
+    font-size: 20px;
+    margin-bottom: 0.3em;
+    font-weight: 600;
+    margin-top: 0;
+    padding: 0;
+}
 
 .result {
     border-bottom: 1px solid #c8c8c8;
     padding-top: 0;
-    padding-bottom: 1em;
+    padding-bottom: 2em;
     margin-bottom: 1em;
     margin-top: 1em;
     padding-left: 0.5em;
@@ -104,15 +145,18 @@
     border: 1px solid #dbdbdb;
     background-color: #fafafa;
     cursor: pointer;
+    overflow: hidden;
     border-radius: 8px;
 }
 
 .layer h1 {
-    font-size: 1em;
+    font-size: 0.8em;
     margin: 0;
     margin-bottom: 0.1em;
     background-color: #eeeeee;
-    padding: 0.4em;
+    color: #7f7f7f;
+    padding: 0.2em;
+    padding-left: .4em;
     text-align: left;
     border-bottom: 1px solid #dbdbdb;
 }
@@ -120,21 +164,12 @@
 .layer div {
     margin: 0;
     padding: 0.4em;
+    padding-right: 1em;
     display: flex;
-    min-width: 300px;
+    min-width: 150px;
 }
 
-.title h1 {
-    font-size:  1.5em;
-    font-weight: 500;
-    margin: 0;
-    padding: 0;
-}
 
-.title h2 {
-    margin: 0;
-    font-weight: 400;
-}
 
 .title {
     flex: 1;

@@ -144,6 +144,10 @@
                     }
                 });
 
+                if(response.status != 200) {
+                    continue;
+                }
+
                 let layerGraphs = await jsonld.expand(await response.json());
 
                 if(requestIndex != searchRequestIndexCounter) {
@@ -174,6 +178,8 @@
                         databusResourceData.title = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_TITLE);
                         databusResourceData.abstract = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_ABSTRACT);
                         databusResourceData.description = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_DESCRIPTION);
+                        databusResourceData.browseLink = MossUtils.getRelativeBrowseLink(
+                            MossUtils.getLayerURI(env.PUBLIC_MOSS_BASE_URL, databusResourceUri, ""));
                         databusResourceData.layers = [];
 
                         resultMap[databusResourceUri] = databusResourceData;

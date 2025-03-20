@@ -19,6 +19,7 @@ interface AnnotationTag {
         description: string | undefined;
         layers: SearchResultLayer[];
         hash?: string; // Optional as it is computed later
+        browseLink?: string;
     }
 
     type Explanation = {

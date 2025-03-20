@@ -1,85 +1,85 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { MossUtils } from '$lib/utils/moss-utils';
-	import { Input, Button, Select, Heading, Span, GradientButton } from 'flowbite-svelte';
-	import { env } from '$env/dynamic/public'
+import { MossUtils } from '$lib/utils/moss-utils';
+import { Input, Button, Select, Heading, Span, GradientButton } from 'flowbite-svelte';
+import { env } from '$env/dynamic/public'
 
-	import { page } from '$app/stores';
-	import { writable } from 'svelte/store';
-	import { RdfUris } from '$lib/utils/rdf-uris';
+import { page } from '$app/stores';
+import { writable } from 'svelte/store';
+import { RdfUris } from '$lib/utils/rdf-uris';
 
-	const buttonName: string = 'Create Entry';
+const buttonName: string = 'Create Entry';
 
-	let layerTestName = '';
-	let resourceTestName = '';
-	let layerId: string = layerTestName;
-	let databusResource: string = resourceTestName;
-	let content: string = '';
-	let layerList: any;
+let layerTestName = '';
+let resourceTestName = '';
 
-	let errorMessage: string = '';
-	let activeLayer: any = null;
+let layerId: string = layerTestName;
+let databusResource: string = '';
 
-	let layerFormat = writable<string|null>(null);
-	let graphList = MossUtils.getGraphList($page.data.layers);
-	
-	
-	async function onLayerChange() {
-		activeLayer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
-		layerFormat.set(activeLayer?.formatMimeType);
+let content: string = '';
+let layerList: any;
 
-	}
+let errorMessage: string = '';
+let activeLayer: any = null;
 
-	async function createLayer() {
+let layerFormat = writable<string|null>(null);
+let graphList = MossUtils.getGraphList($page.data.layers);
 
-		let graphList = MossUtils.getGraphList($page.data.layers);
+// Read databusResource from request parameters
+$: {
+    const params = new URLSearchParams($page.url.search);
+    databusResource = params.get('databusResource') ?? '';
+}
 
-		// Get the document and see if it exists
-		var layer = graphList.find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
+async function onLayerChange() {
+    activeLayer = $page.data.layers[RdfUris.JSONLD_GRAPH].find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
+    layerFormat.set(activeLayer?.formatMimeType);
+}
 
-		if(layer == undefined) {
-			errorMessage = `No such layer found.`;
-			return;
-		}
+async function createLayer() {
+    let graphList = MossUtils.getGraphList($page.data.layers);
+    var layer = graphList.find((layer: any) => layer[RdfUris.JSONLD_ID] === layerId);
 
-		let layerURI = MossUtils.getLayerURI(env.PUBLIC_MOSS_BASE_URL, databusResource, layer[RdfUris.JSONLD_ID]);
-		let getResponse = await fetch(layerURI);
+    if(layer == undefined) {
+        errorMessage = `No such layer found.`;
+        return;
+    }
 
-		if (getResponse.status == 200) {
-			errorMessage = `Layer already exists. (${layerURI})`;
-			return;
-		}
+    let layerURI = MossUtils.getLayerURI(env.PUBLIC_MOSS_BASE_URL, databusResource, layer[RdfUris.JSONLD_ID]);
+    let getResponse = await fetch(layerURI);
 
-		errorMessage = '';
-		
-		
-		try {
-			const saveURL = MossUtils.getSaveRequestURL(databusResource, layerId);
-			const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', null, layer.formatMimeType);
+    if (getResponse.status == 200) {
+        errorMessage = `Layer already exists. (${layerURI})`;
+        return;
+    }
 
-			if (response.status == 200) {
-				var responseData = await response.json();
+    errorMessage = '';
 
-				console.log(responseData);
-				 goto(`/browse/${responseData.path}`);
-			}
-			else {
-				let responseBody = await response.json();
-				errorMessage = responseBody.message;
-			}
-		} catch(e : any) {
-			console.log(e);
-			errorMessage = e.message;
-		}
-	}
+    try {
+        const saveURL = MossUtils.getSaveRequestURL(databusResource, layerId);
+        const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + saveURL, 'POST', null, layer.formatMimeType);
 
-	
-	layerList = graphList.map((layer: any) => {
-		return {
-			value: layer[RdfUris.JSONLD_ID],
-			name: layer[RdfUris.JSONLD_ID]
-		};
-	});
+        if (response.status == 200) {
+            var responseData = await response.json();
+            console.log(responseData);
+            goto(`/browse/${responseData.path}`);
+        }
+        else {
+            let responseBody = await response.json();
+            errorMessage = responseBody.message;
+        }
+    } catch(e : any) {
+        console.log(e);
+        errorMessage = e.message;
+    }
+}
+
+layerList = graphList.map((layer: any) => {
+    return {
+        value: layer[RdfUris.JSONLD_ID],
+        name: layer[RdfUris.JSONLD_ID]
+    };
+});
 
 
 </script>

@@ -99,10 +99,17 @@ export class MossUtils {
         const databusResourceURIFragments = MossUtils.getMossDocumentUriFragments(resource);
         return `${baseUrl}/res/${databusResourceURIFragments}/${layerName}`;
       }
+
+    static getRelativeBrowseLink(entryUrl: string) {
+        let url = new URL(entryUrl);
+
+
+        return url.pathname.replace("res", "browse");
+    }
     
       static getMossDocumentUriFragments(resourceURI: string): string {
         // Replace # with its encoded equivalent
-        resourceURI = resourceURI.replace("#", "%23");
+        resourceURI = resourceURI.replace("#", "/");
     
         try {
           const resourceURL = new URL(resourceURI);
