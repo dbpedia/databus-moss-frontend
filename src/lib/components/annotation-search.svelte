@@ -38,6 +38,14 @@
             if(result.annotatedCount == undefined || result.annotatedCount.length == 0) {
                 result.annotatedCount = 0;
             }
+
+            try {
+                if(result.label == null) {
+                    result.label = [ MossUtils.uriToName(result.id[0]) ];
+                }
+            } catch(err) {
+
+            }
         }
 
         searchResults = results.docs;

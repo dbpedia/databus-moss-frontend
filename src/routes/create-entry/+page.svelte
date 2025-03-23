@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+import { goto } from '$app/navigation';
 import { MossUtils } from '$lib/utils/moss-utils';
 import { Input, Button, Select, Heading, Span, GradientButton } from 'flowbite-svelte';
 import { env } from '$env/dynamic/public'
@@ -28,7 +28,15 @@ let graphList = MossUtils.getGraphList($page.data.layers);
 // Read databusResource from request parameters
 $: {
     const params = new URLSearchParams($page.url.search);
-    databusResource = params.get('databusResource') ?? '';
+
+	if(params.has('databusResource')) {
+    	databusResource = params.get('databusResource') ?? '';
+
+		
+		params.delete('databusResource');
+		goto(`?${params.toString()}`, { replaceState: true });
+	}
+
 }
 
 async function onLayerChange() {
