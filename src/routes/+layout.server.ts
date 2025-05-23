@@ -29,10 +29,17 @@ async function fetchUserData(session : any) {
     return null;
 }
 
-async function hasAdminRole(accessToken : any) {
+async function hasAdminRole(userData : any, accessToken : any) {
     try {
+        
+
         // Decode the JWT token
         const decodedToken = jwt.decode(accessToken) as any;
+
+        if(env.AUTH_ADMIN_USER != null && env.AUTH_ADMIN_USER === userData.username) {
+            console.log(`ADMIN: ${userData.username} recognized as admin user.`);
+            return true;
+        }
 
         // Check the resource_access claim
         if (decodedToken && decodedToken.resource_access) {
@@ -43,6 +50,7 @@ async function hasAdminRole(accessToken : any) {
             if (roles && roles.includes(env.AUTH_ADMIN_ROLE)) {
                 return true;
             }
+            
         }
         
         return false;
@@ -62,7 +70,7 @@ export const load: LayoutServerLoad = async (event) => {
         userData = await fetchUserData(session);
 
         if(userData != null) {
-            userData.isAdmin = await hasAdminRole(session.accessToken);
+            userData.isAdmin = await hasAdminRole(userData, session.accessToken);
         }
 
     } catch(error) {

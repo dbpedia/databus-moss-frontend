@@ -24,6 +24,18 @@
     let searchInput : string;
     searchInput = "";
 
+    let publicationDateStart: string = "";
+    let publicationDateEnd: string = "";
+    
+    let referenceDateStart: string = "";
+    let referenceDateEnd: string = "";
+
+    let grantNo: string = "";
+    let publisherEmail: string = "";
+
+    let format: string = "";
+    let licenseUri: string = "";
+
     let searchRequestIndexCounter = 0;
     let isSearching = false;
 
@@ -118,6 +130,35 @@
             for(let tag of annotationTags) {
                 q += tag.id + " ";
             }
+        }
+        
+        if (publicationDateStart || publicationDateEnd) {
+            const start = publicationDateStart ?? "";
+            const end = publicationDateEnd ?? "";
+            q += `&publicationDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
+        }
+
+        if(grantNo) {
+            q += `&grantNo=${grantNo}`;
+        }
+
+        if(licenseUri) {
+            q += `&license=${licenseUri}`;
+        }
+
+        if(format) {
+            q += `&format=${format}`;
+        }
+
+
+        if(publisherEmail) {
+            q += `&publisher=${publisherEmail}`;
+        }
+
+        if (referenceDateStart || referenceDateEnd) {
+            const start = referenceDateStart ?? "";
+            const end = referenceDateEnd ?? "";
+            q += `&referenceDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
         }
 
         const results: { docs: any } = await query(q);
@@ -285,6 +326,46 @@
                 </ul>
             </div>
             <div class="column medium">
+                
+                <h2>Publication Date</h2>
+                <div class="facet-input">
+                <Input type="datetime-local" bind:value={publicationDateStart} placeholder="Start time" on:change={onSearchInputChanged} />
+                </div>
+                <div class="facet-input">
+                    <Input type="datetime-local" bind:value={publicationDateEnd} placeholder="End time" on:change={onSearchInputChanged} />
+                </div>
+
+                <h2>Grant No</h2>
+                <div class="facet-input">
+                <Input type="text" bind:value={grantNo} placeholder="Grant No" on:change={onSearchInputChanged} />
+                </div>
+
+                <h2>Publisher Contact</h2>
+                <div class="facet-input">
+                <Input type="text" bind:value={publisherEmail} placeholder="Publisher Contact Email" on:change={onSearchInputChanged} />
+                </div>
+
+                <h2>License URI</h2>
+                <div class="facet-input">
+                <Input type="text" bind:value={licenseUri} placeholder="License URI" on:change={onSearchInputChanged} />
+                </div>
+
+                <h2>Data Format</h2>
+                <div class="facet-input">
+                <Input type="text" bind:value={format} placeholder="Data Format" on:change={onSearchInputChanged} />
+                </div>
+
+                
+                <h2>Reference Date</h2>
+                <div class="facet-input">
+                <Input type="datetime-local" bind:value={referenceDateStart} placeholder="Start time" on:change={onSearchInputChanged} />
+                </div>
+                <div class="facet-input">
+                    <Input type="datetime-local" bind:value={referenceDateEnd} placeholder="End time" on:change={onSearchInputChanged} />
+                </div>
+
+               
+                <h2>Ontology Annotations</h2>
                 <AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
             </div>
         </div>
@@ -295,6 +376,10 @@
 
 :global(body) {
     margin: 0;
+}
+
+.facet-input {
+    margin-bottom: 0.2em;
 }
 
 ul {

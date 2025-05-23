@@ -26,29 +26,33 @@
 
     async function onSearchInputChanged() {
 
-        var suffix = "";
+        try {
+            var suffix = "";
 
-        if(hideUnused) {
-            suffix += annotatedCountSuffix;
-        }
-
-        var results = await MossUtils.fetchJSON(baseUrl, searchInput + suffix);
-
-        for(var result of results.docs) {
-            if(result.annotatedCount == undefined || result.annotatedCount.length == 0) {
-                result.annotatedCount = 0;
+            if(hideUnused) {
+                suffix += annotatedCountSuffix;
             }
 
-            try {
-                if(result.label == null) {
-                    result.label = [ MossUtils.uriToName(result.id[0]) ];
+            var results = await MossUtils.fetchJSON(baseUrl, searchInput + suffix);
+
+            for(var result of results.docs) {
+                if(result.annotatedCount == undefined || result.annotatedCount.length == 0) {
+                    result.annotatedCount = 0;
                 }
-            } catch(err) {
 
+                try {
+                    if(result.label == null) {
+                        result.label = [ MossUtils.uriToName(result.id[0]) ];
+                    }
+                } catch(err) {
+
+                }
             }
-        }
 
-        searchResults = results.docs;
+            searchResults = results.docs;
+        } catch(err) {
+
+        }
     }
 
     function onAnnotationClicked(event : Event, result : any) {

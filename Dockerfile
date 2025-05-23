@@ -17,6 +17,8 @@ RUN npm run build
 # Stage 3: Run the Node.js SvelteKit server
 FROM node:20-alpine AS sveltekit_server
 
+RUN apk add --no-cache bash
+
 # Set the working directory
 WORKDIR /app
 
