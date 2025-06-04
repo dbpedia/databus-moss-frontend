@@ -34,8 +34,12 @@ export async function load({ locals, parent }: any) {
     
     const parentData = await parent();
 
-    if(parentData == null || !parentData.userData.isAdmin) {
-        
+    
+    console.log("=== ADMIN SERVER HANDLER ===");
+    console.log(JSON.stringify(parentData, null, 3));
+    
+
+    if(parentData == null || parentData.userData == null || !parentData.userData.isAdmin) {
         return null;
     }
     
