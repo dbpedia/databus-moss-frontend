@@ -16,7 +16,7 @@
 
     let searchInput = "";
     
-    let baseUrl = `${env.PUBLIC_MOSS_BASE_URL}/api/search?type=class&query=`;
+    let baseUrl = `/api/v1/search?type=class&query=`;
     let annotatedCountSuffix = "&annotatedCount=1,1000000";
     let searchResults : any;
     let hideUnused : boolean;

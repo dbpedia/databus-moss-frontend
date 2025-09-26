@@ -1,63 +1,60 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { page } from "$app/stores"
-    import {
-        Input,
-        Button,
-     } from "flowbite-svelte";
-	import { MossUtils } from "$lib/utils/moss-utils";
-	import { env } from '$env/dynamic/public'
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { Input, Button } from 'flowbite-svelte';
+	import { MossUtils } from '$lib/utils/moss-utils';
+	import { env } from '$env/dynamic/public';
+	import FeedbackMessage from '$lib/components/feedback-message.svelte';
 
-    let username: string = "";
-    let usernameInput: string = "";
-    let user: any;
+	let username: string = '';
+	let usernameInput: string = '';
+	let user: any;
+	let feedback: any;
 
-    async function fetchUserData() {
-        let response = await MossUtils.fetchAuthorized(`${env.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, "GET");
+	async function fetchUserData() {
+		let response = await MossUtils.fetchAuthorized(
+			`${env.PUBLIC_MOSS_BASE_URL}/api/v1/users/get-user`,
+			'GET'
+		);
 
-        if (response.ok) {
-            user = await response.json();
-            usernameInput = user.username;
-        } else {
-            user = {};
-        }
-    }
+		if (response.ok) {
+			user = await response.json();
+			usernameInput = user.username;
+		} else {
+			user = {};
+		}
+	}
 
-    async function onChangeUsernameButtonClicked() {
+	async function onChangeUsernameButtonClicked() {
+		if (!usernameInput) {
+			console.log('user name error');
+			return;
+		}
 
-        if (!usernameInput) {
-            console.log("user name error");
-            return;
-        }
+		username = usernameInput;
 
-        username = usernameInput;
+		let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/v1/users/set-username?username=${username}`;
+		let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/users/set-username?username=${username}`;
-        let response = await MossUtils.fetchAuthorized(uri, "POST");
+		if (response.ok) {
+			await fetchUserData();
+			feedback.showMessage('Profile saved!', true);
+		} else {
+			feedback.showMessage('Failed to save profile.', false);
+		}
+	}
 
-        if (response.ok) {
-            await fetchUserData();
-        }
-    }
-
-    onMount(() => {
-        fetchUserData();
-    });
-
-
+	onMount(() => {
+		fetchUserData();
+	});
 </script>
 
-
-
 <div class="section">
-    <div class="container">
-
-        {#if $page.data.session}
-        <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
-
-
-        {/if}
-            <!-- LOGIN BUTTON
+	<div class="container">
+		{#if $page.data.session}
+			<h1>Welcome, {$page.data.session.user?.name ?? 'User'}</h1>
+		{/if}
+		<!-- LOGIN BUTTON
 
 <Heading tag="h4" class="mb-2">Welcome</Heading>
 {#if $page.data.session}
@@ -124,45 +121,44 @@
         </Table>
         {/if}-->
 
-        <div class="columns">
-            <div class="column small sidebar">
-                <a class="sidebar-link active" href="/user">
-                    Profile
-                </a>
-                <a class="sidebar-link" href="/user/keys">
-                    Keys
-                </a>
-            </div>
-            <div class="column settings">
-                {#if user != undefined}
-                <div class="setting">
-                    <h2>Username</h2>
-                    <div class="set-user-form">
-                        <Input id="usernameInput" style="width: 450px; margin-right: .5em" bind:value={usernameInput} placeholder="Enter a username..." />
-                       </div>
-                    <div class="explanation">The username may appear around this MOSS instance where you contribute.</div>
-                </div>
-
-                <Button color="green" on:click={onChangeUsernameButtonClicked} >Save Profile</Button>
-
-                {/if}
-                <!--
+		<div class="columns">
+			<div class="column small sidebar">
+				<a class="sidebar-link active" href="/user"> Profile </a>
+				<a class="sidebar-link" href="/user/keys"> Keys </a>
+			</div>
+			<div class="column settings">
+				{#if user != undefined}
+					<div class="setting">
+						<h2>Username</h2>
+						<div class="set-user-form">
+							<Input
+								id="usernameInput"
+								style="width: 450px; margin-right: .5em"
+								bind:value={usernameInput}
+								placeholder="Enter a username..."
+							/>
+						</div>
+						<div class="explanation">
+							The username may appear around this MOSS instance where you contribute.
+						</div>
+					</div>
+					<div style="display:flex">
+						<Button color="green" on:click={onChangeUsernameButtonClicked}>Save Profile</Button>
+						<div style="margin-left: 8px"><FeedbackMessage bind:feedback></FeedbackMessage></div>
+					</div>
+				{/if}
+				<!--
                 <div class="setting">
                     <h2>Current Username</h2>
                     <Input id="currentUser" disabled style="width: 450px; margin-right: .5em" bind:value={username} placeholder="Enter a username..." />
                 </div>-->
-
-            </div>
-
-        </div>
-
-
-    </div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <style>
-    .set-user-form {
-        display: flex;
-    }
+	.set-user-form {
+		display: flex;
+	}
 </style>
-

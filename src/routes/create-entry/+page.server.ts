@@ -13,11 +13,11 @@ export async function load({ locals, parent }: any) {
         return null;
     }
 
-    const layerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
-    const layerData = await layerListResponse.json();
+    const moduleListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules`);
+    const moduleList = await moduleListResponse.json();
     
     return { 
         ...parentData,
-        layers: layerData
+        modules: moduleList
     }
 }

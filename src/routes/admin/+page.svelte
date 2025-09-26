@@ -1,193 +1,209 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { page } from "$app/stores"
-    import { writable } from "svelte/store";
-	import LayerTable from '$lib/components/admin/layer-table.svelte';
-	import type { Indexer, Layer } from '$lib/types';
-	import { MossUtils } from '$lib/utils/moss-utils';
-    import { env } from '$env/dynamic/public'
-	import LayerForm from '$lib/components/admin/layer-form.svelte';
-    import IndexerTable from '$lib/components/admin/indexer-table.svelte';
-	import IndexerForm from '$lib/components/admin/indexer-form.svelte';
+	import { onMount } from 'svelte';
+	import { hashStore } from '$lib/stores/hash-navigation';
+	import ModuleForm from './module-form.svelte';
+	import ModuleDeleter from './module-deleter.svelte';
+	import ModuleDetail from './module-detail.svelte';
+	import type { MossModule } from '$lib/types';
+	import { env } from '$env/dynamic/public';
+	import { writable, derived } from 'svelte/store';
+	import { page } from '$app/stores';
+	import LoginWall from '$lib/components/login-wall.svelte';
 
+	const modules = writable<MossModule[]>([]);
 
-    // Store for active tab
-    const activeTab = writable("layers");
-   
-    // Set active tab from URL hash
-    onMount(() => {
-        const hash = window.location.hash.slice(1); // Remove #
-        if (hash) {
-            activeTab.set(hash);
-        }
+	async function fetchModules() {
+		try {
+			const res = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules`);
+			if (res.ok) modules.set(await res.json());
+		} catch (err) {
+			console.error('Failed to fetch modules:', err);
+		}
+	}
 
-        window.addEventListener("hashchange", () => {
-            activeTab.set(window.location.hash.slice(1));
-        });
+	onMount(fetchModules);
 
-    });
-    
+	function showCreateForm() {
+		hashStore.navigate('create-module');
+	}
 
-    let layers = writable($page.data.layers);
-    let indexerForm : Indexer = { id: '', layers: [] };
+	function openDetail(mod: MossModule) {
+		hashStore.navigate(`edit-module?id=${encodeURIComponent(mod.id)}`);
+	}
 
-    let isEditing = false;
-    let activeLayerId : string|null = null;
-    let activeIndexer : Indexer|null = null;
-    let layerToDelete : string|null = null;
+	function backToList() {
+		hashStore.navigate('list');
+	}
 
-    function onCreateLayer() {
-        isEditing = false;
-        window.location.hash = "layers-create";
-    }
+	// Derived active module
+	const activeModule = derived([modules, hashStore], ([$modules, $hash]) =>
+		$hash.params.id ? $modules.find((m) => m.id === $hash.params.id) || null : null
+	);
 
-    function onEditLayer(event: CustomEvent<Layer>) {
-        isEditing = true;
-        activeLayerId = event.detail.id;
-        window.location.hash = `layers-edit?id=${encodeURIComponent(event.detail.id)}`;
-    }
+	async function handleCreated(moduleData: MossModule) {
+		try {
+			const res = await fetch(`/api/v1/modules`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(moduleData)
+			});
 
-    function onEditIndexer(event: CustomEvent<Indexer>) {
-        activeIndexer = event.detail;
-        indexerForm = { ...event.detail };
-        window.location.hash = `indexers-edit?id=${encodeURIComponent(event.detail.id)}`;
-    }
+			if (!res.ok) {
+				const text = await res.text();
+				console.error('Failed to create module:', text);
+				return;
+			}
 
-    function onCreateIndexer() {
-        indexerForm = { id: '', layers: [] };;
-        window.location.hash = "indexers-edit";
-    }
+			await fetchModules();
+			backToList();
+		} catch (err) {
+			console.error('Error creating module:', err);
+		}
+	}
 
-    async function sendDeleteRequest() {
+	async function handleDelete(id: string) {
+		try {
+			const res = await fetch(`/api/v1/modules/${id}`, { method: 'DELETE' });
 
-        if(activeLayerId == null || activeLayerId !== layerToDelete) {
-            cancelLayerForm();
-            return;
-        }
+			console.log(res);
 
-        let layerName = MossUtils.getResourceNameFromId(activeLayerId);
-            const response = await MossUtils.fetchAuthorized(env.PUBLIC_MOSS_BASE_URL + "/api/layers/" + layerName, 'DELETE');
-
-        if (!response.ok) {
-            const error = await response.json();
-            console.error("Error:", error);
-            cancelLayerForm();
-            return;
-        }
-
-        const layerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
-        let layerResponse = await layerListResponse.json();
-        layers.set(layerResponse);
-
-        cancelLayerForm();
-    }
-
-    async function deleteLayer(event: CustomEvent<string>) {
-        layerToDelete = "";
-        window.location.hash = "layers-delete";
-        activeLayerId = event.detail;
-    }
-
-
-    async function cancelLayerForm() {
-
-        const layerListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers`);
-        let layerResponse = await layerListResponse.json();
-        layers.set(layerResponse);
-
-        activeLayerId = null;
-        window.location.hash = "layers";
-    }
-    
+			if (res.ok) {
+				await fetchModules();
+				backToList();
+			} else {
+				console.error(await res.text());
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	}
 </script>
 
+{#if $page.data.userData}
+	<div class="section">
+		<div class="container">
+			<div class="admin-page">
+				{#if $hashStore.view === 'list'}
+					<div class="top-bar">
+						<h1>Modules</h1>
+						<button class="btn-create" on:click={showCreateForm}>+ Create Module</button>
+					</div>
 
+					<div class="grid">
+						{#each $modules as module}
+							<button class="card" on:click={() => openDetail(module)}>
+								<h2>{module.label}</h2>
+								<p>{module.description}</p>
+								<div class="meta"><strong>Language:</strong> {module.language}</div>
+							</button>
+						{/each}
+					</div>
+				{/if}
 
-<div class="section">
-    <div class="container">
+				{#if $hashStore.view === 'delete-module' && $activeModule}
+					<ModuleDeleter
+						activeModule={$activeModule}
+						on:delete={({ detail }) => handleDelete(detail.id)}
+						on:cancel={backToList}
+					/>
+				{/if}
 
-        {#if $page.data.userData.isAdmin}
-        <h1>MOSS Admin Settings</h1>
+				{#if $hashStore.view === 'create-module'}
+					<ModuleForm on:cancel={backToList} on:created={(e) => handleCreated(e.detail)} />
+				{/if}
 
-        <div class="columns">
-            <div class="column small sidebar">
-                <a class="sidebar-link" class:active={$activeTab.startsWith("layers")} href="#layers">
-                    Layers
-                </a>
-                <a class="sidebar-link" class:active={$activeTab.startsWith("indexers")} href="#indexers">
-                    Indexers
-                </a>
-                <!--a class="sidebar-link" class:active={$activeTab.startsWith("shapes")} href="#shapes">
-                    Shapes
-                </a>-->
-            </div>
-            <div class="column settings">
-               
-                {#if $activeTab === "layers"}
-                    <h2>Layers</h2>
-                    <LayerTable layerData={$layers} on:edit={onEditLayer} on:delete={deleteLayer} on:create={onCreateLayer} />
-                {/if}
-                
-                {#if $activeTab.startsWith("layers-create")}
-                    <LayerForm on:cancel={cancelLayerForm} />
-                {/if}
-
-                {#if $activeTab.startsWith("layers-delete")}
-                    <form on:submit|preventDefault={sendDeleteRequest}>
-                        <p>Delete {activeLayerId} </p>
-                        <input type="text" bind:value={layerToDelete} placeholder="Retype layer name..." required />
-                        <button type="submit">Delete</button>
-                        <button type="button" on:click={cancelLayerForm}>Cancel</button>
-                    </form>
-                {/if}
-                
-                {#if $activeTab.startsWith("layers-edit")}
-                    <LayerForm on:cancel={cancelLayerForm} />
-                {/if}
-
-                {#if $activeTab.startsWith("indexers-edit")}
-                    <IndexerForm   />
-                {/if}
-
-                {#if $activeTab === "indexers"}
-                    <h2>Indexers</h2>
-                    <IndexerTable on:edit={onEditIndexer} on:create={onCreateIndexer} />
-                {/if}
-
-                
-               
-                <!--
-                <div class="setting">
-                    <h2>Current Username</h2>
-                    <Input id="currentUser" disabled style="width: 450px; margin-right: .5em" bind:value={username} placeholder="Enter a username..." />
-                </div>-->
-
-            </div>
-
-        </div>
-
-
-        {/if}
-    </div>
-</div>
+				{#if $hashStore.view === 'edit-module' && $activeModule}
+					<ModuleDetail
+						activeModule={$activeModule}
+						on:back={backToList}
+						on:updated={fetchModules}
+					/>
+				{/if}
+			</div>
+		</div>
+	</div>
+{:else}
+	<LoginWall />
+{/if}
 
 <style>
-   
-    h2 {
-        font-size: 1.3em;
-    }
+	.admin-page {
+		padding: 2rem 0;
+		font-family: 'Inter', sans-serif;
+	}
 
+	h1 {
+		font-size: 1.75rem;
+		font-weight: 700;
+		margin: 0;
+		padding: 0;
+		color: #111827;
+	}
 
-    button {
-        padding: .5em 1em;
-        background-color:#f4f4f4;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-right: 2px;
-        cursor: pointer;
-    }
+	.top-bar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
 
-    
+	.btn-create {
+		padding: 0.5em 1em;
+		background-color: #4f46e5;
+		color: white;
+		border: none;
+		border-radius: 0.375rem;
+		cursor: pointer;
+		font-weight: 600;
+		transition: background 0.2s;
+	}
 
+	.btn-create:hover {
+		background-color: #6366f1;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.card {
+		background: #fff;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.5rem;
+		padding: 1rem;
+		text-align: left;
+		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		transition:
+			box-shadow 0.2s,
+			transform 0.2s;
+		width: 100%;
+	}
+
+	.card:hover {
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+		transform: translateY(-1px);
+	}
+
+	.card h2 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin-bottom: 0.25rem;
+	}
+
+	.card p {
+		font-size: 0.95rem;
+		color: #4b5563;
+		margin-bottom: 0.5rem;
+	}
+
+	.card .meta {
+		font-size: 0.85rem;
+		color: #6b7280;
+	}
 </style>
-

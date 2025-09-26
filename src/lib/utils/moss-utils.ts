@@ -1,4 +1,5 @@
 import { env } from "$env/dynamic/public";
+import type { RdfFormatInfo } from "$lib/types";
 import { RdfUris } from "./rdf-uris";
 
 export class MossUtils {
@@ -94,17 +95,21 @@ export class MossUtils {
         return items;
     }
 
-    static getLayerURI(baseUrl: string, resource: string, layerId: string): string {
-        const layerName = MossUtils.getResourceNameFromId(layerId);
+    static getMossEntryURI(baseUrl: string, resource: string, layerId: string): string {
+        const moduleId = MossUtils.getResourceNameFromId(layerId);
         const databusResourceURIFragments = MossUtils.getMossDocumentUriFragments(resource);
-        return `${baseUrl}/res/${databusResourceURIFragments}/${layerName}`;
+        return `${baseUrl}/res/${databusResourceURIFragments}/${moduleId}`;
       }
 
-    static getRelativeBrowseLink(entryUrl: string) {
+    static getRelativeBrowseLink(entryUrl: string, formatInfo: RdfFormatInfo | null = null): string {
         let url = new URL(entryUrl);
+        let result = url.pathname.replace("res", "browse");
 
+        if(formatInfo != null) {
+            result += `.${formatInfo.extensions[0]}`;
+        }
 
-        return url.pathname.replace("res", "browse");
+        return result;
     }
     
       static getMossDocumentUriFragments(resourceURI: string): string {
@@ -163,9 +168,9 @@ export class MossUtils {
 
 
 
-    static getSaveRequestURL(resource: string, layerName: string): string {
-        resource = resource.replaceAll("#", MossUtils.encodedHashTag);
-        return `/api/save?layer=${layerName}&resource=${resource}`;
+    static getSaveRequestURL(resourceUri: string, moduleId: string): string {
+        resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
+        return `/api/v1/save-entry?module=${moduleId}&resource=${resourceUri}`;
     }
 
     static getUriSegments(path: string) {

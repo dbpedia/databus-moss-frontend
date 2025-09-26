@@ -7,6 +7,10 @@ body {
     padding: 0;
 }
 
+html {
+    overflow-y: scroll;
+}
+
 h1 {
     font-size: 1.3em;
     padding-top: 1em;

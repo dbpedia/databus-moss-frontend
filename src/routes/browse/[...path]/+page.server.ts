@@ -2,7 +2,8 @@
 import { MossUtils } from '$lib/utils/moss-utils';
 import { RdfUris } from '$lib/utils/rdf-uris';
 import { error } from '@sveltejs/kit';
-import { env } from '$env/dynamic/public'
+import { env } from '$env/dynamic/public';
+import jsonld from 'jsonld';
 
 
 /** @type {import('./$types').PageServerLoad} */
@@ -29,10 +30,9 @@ export async function load({ url, locals }: any) {
     }
 
     let contentType = response.headers.get("Content-Type");
-    let extensionURI = null;
 
     let entryData : any = {};
-    let layerData: any = {};
+    let moduleData: any = {};
 
     if(contentType != "application/json") {
 
@@ -41,9 +41,8 @@ export async function load({ url, locals }: any) {
         isDocument = true;
         entryData.uri = MossUtils.getEntryURIFromBrowsePath(env.PUBLIC_MOSS_BASE_URL, url.pathname);
 
-        console.log(entryData.uri);
         
-        // Fetch layer info
+        // Fetch module info
         // var graphURI = env.PUBLIC_MOSS_BASE_URL + url.pathname.replace("/browse", "/g/content");
        
         var query = `SELECT ?p ?o WHERE {
@@ -51,6 +50,9 @@ export async function load({ url, locals }: any) {
         }`;
 
         var sparqlRequestURL = `${env.PUBLIC_MOSS_BASE_URL}/sparql?query=${encodeURIComponent(query)}`;
+
+        console.log(sparqlRequestURL);
+
         let sparqlResponse = await fetch(sparqlRequestURL, {
             method: 'GET', // or 'POST', 'PUT', etc.
             headers: {
@@ -70,7 +72,7 @@ export async function load({ url, locals }: any) {
         for(const binding of result.results.bindings) {
 
             if(binding.p.value == RdfUris.MOSS_INSTANCE_OF) {
-                entryData.layerURI = binding.o.value;
+                entryData.moduleURI = binding.o.value;
             }
 
             if(binding.p.value == RdfUris.MOSS_EXTENDS) {
@@ -84,16 +86,18 @@ export async function load({ url, locals }: any) {
             });
         }
 
-       
-
-        console.log(entryData.layerURI);
-        
-
         try {
-            layerData = await(await fetch(entryData.layerURI)).json();
+            console.log("====== MODULE LOADING ======");
+            
+            console.log(entryData.moduleURI);
+            
+            moduleData = await(await fetch(entryData.moduleURI)).json();
+            moduleData = await jsonld.expand(moduleData);
+            moduleData = moduleData[0];
+            
         }
         catch(e) {
-            console.log("ERROR LOADING LAYER DATA");
+            console.log("ERROR LOADING MODULE DATA");
             
         }
         
@@ -123,7 +127,7 @@ export async function load({ url, locals }: any) {
         token: session?.accessToken,
         props: {
             extensionData: entryData,
-            layerData: layerData,
+            moduleData: moduleData,
             segments,
             domain,
             isDocument,

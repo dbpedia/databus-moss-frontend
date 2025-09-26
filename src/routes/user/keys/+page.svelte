@@ -17,7 +17,7 @@
 
     async function fetchUserData() {
         
-        let response = await MossUtils.fetchAuthorized(`${env.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, "GET", undefined);
+        let response = await fetch(`/api/v1/users/get-user`);
 
         if (response.ok) {
             user = await response.json();
@@ -33,7 +33,7 @@
             return;
         }
 
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/users/create-apikey?name=${apiKeyNameInput}`;
+        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/v1/users/create-apikey?name=${apiKeyNameInput}`;
         let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
         if(response.ok) {
@@ -57,7 +57,7 @@
 
 
     async function onRevokeAPIKeyButtonClicked(keyName: string) {
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/users/revoke-apikey?name=${keyName}`;
+        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/v1/users/revoke-apikey?name=${keyName}`;
         let response = await MossUtils.fetchAuthorized(uri, 'POST');
 
         if(response.ok) {

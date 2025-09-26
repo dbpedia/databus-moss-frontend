@@ -16,10 +16,11 @@ async function fetchUserData(session: any) {
         Authorization: 'Bearer ' + accessToken
     };
 
-    let response = await fetch(`${ENV.PUBLIC_MOSS_BASE_URL}/api/users/get-user`, {
+    let response = await fetch(`${env.MOSS_API_SERVER_URL}/api/v1/users/get-user`, {
         method: "GET",
         headers: headers,
     });
+
 
     console.log(JSON.stringify(response, null, 3));
 
@@ -35,12 +36,12 @@ async function fetchUserData(session: any) {
 export const load: LayoutServerLoad = async (event) => {
 
     let userData = null;
-    console.log(`Fetching user data....`);
+    // console.log(`Fetching user data....`);
 
     try {
         const session = await event.locals.auth() as any;
 
-        console.log(JSON.stringify(session, null, 3));
+        // console.log(JSON.stringify(session, null, 3));
         userData = await fetchUserData(session);
 
         // userData.isAdmin now comes from backend API, no local role check here
@@ -49,7 +50,7 @@ export const load: LayoutServerLoad = async (event) => {
         console.error("Error fetching user data:", error);
     }
 
-    console.log(JSON.stringify(userData, null, 3));
+    // console.log(JSON.stringify(userData, null, 3));
 
     return {
         userData: userData

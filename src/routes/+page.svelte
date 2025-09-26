@@ -11,7 +11,7 @@
 	import { JsonldUtils } from "$lib/utils/jsonld-utils";
 	import { RdfUris } from "$lib/utils/rdf-uris";
 
-    let baseUrl = `${env.PUBLIC_MOSS_BASE_URL}/api/search?query=`;
+    let baseUrl = `/api/v1/search?query=`;
     let joinSuffix = `&join=`;
     let joinField = "annotation";
 
@@ -220,7 +220,7 @@
                         databusResourceData.abstract = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_ABSTRACT);
                         databusResourceData.description = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_DESCRIPTION);
                         databusResourceData.browseLink = MossUtils.getRelativeBrowseLink(
-                            MossUtils.getLayerURI(env.PUBLIC_MOSS_BASE_URL, databusResourceUri, ""));
+                            MossUtils.getMossEntryURI(env.PUBLIC_MOSS_BASE_URL, databusResourceUri, ""));
                         databusResourceData.layers = [];
 
                         resultMap[databusResourceUri] = databusResourceData;
