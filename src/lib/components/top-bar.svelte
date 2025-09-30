@@ -37,6 +37,7 @@
 <style>
     .container {
         top: 0;
+        margin-top: .5rem;
         z-index: 1000;
         margin-left: 1em;
         margin-right: 1em;

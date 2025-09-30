@@ -20,3 +20,10 @@ export interface MossModule {
     description: string;
     language: string;
 }
+
+export interface DatabusResource {
+    id: string;
+    title: string;
+    abstract: string;
+    description: string;
+}

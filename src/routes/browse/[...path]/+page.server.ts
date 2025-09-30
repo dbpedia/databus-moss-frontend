@@ -4,17 +4,18 @@ import { RdfUris } from '$lib/utils/rdf-uris';
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import jsonld from 'jsonld';
+import type { DatabusResource, MossModule } from '$lib/types';
 
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url, locals }: any) {
 
-    
-    
-    
+
+
+
     const domain = url.toString();
     const segments = MossUtils.getUriSegments(url.pathname);
-    
+
     let folders;
     let files;
     let isDocument = false;
@@ -31,27 +32,27 @@ export async function load({ url, locals }: any) {
 
     let contentType = response.headers.get("Content-Type");
 
-    let entryData : any = {};
+    let entryData: any = {};
     let moduleData: any = {};
+    let module: MossModule | null = null;
+    let resource: DatabusResource | null = null;
 
-    if(contentType != "application/json") {
+    if (contentType != "application/json") {
 
         content = await response.text();
 
         isDocument = true;
         entryData.uri = MossUtils.getEntryURIFromBrowsePath(env.PUBLIC_MOSS_BASE_URL, url.pathname);
 
-        
+
         // Fetch module info
         // var graphURI = env.PUBLIC_MOSS_BASE_URL + url.pathname.replace("/browse", "/g/content");
-       
+
         var query = `SELECT ?p ?o WHERE {
             <${entryData.uri}> ?p ?o .
         }`;
 
         var sparqlRequestURL = `${env.PUBLIC_MOSS_BASE_URL}/sparql?query=${encodeURIComponent(query)}`;
-
-        console.log(sparqlRequestURL);
 
         let sparqlResponse = await fetch(sparqlRequestURL, {
             method: 'GET', // or 'POST', 'PUT', etc.
@@ -59,48 +60,52 @@ export async function load({ url, locals }: any) {
                 'Accept': 'application/json', // You can specify other formats as needed
             },
         });
-        
+
         let result = await sparqlResponse.json();
-        headerInfo = []; 
+        headerInfo = [];
 
         headerInfo.push({
-            key : "id",
+            key: "id",
             type: "uri",
             value: entryData.uri,
         });
-        
-        for(const binding of result.results.bindings) {
 
-            if(binding.p.value == RdfUris.MOSS_INSTANCE_OF) {
+        for (const binding of result.results.bindings) {
+
+            if (binding.p.value == RdfUris.MOSS_INSTANCE_OF) {
                 entryData.moduleURI = binding.o.value;
             }
 
-            if(binding.p.value == RdfUris.MOSS_EXTENDS) {
+            if (binding.p.value == RdfUris.MOSS_EXTENDS) {
                 entryData.databusResourceURI = binding.o.value;
+
             }
 
             headerInfo.push({
-                key : RdfUris.compact(binding.p.value),
+                key: RdfUris.compact(binding.p.value),
                 value: binding.o.value,
                 type: binding.o.type
             });
         }
 
+
         try {
-            console.log("====== MODULE LOADING ======");
-            
-            console.log(entryData.moduleURI);
-            
-            moduleData = await(await fetch(entryData.moduleURI)).json();
+            // console.log("====== MODULE LOADING ======");
+
+            moduleData = await (await fetch(entryData.moduleURI)).json();
             moduleData = await jsonld.expand(moduleData);
             moduleData = moduleData[0];
-            
+
+            // console.log(moduleData);
+
+            module = MossUtils.formatModuleData(moduleData);
+
         }
-        catch(e) {
-            console.log("ERROR LOADING MODULE DATA");
-            
+        catch (e) {
+            // console.log("ERROR LOADING MODULE DATA");
+
         }
-        
+
 
 
     } else {
@@ -111,7 +116,7 @@ export async function load({ url, locals }: any) {
         if (!folders) {
             folders = [];
         }
-        
+
         files = data.files;
     }
 
@@ -125,8 +130,11 @@ export async function load({ url, locals }: any) {
         content: content,
         contentType: contentType,
         token: session?.accessToken,
+        module: module,
+        resource: resource,
         props: {
             extensionData: entryData,
+            moduleId: MossUtils.uriToName(moduleData[RdfUris.JSONLD_ID]),
             moduleData: moduleData,
             segments,
             domain,

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import jsonld from 'jsonld';
 	import { onMount } from 'svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import CodeMirror from '$lib/components/code-mirror.svelte';
@@ -9,7 +10,13 @@
 	import { env } from '$env/dynamic/public';
 	import { RdfFormats } from '$lib/utils/rdf-formats';
 	import type { MossModule } from '$lib/types';
-	// === Template mapping ===
+	import { JsonldUtils } from '$lib/utils/jsonld-utils';
+	import { RdfUris } from '$lib/utils/rdf-uris';
+	import MossModuleWidget from '$lib/components/moss-module-widget.svelte';
+	import MossModuleHeader from '$lib/components/moss-module-header.svelte';
+	import { Button, GradientButton } from 'flowbite-svelte';
+	import MossEntryHeader from '$lib/components/moss-entry-header.svelte';
+
 	type TemplateFormat = 'json-ld' | 'turtle' | 'yaml' | null;
 	interface TemplateMapping {
 		name: string;
@@ -30,18 +37,19 @@
 		return templateMapping[language] || { name: 'template.txt', format: null };
 	}
 
-	// === State ===
 	let moduleId = '';
 	let databusResource = '';
 	let errorMessage = '';
+	let validationMessages: string[] = [];
+	let validationSuccess = false;
 	let activeModule: MossModule | null = null;
 	let moduleList: any[] = [];
 	let entryUri: string | null;
 
-	let entryExists: boolean | null = null; // null = not checked, true = exists, false = not
+	let entryExists: boolean | null = null;
 	let entryCreated = false;
+	let headerInfo: { key: string; value: string; type?: string }[] = [];
 
-	// Step 2 detection
 	$: params = new URLSearchParams($page.url.search);
 	$: step2 = params.has('module') && params.has('resource');
 
@@ -52,18 +60,57 @@
 		updateActiveModule();
 		loadTemplate();
 		checkEntryExists();
+		createHeaderInfo();
 		entryCreated = false;
 	} else {
+		headerInfo = [];
 		entryUri = null;
 		errorMessage = '';
 		entryCreated = false;
+		validationMessages = [];
+		validationSuccess = false;
+	}
+
+	function createHeaderInfo() {
+		let info: { key: string; value: string; type?: string }[] = [];
+
+		info.push({
+			key: 'id',
+			value: entryUri ?? '',
+			type: 'placeholder'
+		});
+
+		info.push({
+			key: 'rdf:type',
+			value: RdfUris.MOSS_ENTRY,
+			type: 'uri'
+		});
+
+		info.push({
+			key: 'moss:instanceOf',
+			value: MossUtils.getModuleUri(moduleId),
+			type: 'uri'
+		});
+
+		info.push({
+			key: 'moss:extends',
+			value: databusResource,
+			type: 'uri'
+		});
+
+		let mimeType = RdfFormats.getFormatByMimeType(activeModule?.language ?? '');
+
+		info.push({
+			key: 'moss:content',
+			value: MossUtils.getContentGraphUri(databusResource, moduleId, mimeType),
+			type: 'placeholder'
+		});
+
+		headerInfo = info;
 	}
 
 	function goToEntry() {
-		if(entryUri == null || activeModule == null) {
-			return;
-		}
-
+		if (entryUri == null || activeModule == null) return;
 		let formatInfo = RdfFormats.getFormatByMimeType(activeModule.language);
 		let browseLink = MossUtils.getRelativeBrowseLink(entryUri, formatInfo);
 		goto(browseLink);
@@ -71,13 +118,11 @@
 
 	async function checkEntryExists() {
 		if (!databusResource || !moduleId || !entryUri) return;
-
 		try {
 			const response = await fetch(entryUri, {
 				method: 'GET',
 				headers: { Accept: 'application/ld+json' }
 			});
-
 			entryExists = response.status === 200;
 		} catch (err) {
 			console.error('Error checking entry existence:', err);
@@ -85,15 +130,12 @@
 		}
 	}
 
-	// Template editor
 	let resourceName: string;
 	let format: TemplateFormat = null;
 	let templateContent = '';
 
-	// Populate modules + prefill step 2
 	onMount(async () => {
 		moduleList = $page.data.modules ?? [];
-
 		if (step2) {
 			moduleId = params.get('module')!;
 			databusResource = params.get('resource')!;
@@ -106,9 +148,12 @@
 
 	function updateActiveModule() {
 		activeModule = moduleList.find((mod) => mod.id === moduleId) ?? null;
+
+		if (activeModule && databusResource) {
+			createHeaderInfo();
+		}
 	}
 
-	// Step 1 → Next
 	function nextStep() {
 		if (!moduleId || !databusResource) {
 			errorMessage = 'Both module and Databus Resource are required.';
@@ -120,34 +165,21 @@
 		goto(`?${params.toString()}`);
 	}
 
-	// Step 2 → Back
 	function goBack() {
 		goto('/create-entry');
 	}
 
-	// Step 2 → Create
 	async function createEntry() {
 		errorMessage = '';
 		try {
 			const saveURL = MossUtils.getSaveRequestURL(databusResource, moduleId);
-
-			const headers: any = {
-				Accept: 'application/json',
-				'Content-Type': activeModule?.language
-			};
-
-			var response = await fetch(saveURL, {
-				method: 'POST',
-				headers: headers,
-				body: templateContent
-			});
+			const headers: any = { Accept: 'application/json', 'Content-Type': activeModule?.language };
+			const response = await fetch(saveURL, { method: 'POST', headers, body: templateContent });
 
 			if (response.status === 200) {
 				const data = await response.json();
 				console.log('Entry created:', data);
 				entryCreated = true;
-
-
 			} else {
 				const body = await response.json();
 				errorMessage = body.message;
@@ -157,11 +189,44 @@
 		}
 	}
 
+	async function validateEntry() {
+		errorMessage = '';
+		validationMessages = [];
+		validationSuccess = false;
+		try {
+			const validationURL = MossUtils.getValidationRequestURL(databusResource, moduleId);
+			const headers: any = {
+				Accept: 'application/ld+json',
+				'Content-Type': activeModule?.language
+			};
+			const response = await fetch(validationURL, {
+				method: 'POST',
+				headers,
+				body: templateContent
+			});
+
+			const reportGraph = await jsonld.expand(await response.json());
+			const report = JsonldUtils.getTypedGraph(reportGraph, RdfUris.SHACL_VALIDATION_REPORT);
+			const conformsRaw = JsonldUtils.getValue(report, RdfUris.SHACL_CONFORMS);
+			const conforms = conformsRaw === true || conformsRaw === 'true';
+
+			if (conforms === true) {
+				validationSuccess = true;
+			} else {
+				const results = report[RdfUris.SHACL_RESULT] ?? [];
+				validationMessages = results.map((result: any) => {
+					const resultGraph = JsonldUtils.getGraphById(reportGraph, result[RdfUris.JSONLD_ID]);
+					return JsonldUtils.getValue(resultGraph, RdfUris.SHACL_RESULT_MESSAGE);
+				});
+			}
+		} catch (e: any) {
+			errorMessage = e.message;
+		}
+	}
+
 	async function loadTemplate() {
 		if (!activeModule) return;
-
 		({ name: resourceName, format } = getTemplateFile(activeModule.language));
-
 		try {
 			const response = await fetch(`/api/v1/modules/${moduleId}/${resourceName}`);
 			if (response.ok) {
@@ -180,7 +245,7 @@
 	<section class="section">
 		<div class="container">
 			{#if !step2}
-				<div class="form-card">
+				<div class="form-card thin">
 					<h2>Create Metadata Entry</h2>
 					<form on:submit|preventDefault={nextStep}>
 						<div class="form-group">
@@ -207,54 +272,92 @@
 						</div>
 
 						{#if activeModule}
-							<div class="card">
-								<h2>{activeModule.label}</h2>
-								<p>{activeModule.description}</p>
-								<p class="meta">Language: {activeModule.language}</p>
+							<div class="module-box">
+								<MossModuleHeader moduleInfo={activeModule}></MossModuleHeader>
 							</div>
 						{/if}
 
 						<div class="form-actions right">
-							<button type="submit" class="btn-primary">Next</button>
+							<GradientButton
+								color="pinkToOrange"
+								size="md"
+								type="submit"
+								class="button-group-size relative">Next</GradientButton
+							>
 						</div>
 						{#if errorMessage}<div class="error-box">{errorMessage}</div>{/if}
 					</form>
 				</div>
 			{:else if activeModule}
-				<div class="form-card">
-					<h2>Create Metadata Entry</h2>
-
-					<DatabusResourcePreview resourceUrl={databusResource} />
-					<div class="card" style="margin-top: 0.5rem;">
+				<!--div class="card" style="margin-top: 0.5rem;">
 						<h2>{activeModule.label}</h2>
 						<p>{activeModule.description}</p>
 						<p class="meta">Language: {activeModule.language}</p>
-					</div>
+					</div>-->
 
-					{#if entryCreated}
-						<p class="resource-success">Entry was created successfully.</p>
-						<div class="form-actions right">
-							<button type="button" class="btn-secondary" on:click={goBack}>Back</button>
-							<button class="btn-primary" on:click={goToEntry}>Go To Entry</button>
-						</div>
-						
-					{:else if entryExists}
+				{#if entryCreated}
+					<p class="resource-success">Entry was created successfully.</p>
+					<div class="form-actions right">
+						<button type="button" class="btn-secondary" on:click={goBack}>Back</button>
+						<button class="btn-primary" on:click={goToEntry}>Go To Entry</button>
+					</div>
+				{:else if entryExists}
+					<div class="form-card">
+						<h2>Create Metadata Entry</h2>
+						<DatabusResourcePreview resourceUrl={databusResource} />
 						<p class="resource-warning">An entry for this resource and module already exists.</p>
 						<div class="form-actions right">
 							<button type="button" class="btn-secondary" on:click={goBack}>Back</button>
 							<button class="btn-primary" on:click={goToEntry}>Go To Entry</button>
 						</div>
-					{:else}
-						<CodeMirror bind:value={templateContent} format={activeModule.language} />
+					</div>
+				{:else}
+					<MossEntryHeader module={activeModule} entryData={headerInfo}></MossEntryHeader>
 
-						<div class="form-actions right">
-							<button type="button" class="btn-secondary" on:click={goBack}>Back</button>
-							<button type="button" class="btn-primary" on:click={createEntry}>Create Entry</button>
+					<div style="display:flex; gap: 1rem">
+						<div style="flex: 3">
+							<div class="form-actions" style="justify-content: space-between;">
+								<Button
+									color="alternative"
+									size="md"
+									class="button-group-size relative"
+									on:click={goBack}>Back</Button
+								>
+
+								<GradientButton
+									color="pinkToOrange"
+									size="md"
+									class="button-group-size relative"
+									on:click={createEntry}>Create Entry</GradientButton
+								>
+							</div>
+							<div class="code-area">
+								<CodeMirror bind:value={templateContent} format={activeModule.language} />
+							</div>
 						</div>
 
-						{#if errorMessage}<div class="error-box">{errorMessage}</div>{/if}
+						<div style="width: 500px">
+							<MossModuleWidget
+								bind:moduleId={activeModule.id}
+								content={templateContent}
+								resourceUri={databusResource}
+								on:testIndexer={(e) => console.log('Test Indexer', e.detail)}
+							/>
+						</div>
+					</div>
+
+					{#if validationMessages.length > 0}
+						<ul class="error-box">
+							{#each validationMessages as msg}
+								<li>{msg}</li>
+							{/each}
+						</ul>
 					{/if}
-				</div>
+
+					{#if errorMessage && validationMessages.length === 0}<div class="error-box">
+							{errorMessage}
+						</div>{/if}
+				{/if}
 			{/if}
 		</div>
 	</section>
@@ -267,7 +370,6 @@
 		padding: 2rem 0;
 	}
 	.container {
-		max-width: 800px;
 		margin: 0 auto;
 	}
 	.form-card {
@@ -276,11 +378,26 @@
 		border: 1px solid #e5e7eb;
 		border-radius: 0.5rem;
 		margin-bottom: 2rem;
+		max-width: 800px;
+		margin: auto;
 	}
 
 	h2 {
 		font-size: 1.5rem;
 		margin-bottom: 1rem;
+	}
+
+	.module-box {
+		background-color: #fcfcfc;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.5rem;
+		padding: 1rem;
+		position: relative;
+		margin-bottom: 1rem;
+	}
+
+	.code-area {
+		border: 1px solid #e5e7eb;
 	}
 	.form-group {
 		margin-bottom: 1rem;
@@ -306,38 +423,9 @@
 		border-color: #6366f1;
 		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 	}
-	.card {
-		background-color: #fafafa;
-		border: 1px solid #e5e7eb;
-		border-radius: 0.5rem;
-		padding: 1rem;
-		text-align: left;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		transition:
-			box-shadow 0.2s,
-			transform 0.2s;
-		width: 100%;
-		margin-bottom: 1rem;
-	}
-	.card h2 {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: #1f2937;
-		margin-bottom: 0.25rem;
-	}
-	.card p {
-		font-size: 0.95rem;
-		color: #4b5563;
-		margin-bottom: 0.5rem;
-	}
-	.card .meta {
-		font-size: 0.85rem;
-		color: #6b7280;
-	}
+
 	.form-actions {
-		margin-top: 1.5rem;
+		margin-bottom: 0.5rem;
 		display: flex;
 		gap: 0.5rem;
 	}

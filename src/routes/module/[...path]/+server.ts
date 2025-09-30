@@ -2,43 +2,16 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private'
 
-const publicRoutes: Record<string, string[]> = {
-    '/api/v1/modules': ['GET'],
-};
-
-function isPublicRoute(path: string, method: string) {
-    for (const [route, methods] of Object.entries(publicRoutes)) {
-        if (path.startsWith(route) && methods.includes(method)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 async function proxyHandler({ request, params, locals }: any) {
     const session = await locals.auth?.() as any;
 
-    const requestURL = new URL(request.url);
-    const path = requestURL.pathname;
-
-    // Skip auth if route+method is public
-    if (!isPublicRoute(path, request.method)) {
-        if (!session?.user || !session.accessToken) {
-            return new Response(JSON.stringify({ message: 'Unauthorized', status: 401 }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    const accessToken = session?.accessToken ?? '';
+    var requestURL = new URL(request.url);
     const backendUrl = `${env.MOSS_API_SERVER_URL}${requestURL.pathname}${requestURL.search}`;
 
     const proxyOptions: RequestInit = {
         method: request.method,
         headers: {
             ...Object.fromEntries(request.headers),
-            ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
         },
         body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text()
     };

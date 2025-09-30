@@ -44,6 +44,13 @@ export class RdfUris {
     // RDF
     static RDF_TYPE : string = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 
+    // SHACL
+    static SHACL_VALIDATION_REPORT = 'http://www.w3.org/ns/shacl#ValidationReport';
+    static SHACL_VALIDATION_RESULT = 'http://www.w3.org/ns/shacl#ValidationResult';
+    static SHACL_CONFORMS = 'http://www.w3.org/ns/shacl#conforms';
+    static SHACL_RESULT = 'http://www.w3.org/ns/shacl#result';
+    static SHACL_RESULT_MESSAGE = 'http://www.w3.org/ns/shacl#resultMessage';
+
     static compact(uri : string) : string {
         uri = uri.replace(this.NS_MOSS, "moss:");
         uri = uri.replace(this.NS_DCT, "dct:");
