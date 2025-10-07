@@ -22,16 +22,18 @@
 	let moduleInfo: any = null;
 	let shaclContent = '';
 	let indexerContent = '';
+	let contextContent = '';
+	let contextUri = '';
 	let errorMessage = '';
 	let shaclExists = false;
 	let indexerExists = false;
+	let contextExists = false;
 
-	let activeTab: 'shacl' | 'indexer' | null = 'shacl';
+	let activeTab: 'shacl' | 'indexer' | 'context' | null = 'shacl';
 	let validationView = false;
 
 	let validationMessages: string[] = [];
 	let validationSuccess = false;
-
 
 	let testReport: TestReport | null = null;
 	let testView = false;
@@ -67,6 +69,15 @@
 			if (indexerRes.ok) {
 				indexerExists = true;
 				indexerContent = await indexerRes.text();
+			} else {
+				activeTab = 'context';
+			}
+
+			const contextRes = await fetch(`/api/v1/modules/${moduleId}/context.jsonld`);
+			if (contextRes.ok) {
+				contextExists = true;
+				contextUri = `${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules/${moduleId}/context.jsonld`;
+				contextContent = await contextRes.text();
 			}
 		} catch (e: any) {
 			console.error('Error loading optional resources:', e);
@@ -193,6 +204,11 @@
 						Indexer
 					</button>
 				{/if}
+				{#if contextExists}
+					<button class:active={activeTab === 'context'} on:click={() => (activeTab = 'context')}>
+						Context
+					</button>
+				{/if}
 			</div>
 
 			{#if activeTab === 'shacl'}
@@ -274,6 +290,14 @@
 
 					<pre class="code yaml">{indexerContent}</pre>
 				</div>
+			{:else if activeTab === 'context'}
+				<div class="tab-content">
+					<div class="tab-actions"></div>
+					<div style="margin-bottom: 0.5rem">
+						<ResourceUri uri={contextUri} />
+					</div>
+					<pre class="code json">{contextContent}</pre>
+				</div>
 			{/if}
 		{/if}
 	</div>
@@ -300,7 +324,6 @@
 		margin-left: 1.5rem;
 	}
 
-
 	.module-box-header {
 		margin-bottom: 0.5rem;
 	}
@@ -312,7 +335,6 @@
 		text-transform: uppercase;
 		margin: 0;
 	}
-
 
 	.section-divider {
 		border: none;
@@ -343,9 +365,10 @@
 		position: relative;
 	}
 	.tab-actions {
-		position: absolute;
-		top: -3rem;
-		right: 0;
+		margin-bottom: 0.5rem;
+		display: flex;
+		width: 100%;
+		justify-content: flex-end;
 	}
 
 	pre.code {

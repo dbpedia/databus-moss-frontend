@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { writable } from 'svelte/store';
 	// @ts-ignore
 	import jsonld from 'jsonld';
@@ -20,44 +21,63 @@
 	import MossEntryHeader from '$lib/components/moss-entry-header.svelte';
 	import type { MossModule } from '$lib/types';
 
-	/** @type {import('./$types').PageData} */
 	export let data: any;
 
 	let buttonName = writable('Save Entry');
 	let validationErrorMsg = '';
 	let displayFeedback = writable(false);
 	let displaySave = writable(false);
+	let displayDelete = writable(false);
 	let indicatorColor: 'green' | 'red' | 'none' = 'none';
 	let indicatorVisible = writable(false);
 	let feedback: any;
 	let errors: any;
 
-	const module : MossModule = data.module;
-
+	const module: MossModule = data.module;
 	errors = [];
 
 	$: backLink = MossUtils.createListGroupNavigationItems(['..'], $page.url.pathname);
 
-	export async function saveDocument(): Promise<Response> {
+	export async function deleteEntry(): Promise<Response> {
 		let moduleData: any = $page.data.props.moduleData;
 		let moduleURI = moduleData[RdfUris.JSONLD_ID];
 		let moduleId = MossUtils.uriToName(moduleURI);
 
-		// TODO
 		if (moduleId == null) {
 			throw 'Nope';
 		}
 
 		let language = JsonldUtils.getValue(moduleData, RdfUris.MOSS_MIME_TYPE);
+		let extensionData: any = $page.data.props.extensionData;
+		const requestURL = MossUtils.getDeletionRequestURL(extensionData.databusResourceURI, moduleId);
 
+		const headers: any = {
+			Accept: 'application/json',
+			'Content-Type': language
+		};
+
+		return await fetch(requestURL, {
+			method: 'POST',
+			headers: headers
+		});
+	}
+
+	export async function saveEntry(): Promise<Response> {
+		let moduleData: any = $page.data.props.moduleData;
+		let moduleURI = moduleData[RdfUris.JSONLD_ID];
+		let moduleId = MossUtils.uriToName(moduleURI);
+
+		if (moduleId == null) {
+			throw 'Nope';
+		}
+
+		let language = JsonldUtils.getValue(moduleData, RdfUris.MOSS_MIME_TYPE);
 		let extensionData: any = $page.data.props.extensionData;
 		const requestURL = MossUtils.getSaveRequestURL(extensionData.databusResourceURI, moduleId);
 
-		// Prune the last newline if it exists
 		let content = data.content;
-
 		while (content.endsWith('\n') || content.endsWith('\r')) {
-			content = content.slice(0, -1); // Remove the last character (newline)
+			content = content.slice(0, -1);
 		}
 
 		const headers: any = {
@@ -75,39 +95,44 @@
 	async function onSaveButtonClicked() {
 		errors = [];
 		feedback.clearMessage();
-		// const valid = await validateLayerHeader(data.content);
 		indicatorColor = 'none';
-
-		/*
-        if (!valid) {
-
-
-            displayFeedback.set(false);
-            setTimeout(() => {
-                displayFeedback.set(true);
-            }, 0);
-            return;
-        }*/
-
 		displaySave.set(true);
 
-		let response = await saveDocument();
-		console.log(response);
+		let response = await saveEntry();
 
 		if (response.ok) {
 			feedback.showMessage('Document Saved!', true);
 		} else {
 			let data = await response.json();
 			feedback.showMessage('Failed to save document.', false);
-
 			errors.push(data.message);
 			errors = [...errors];
 		}
+
 		displaySave.set(false);
-		/*setTimeout(() => {
-            setIndicatorColor(response.ok);
-            displaySave.set(false);
-        }, 850);*/
+	}
+
+	async function onDeleteButtonClicked() {
+		const confirmed = confirm('Are you sure you want to delete this entry?');
+		if (!confirmed) return;
+
+		errors = [];
+		feedback.clearMessage();
+		indicatorColor = 'none';
+		displayDelete.set(true);
+
+		let response = await deleteEntry();
+
+		if (response.ok) {
+			await goto('/browse');
+		} else {
+			let data = await response.json();
+			feedback.showMessage('Failed to delete document.', false);
+			errors.push(data.message);
+			errors = [...errors];
+		}
+
+		displayDelete.set(false);
 	}
 </script>
 
@@ -172,7 +197,7 @@
 								<FeedbackMessage bind:feedback></FeedbackMessage>
 
 								<GradientButton
-									color="pinkToOrange"
+									color="cyanToBlue"
 									size="md"
 									class="button-group-size relative"
 									on:click={onSaveButtonClicked}
@@ -183,6 +208,20 @@
 										<Indicator color={indicatorColor} size="lg" placement="top-right" />
 									{/if}
 									{$buttonName}
+								</GradientButton>
+
+								<GradientButton
+									color="red"
+									size="md"
+									class="button-group-size relative"
+									on:click={onDeleteButtonClicked}
+								>
+									{#if $displayDelete}
+										<Spinner class="me-3" size="4" color="white" />
+									{:else if $indicatorVisible}
+										<Indicator color={indicatorColor} size="lg" placement="top-right" />
+									{/if}
+									Delete
 								</GradientButton>
 							</div>
 						</div>
@@ -209,7 +248,6 @@
 </div>
 
 <style>
-
 	.code-area {
 		border: 1px solid #e5e7eb;
 	}
@@ -242,11 +280,6 @@
 		align-items: right;
 	}
 
-
-	
-
-
-
 	.buttons {
 		display: flex;
 		justify-content: space-between;
@@ -264,5 +297,4 @@
 		display: flex;
 		gap: 5px;
 	}
-
 </style>

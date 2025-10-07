@@ -4,6 +4,7 @@ import { env } from '$env/dynamic/private'
 
 const publicRoutes: Record<string, string[]> = {
     '/api/v1/modules': ['GET'],
+    '/api/v1/search': ['GET']
 };
 
 function isPublicRoute(path: string, method: string) {

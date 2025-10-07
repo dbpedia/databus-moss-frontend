@@ -213,11 +213,14 @@ export class MossUtils {
         return currentURI.substring(currentURI.lastIndexOf('.'));
     }
 
-
-
     static getSaveRequestURL(resourceUri: string, moduleId: string): string {
         resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
         return `/api/v1/save-entry?module=${moduleId}&resource=${resourceUri}`;
+    }
+
+    static getDeletionRequestURL(resourceUri: string, moduleId: string): string {
+        resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
+        return `/api/v1/delete-entry?module=${moduleId}&resource=${resourceUri}`;
     }
 
     static getValidationRequestURL(resourceUri: string, moduleId: string): string {
@@ -225,7 +228,7 @@ export class MossUtils {
         return `/api/v1/validate-entry?module=${moduleId}&resource=${resourceUri}`;
     }
 
-     static getIndexerPreviewURL(resourceUri: string, moduleId: string): string {
+    static getIndexerPreviewURL(resourceUri: string, moduleId: string): string {
         resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
         return `/api/v1/get-indexer-preview?module=${moduleId}&resource=${resourceUri}`;
     }

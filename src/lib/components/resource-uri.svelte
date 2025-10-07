@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let uri: string | null | undefined;
-	export let fontSize: string = "0.85rem";
+	export let fontSize: string = "0.65rem";
 
 	let copied = false;
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -73,7 +73,7 @@
 		color: #2563eb;
 		text-decoration: none;
 		white-space: nowrap;
-		font-family: monospace;
+		font-family: 'monospatial';
 		overflow: hidden;
 		text-overflow: ellipsis;
 		transition: color 0.2s ease;

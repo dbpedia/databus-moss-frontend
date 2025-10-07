@@ -1,280 +1,268 @@
-
 <script lang="ts">
-    import SearchResult from "$lib/components/search-result.svelte";
-    import AnnotationSearch from "$lib/components/annotation-search.svelte";
-    import { MossUtils } from '$lib/utils/moss-utils';
-    import {
-        Input
-     } from "flowbite-svelte";
-     import { env } from '$env/dynamic/public'
-     import jsonld from 'jsonld';
-	import { JsonldUtils } from "$lib/utils/jsonld-utils";
-	import { RdfUris } from "$lib/utils/rdf-uris";
+	import SearchResult from '$lib/components/search-result.svelte';
+	import AnnotationSearch from '$lib/components/annotation-search.svelte';
+	import { MossUtils } from '$lib/utils/moss-utils';
+	import { A, Input } from 'flowbite-svelte';
+	import { env } from '$env/dynamic/public';
+	import jsonld from 'jsonld';
+	import { JsonldUtils } from '$lib/utils/jsonld-utils';
+	import { RdfUris } from '$lib/utils/rdf-uris';
 
-    let baseUrl = `/api/v1/search?query=`;
-    let joinSuffix = `&join=`;
-    let joinField = "annotation";
+	let baseUrl = `/api/v1/search?query=`;
+	let joinSuffix = `&join=`;
+	let joinField = 'annotation';
 
-    let searchResults : { [key: string]: any };
-    let annotationTags : any;
+	let searchResults: { [key: string]: any };
+	let annotationTags: any;
 
-    annotationTags = [];
-    searchResults = {};
+	annotationTags = [];
+	searchResults = {};
 
-    let searchInput : string;
-    searchInput = "";
+	let searchInput: string;
+	searchInput = '';
 
-    let publicationDateStart: string = "";
-    let publicationDateEnd: string = "";
-    
-    let referenceDateStart: string = "";
-    let referenceDateEnd: string = "";
+	let publicationDateStart: string = '';
+	let publicationDateEnd: string = '';
 
-    let grantNo: string = "";
-    let publisherEmail: string = "";
+	let referenceDateStart: string = '';
+	let referenceDateEnd: string = '';
 
-    let format: string = "";
-    let licenseUri: string = "";
+	let grantNo: string = '';
+	let publisherEmail: string = '';
 
-    let searchRequestIndexCounter = 0;
-    let isSearching = false;
+	let format: string = '';
+	let licenseUri: string = '';
 
-  
+	let searchRequestIndexCounter = 0;
+	let isSearching = false;
 
-    function onAnnotationClicked(event : CustomEvent) {
+	function onAnnotationClicked(event: CustomEvent) {
+		if (event.detail == undefined) {
+			return;
+		}
 
-        if(event.detail == undefined) {
-            return;
-        }
+		// Get the annotation tag from the event
+		let label = event.detail.label[0];
+		label = label.replace('<B>', '').replace('</B>', '');
 
-        // Get the annotation tag from the event
-        let label = event.detail.label[0];
-        label = label.replace("<B>", "").replace("</B>", "");
+		var annotationTag = {
+			id: event.detail.id[0],
+			label: label
+		};
 
-        var annotationTag = {
-            id: event.detail.id[0],
-            label: label
-        };
+		// Avoid duplicates based on `id`
+		if (annotationTags.some((tag: { id: string; label: string }) => tag.id === annotationTag.id)) {
+			return;
+		}
 
-        // Avoid duplicates based on `id`
-        if (annotationTags.some((tag: { id: string; label: string }) => tag.id === annotationTag.id)) {
-            return;
-        }
+		// Add and reassign for svelte
+		annotationTags.push(annotationTag);
+		annotationTags = [...annotationTags];
 
-        // Add and reassign for svelte
-        annotationTags.push(annotationTag);
-        annotationTags = [...annotationTags]
+		onSearchInputChanged();
+	}
 
-        onSearchInputChanged();
-    }
+	// Callback function when 'x' is clicked
+	function removeTag(tag: { id: string; label: string }) {
+		// Remove the tag based on `id`
+		annotationTags = annotationTags.filter((t: any) => t.id !== tag.id);
 
-    // Callback function when 'x' is clicked
-    function removeTag(tag: { id: string; label: string }) {
-        
-        // Remove the tag based on `id`
-        annotationTags = annotationTags.filter((t: any) => t.id !== tag.id);
+		// Trigger the search input change or any other logic
+		onSearchInputChanged();
+	}
 
-        // Trigger the search input change or any other logic
-        onSearchInputChanged();
-    }
+	async function query(searchInput: string, join?: string) {
+		let query = `${baseUrl}${searchInput}`;
+		if (join != null) {
+			query += joinSuffix + join;
+		}
 
-    async function query(searchInput: string, join?: string) {
-        let query = `${baseUrl}${searchInput}`
-        if (join != null) {
-            query += joinSuffix + join;
-        }
+		const data = await fetch(query);
+		return (await data.json()) ?? [];
+	}
 
-        const data = await fetch(query);
-        return await data.json() ?? [];
-    }
+	function generateSearchExplanation(doc: any, searchTerm: string): any {
+		let matchedFields: any = {};
 
+		// Check each field in the document for the <B> tags indicating a match.
+		for (const [field, value] of Object.entries(doc)) {
+			if (!Array.isArray(value)) {
+				continue;
+			}
 
-    function generateSearchExplanation(doc: any, searchTerm: string): any {
-       
-        let matchedFields: any = {};
+			for (let val of value) {
+				if (!val.includes('<B>')) {
+					continue;
+				}
 
-        // Check each field in the document for the <B> tags indicating a match.
-        for (const [field, value] of Object.entries(doc)) {
-            if (!Array.isArray(value)) {
-                continue;
-            }
-            
-            for(let val of value) {
-                if(!val.includes("<B>")) {
-                    continue;
-                }
+				if (matchedFields[field] == undefined) {
+					matchedFields[field] = [];
+				}
 
-                if(matchedFields[field] == undefined) {
-                    matchedFields[field] = [];
-                }
-                
-                matchedFields[field].push({ label: val });
-            }
-        }
+				matchedFields[field].push({ label: val });
+			}
+		}
 
-        return matchedFields;
-    }
+		return matchedFields;
+	}
 
+	async function onSearchInputChanged() {
+		let q = searchInput;
+		searchRequestIndexCounter++;
+		isSearching = true;
 
-    async function onSearchInputChanged() {
+		let requestIndex = searchRequestIndexCounter;
 
-        let q = searchInput;
-        searchRequestIndexCounter++;
-        isSearching = true;
+		if (annotationTags.length > 0) {
+			q += '&annotation=';
+			for (let tag of annotationTags) {
+				q += tag.id + ' ';
+			}
+		}
 
-        let requestIndex = searchRequestIndexCounter;
+		if (publicationDateStart || publicationDateEnd) {
+			const start = publicationDateStart ?? '';
+			const end = publicationDateEnd ?? '';
+			q += `&publicationDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
+		}
 
-        if(annotationTags.length > 0) {
+		if (grantNo) {
+			q += `&grantNo=${grantNo}`;
+		}
 
-            q += "&annotation="
-            for(let tag of annotationTags) {
-                q += tag.id + " ";
-            }
-        }
-        
-        if (publicationDateStart || publicationDateEnd) {
-            const start = publicationDateStart ?? "";
-            const end = publicationDateEnd ?? "";
-            q += `&publicationDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
-        }
+		if (licenseUri) {
+			q += `&license=${licenseUri}`;
+		}
 
-        if(grantNo) {
-            q += `&grantNo=${grantNo}`;
-        }
+		if (format) {
+			q += `&format=${format}`;
+		}
 
-        if(licenseUri) {
-            q += `&license=${licenseUri}`;
-        }
+		if (publisherEmail) {
+			q += `&publisher=${publisherEmail}`;
+		}
 
-        if(format) {
-            q += `&format=${format}`;
-        }
+		if (referenceDateStart || referenceDateEnd) {
+			const start = referenceDateStart ?? '';
+			const end = referenceDateEnd ?? '';
+			q += `&referenceDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
+		}
 
+		const results: { docs: any } = await query(q);
+		const resultMap: Record<string, SearchResult> = {};
 
-        if(publisherEmail) {
-            q += `&publisher=${publisherEmail}`;
-        }
+		searchResults = resultMap;
 
-        if (referenceDateStart || referenceDateEnd) {
-            const start = referenceDateStart ?? "";
-            const end = referenceDateEnd ?? "";
-            q += `&referenceDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
-        }
+		for (var result of results.docs) {
 
-        const results: { docs: any } = await query(q);
-        const resultMap: Record<string, SearchResult> = {};
+			let id: string = result.id[0];
 
-        
-        searchResults = resultMap;
+			if (!id.startsWith(env.PUBLIC_MOSS_BASE_URL)) {
+				continue;
+			}
 
-        for(var result of results.docs) {
+			try {
+				var response = await fetch(id, {
+					headers: {
+						Accept: 'application/ld+json'
+					}
+				});
 
-            
+				if (response.status != 200) {
+					continue;
+				}
 
-            let id : string = result.id[0];
+				let layerGraphs = await jsonld.expand(await response.json());
 
-            if(!id.startsWith(env.PUBLIC_MOSS_BASE_URL)) {
-                continue;
-            }
-            
+				if (requestIndex != searchRequestIndexCounter) {
+					return;
+				}
 
-            try {
-                var response = await fetch(id, {
-                    headers: {
-                        'Accept': 'application/ld+json'
-                    }
-                });
+				let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_ENTRY);
+				var databusResourceUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_EXTENDS);
 
-                if(response.status != 200) {
-                    continue;
-                }
+				if (resultMap[databusResourceUri] == undefined) {
+					try {
+						var response = await fetch(databusResourceUri, {
+							headers: {
+								Accept: 'application/ld+json'
+							}
+						});
 
-                let layerGraphs = await jsonld.expand(await response.json());
+						var resourceGraphs = await jsonld.expand(await response.json());
 
-                if(requestIndex != searchRequestIndexCounter) {
-                    return;
-                }
+						if (requestIndex != searchRequestIndexCounter) {
+							return;
+						}
 
-                let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_ENTRY);
-                var databusResourceUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_EXTENDS);
+						var resourceGraph = JsonldUtils.getGraphById(resourceGraphs, databusResourceUri);
 
-                if(resultMap[databusResourceUri] == undefined) {
-                    try {
-                        var response = await fetch(databusResourceUri, {
-                            headers: {
-                                'Accept': 'application/ld+json'
-                            }
-                        });
+						var databusResourceData: any = {};
+						databusResourceData.uri = databusResourceUri;
+						databusResourceData.title = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_TITLE);
+						databusResourceData.abstract = JsonldUtils.getValue(
+							resourceGraph,
+							RdfUris.DCT_ABSTRACT
+						);
+						databusResourceData.description = JsonldUtils.getValue(
+							resourceGraph,
+							RdfUris.DCT_DESCRIPTION
+						);
+						databusResourceData.browseLink = MossUtils.getRelativeBrowseLink(
+							MossUtils.getMossEntryURI(env.PUBLIC_MOSS_BASE_URL, databusResourceUri, '')
+						);
+						databusResourceData.layers = [];
 
-                        var resourceGraphs = await jsonld.expand(await response.json());
+						resultMap[databusResourceUri] = databusResourceData;
+					} catch (e) {
+						console.log(e);
+					}
+				}
 
-                        if(requestIndex != searchRequestIndexCounter) {
-                            return;
-                        }
+				if (resultMap[databusResourceUri] == undefined) {
+					continue;
+				}
 
-                        var resourceGraph = JsonldUtils.getGraphById(resourceGraphs, databusResourceUri)
+				result.uri = result.id[0];
+				result.name = MossUtils.uriToName(result.uri);
+				result.contentUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_CONTENT);
+				result.explanations = generateSearchExplanation(result, searchInput);
 
-                        var databusResourceData : any = {};
-                        databusResourceData.uri = databusResourceUri;
-                        databusResourceData.title = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_TITLE);
-                        databusResourceData.abstract = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_ABSTRACT);
-                        databusResourceData.description = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_DESCRIPTION);
-                        databusResourceData.browseLink = MossUtils.getRelativeBrowseLink(
-                            MossUtils.getMossEntryURI(env.PUBLIC_MOSS_BASE_URL, databusResourceUri, ""));
-                        databusResourceData.layers = [];
+				resultMap[databusResourceUri].layers.push(result);
+			} catch (e) {
+				console.log(e);
+			}
 
-                        resultMap[databusResourceUri] = databusResourceData;
-                    } catch(e) {
-                        console.log(e);
-                    }
-                }
+			if (result.annotation != undefined) {
+				for (var annotationUri of result.annotation) {
+					for (let tag of annotationTags) {
+						if (annotationUri == tag.id) {
+							if (result.explanations['annotation'] == undefined) {
+								result.explanations['annotation'] = [];
+							}
 
-                if(resultMap[databusResourceUri] == undefined) {
-                    continue;
-                }
+							result.explanations['annotation'].push({ label: tag.label, uri: tag.id });
+						}
+					}
+				}
+			}
 
-                result.uri = result.id[0];
-                result.name =  MossUtils.uriToName(result.uri);
-                result.contentUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_CONTENT);
-                result.explanations = generateSearchExplanation(result, searchInput);
-                resultMap[databusResourceUri].layers.push(result);
+			const layerUris = resultMap[databusResourceUri].layers
+				.map((layer: any) => layer.uri)
+				.join(','); // Using 'any' for layer
+			const hashInput = databusResourceUri + layerUris + searchInput + annotationTags.length; // Create a string to hash
+			resultMap[databusResourceUri].hash = createHash(hashInput); // Assign the hash to a new property
 
-            } catch(e) {
-                console.log(e);
-            }
+			if (requestIndex != searchRequestIndexCounter) {
+				return;
+			}
 
-            
-            if(result.annotation != undefined) {
-                
-                for(var annotationUri of result.annotation) {
-                    for(let tag of annotationTags) {
-                        if(annotationUri == tag.id) {
-                            if(result.explanations["annotation"] == undefined) {
-                                result.explanations["annotation"] = [];
-                            }
+			searchResults = resultMap;
+		}
 
-                            result.explanations["annotation"].push({ label: tag.label, uri: tag.id });
-                        }
-                    }
-                }
-            }
-
-            const layerUris = resultMap[databusResourceUri].layers.map((layer: any) => layer.uri).join(','); // Using 'any' for layer
-            const hashInput = databusResourceUri + layerUris + searchInput + annotationTags.length; // Create a string to hash
-            resultMap[databusResourceUri].hash = createHash(hashInput); // Assign the hash to a new property
-
-            
-            if(requestIndex != searchRequestIndexCounter) {
-                return;
-            }
-
-            searchResults = resultMap;
-        }
-
-        
-        searchResults = resultMap;
-        isSearching = false;
-        /*
+		searchResults = resultMap;
+		isSearching = false;
+		/*
          
         // Create hashes for each entry in resultMap
         for (const [uri, data] of Object.entries(resultMap) as [string, any][]) {
@@ -285,140 +273,177 @@
         }
         
         */
-    }
+	}
 
-    function createHash(input : string) {
-        // In a real application, consider using a library like 'crypto-js' or the SubtleCrypto API
-        let hash = 0;
-        for (let i = 0; i < input.length; i++) {
-            hash = (hash << 5) - hash + input.charCodeAt(i);
-            hash = hash | 0; // Convert to 32bit integer
-        }
-        return hash.toString();
-    }
-
+	function createHash(input: string) {
+		// In a real application, consider using a library like 'crypto-js' or the SubtleCrypto API
+		let hash = 0;
+		for (let i = 0; i < input.length; i++) {
+			hash = (hash << 5) - hash + input.charCodeAt(i);
+			hash = hash | 0; // Convert to 32bit integer
+		}
+		return hash.toString();
+	}
 </script>
 
 <div class="section">
-    <div class="container">
-        <div class=columns>
-            <div class="column">
-                <Input bind:value={searchInput} on:keyup={onSearchInputChanged} placeholder="Search files..." />
-                <ul class="tag-list">
-                {#each annotationTags as tag }
-                <li>
-                    <div class="tag-box">
-                      {@html tag.label}
-                      <button class="close-btn" on:click={() => removeTag(tag)}>x</button>
-                    </div>
-                  </li>
-                {/each}
-                </ul>
-                <ul>
-                    {#if isSearching} 
-                        <p>Searching...</p>
-                    {/if}
-                    {#each Object.entries(searchResults) as [key, result] (result.hash)}
-                        <li>
-                            <SearchResult data={result} />
-                        </li>
-                    {/each}
-                </ul>
-            </div>
-            <div class="column medium">
-                
-                <h2>Publication Date</h2>
-                <div class="facet-input">
-                <Input type="datetime-local" bind:value={publicationDateStart} placeholder="Start time" on:change={onSearchInputChanged} />
-                </div>
-                <div class="facet-input">
-                    <Input type="datetime-local" bind:value={publicationDateEnd} placeholder="End time" on:change={onSearchInputChanged} />
-                </div>
+	<div class="container">
+		<div class="columns">
+			<div class="column">
+				<Input
+					bind:value={searchInput}
+					on:keyup={onSearchInputChanged}
+					placeholder="Search files..."
+				/>
+				<ul class="tag-list">
+					{#each annotationTags as tag}
+						<li>
+							<div class="tag-box">
+								{@html tag.label}
+								<button class="close-btn" on:click={() => removeTag(tag)}>x</button>
+							</div>
+						</li>
+					{/each}
+				</ul>
+				<ul>
+					{#if isSearching}
+						<p>Searching...</p>
+					{/if}
+					{#each Object.entries(searchResults) as [key, result] (result.hash)}
+						<li>
+							<SearchResult data={result} />
+						</li>
+					{/each}
+				</ul>
+			</div>
+			<div class="column medium">
+				<h2>Publication Date</h2>
+				<div class="facet-input">
+					<Input
+						type="datetime-local"
+						bind:value={publicationDateStart}
+						placeholder="Start time"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
+				<div class="facet-input">
+					<Input
+						type="datetime-local"
+						bind:value={publicationDateEnd}
+						placeholder="End time"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
 
-                <h2>Grant No</h2>
-                <div class="facet-input">
-                <Input type="text" bind:value={grantNo} placeholder="Grant No" on:change={onSearchInputChanged} />
-                </div>
+				<h2>Grant No</h2>
+				<div class="facet-input">
+					<Input
+						type="text"
+						bind:value={grantNo}
+						placeholder="Grant No"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
 
-                <h2>Publisher Contact</h2>
-                <div class="facet-input">
-                <Input type="text" bind:value={publisherEmail} placeholder="Publisher Contact Email" on:change={onSearchInputChanged} />
-                </div>
+				<h2>Publisher Contact</h2>
+				<div class="facet-input">
+					<Input
+						type="text"
+						bind:value={publisherEmail}
+						placeholder="Publisher Contact Email"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
 
-                <h2>License URI</h2>
-                <div class="facet-input">
-                <Input type="text" bind:value={licenseUri} placeholder="License URI" on:change={onSearchInputChanged} />
-                </div>
+				<h2>License URI</h2>
+				<div class="facet-input">
+					<Input
+						type="text"
+						bind:value={licenseUri}
+						placeholder="License URI"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
 
-                <h2>Data Format</h2>
-                <div class="facet-input">
-                <Input type="text" bind:value={format} placeholder="Data Format" on:change={onSearchInputChanged} />
-                </div>
+				<h2>Data Format</h2>
+				<div class="facet-input">
+					<Input
+						type="text"
+						bind:value={format}
+						placeholder="Data Format"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
 
-                
-                <h2>Reference Date</h2>
-                <div class="facet-input">
-                <Input type="datetime-local" bind:value={referenceDateStart} placeholder="Start time" on:change={onSearchInputChanged} />
-                </div>
-                <div class="facet-input">
-                    <Input type="datetime-local" bind:value={referenceDateEnd} placeholder="End time" on:change={onSearchInputChanged} />
-                </div>
+				<h2>Reference Date</h2>
+				<div class="facet-input">
+					<Input
+						type="datetime-local"
+						bind:value={referenceDateStart}
+						placeholder="Start time"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
+				<div class="facet-input">
+					<Input
+						type="datetime-local"
+						bind:value={referenceDateEnd}
+						placeholder="End time"
+						on:change={onSearchInputChanged}
+					/>
+				</div>
 
-               
-                <h2>Ontology Annotations</h2>
-                <AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
-            </div>
-        </div>
-    </div>
+				<h2>Ontology Annotations</h2>
+				<AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
+			</div>
+		</div>
+	</div>
 </div>
 
 <style>
+	:global(body) {
+		margin: 0;
+	}
 
-:global(body) {
-    margin: 0;
-}
+	.facet-input {
+		margin-bottom: 0.2em;
+	}
 
-.facet-input {
-    margin-bottom: 0.2em;
-}
+	ul {
+		list-style-type: none;
+		padding: 0;
+	}
 
-ul {
-    list-style-type: none;
-    padding: 0;
-}
+	.column {
+		padding-right: 2em;
+	}
 
-.column {
-    padding-right: 2em;
-}
+	.column.medium {
+		min-width: 256px;
+		width: 256px;
+	}
 
-.column.medium {
-    min-width: 256px;
-    width: 256px;
-}
+	.tag-list {
+		display: flex;
+		gap: 0.5em;
+		margin-top: 0.5em;
+		flex-wrap: wrap;
+	}
 
-.tag-list {
-    display: flex;
-    gap: .5em;
-    margin-top: .5em;
-    flex-wrap: wrap;
-}
+	.tag-box {
+		display: inline-block;
+		background-color: #e0e0e0;
+		padding: 8px 10px;
+		border-radius: 12px;
+		line-height: 1;
+		font-size: 14px;
+		position: relative;
+		cursor: pointer;
+	}
 
-.tag-box {
-    display: inline-block;
-    background-color: #e0e0e0;
-    padding: 8px 10px;
-    border-radius: 12px;
-    line-height: 1;
-    font-size: 14px;
-    position: relative;
-    cursor: pointer;
-  }
-
-  .tag-box .close-btn {
-    margin-left: 10px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
+	.tag-box .close-btn {
+		margin-left: 10px;
+		font-weight: bold;
+		cursor: pointer;
+	}
 </style>
-

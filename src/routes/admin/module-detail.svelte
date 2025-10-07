@@ -5,6 +5,8 @@
 	import { env } from '$env/dynamic/public';
 	import SubResourceEditor from './sub-resource-editor.svelte';
 	import TemplateEditor from './template-editor.svelte';
+	import ResourceUri from '$lib/components/resource-uri.svelte';
+	import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
 
 	export let activeModule: MossModule;
 	const dispatch = createEventDispatcher();
@@ -83,14 +85,13 @@
 			General
 		</button>
 
-        <button class:selected={activeTab === 'indexer'} on:click={() => switchTab('indexer')}>
+		<button class:selected={activeTab === 'indexer'} on:click={() => switchTab('indexer')}>
 			Indexer
 		</button>
 
-        <button class:selected={activeTab === 'shapes'} on:click={() => switchTab('shapes')}>
+		<button class:selected={activeTab === 'shapes'} on:click={() => switchTab('shapes')}>
 			SHACL
 		</button>
-
 
 		{#if activeModule.language === 'application/ld+json'}
 			<button class:selected={activeTab === 'context'} on:click={() => switchTab('context')}>
@@ -154,6 +155,10 @@
 				<p class="resource-info">
 					The JSON-LD context defines the vocabulary and mappings used for this module's data.
 				</p>
+
+				<div style="margin-bottom: 0.5rem">
+					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/api/v1/${activeModule.id}/context.jsonld`}></ResourceUri>
+				</div>
 				<SubResourceEditor
 					moduleId={activeModule.id}
 					resourceName="context.jsonld"

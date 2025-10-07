@@ -5,7 +5,6 @@
         Input,
         Button,
      } from "flowbite-svelte";
-	import { MossUtils } from "$lib/utils/moss-utils";
 	import { env } from '$env/dynamic/public'
     
     let usernameInput: string = "";
@@ -14,10 +13,10 @@
     let currentKey: string;
     let currentKeyName: string;
 
-
     async function fetchUserData() {
-        
-        let response = await fetch(`/api/v1/users/get-user`);
+        let response = await fetch(`/api/v1/users/get-user`, {
+            method: 'GET'
+        });
 
         if (response.ok) {
             user = await response.json();
@@ -28,21 +27,19 @@
     }
 
     async function onCreateAPIKeyButtonClicked() {
-
         if(apiKeyNameInput == undefined || apiKeyNameInput.length == 0) {
             return;
         }
 
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/v1/users/create-apikey?name=${apiKeyNameInput}`;
-        let response = await MossUtils.fetchAuthorized(uri, 'POST');
+        let uri = `/api/v1/users/create-apikey?name=${apiKeyNameInput}`;
+        let response = await fetch(uri, {
+            method: 'POST'
+        });
 
         if(response.ok) {
             let data = await response.json();
-            console.log(data);
-
             currentKey = data.key;
             currentKeyName = data.name;
-
             await fetchUserData();
         }
     }
@@ -55,16 +52,17 @@
         });
     }
 
-
     async function onRevokeAPIKeyButtonClicked(keyName: string) {
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/v1/users/revoke-apikey?name=${keyName}`;
-        let response = await MossUtils.fetchAuthorized(uri, 'POST');
+        let uri = `/api/v1/users/revoke-apikey?name=${keyName}`;
+        let response = await fetch(uri, {
+            method: 'POST',
+            credentials: 'include'
+        });
 
         if(response.ok) {
             await fetchUserData();
         }
     }
-
 
     onMount(() => {
         fetchUserData();
@@ -73,7 +71,6 @@
     const rowNames  = [
         "API Keys",
     ];
-
 </script>
 
 <div class="section">
@@ -81,9 +78,6 @@
 
         {#if $page.data.session}
         <h1>Welcome, {$page.data.session.user?.name ?? "User"}</h1>
-
-        {:else}
-            <!-- LOGIN BUTTON -->
         {/if}
 
         <div class="columns">
@@ -114,10 +108,8 @@
                     </div>
                 </div>
                 <div class="warn-box"><b>IMPORTANT:</b> This key will only be displayed once. Copy it now and store it somewhere safe.</div>
-
-
-
                 {/if}
+
                 <h2>Active API Keys</h2>
 
                 {#if user.apiKeys }
@@ -132,72 +124,11 @@
                             color="red">Revoke</Button>
                     </div>
                     {/each}
-                    {/if}
+                {/if}
                 {/if}
             </div>
-
         </div>
-
-
     </div>
-</div>
-
-<div>
-
-    <!--
-
-<Heading tag="h4" class="mb-2">Welcome</Heading>
-{#if $page.data.session}
-    <UserData userName={$page.data.session.user?.name ?? "User"}></UserData>
-    <div class="body">
-        <Heading tag="h6" class="mb-2">Create new API Key</Heading>
-        <div style="mb-4">
-            <Label for="usernameInput">
-                Username:
-                {#if user != undefined}
-                    {user.username}
-                {/if}
-            </Label>
-            <div style="items-center space-x-4">
-                <Input id="usernameInput" bind:value={usernameInput} placeholder="Enter username..." />
-                <Button on:click={onChangeUsernameButtonClicked} color="alternative">Apply</Button>
-            </div>
-        </div>
-        {#if user != undefined}
-        <div class="mb-4">
-            <Label for="apiKeyNameInput">API Key Name:</Label>
-            <div style="flex space-x-4">
-                <Input id="apiKeyNameInput" bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
-                <Button on:click={onCreateAPIKeyButtonClicked} color="alternative">Create API Key</Button>
-            </div>
-        </div>
-
-        <div class=""></div>
-        <Table class="table" shadow striped>
-            <TableHead>
-                {#each rowNames as name}
-                    <TableHeadCell>{name}</TableHeadCell>
-                {/each}
-            </TableHead>
-            <TableBody tableBodyClass="divide-y">
-                    {#each user.apiKeys as keyName }
-                        <TableBodyRow>
-                            <TableBodyCell>{keyName}</TableBodyCell>
-                            <TableBodyCell>
-                                <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)}
-                                    color="alternative">Revoke</Button>
-                            </TableBodyCell>
-                        </TableBodyRow>
-                    {/each}
-            </TableBody>
-        </Table>
-        {/if}
-    </div>
-
-{:else}
-{/if}
--->
-
 </div>
 
 <style>
@@ -210,4 +141,3 @@
         max-width: 1000px
     }
 </style>
-
