@@ -21,7 +21,7 @@
 		};
 
 		const config = mapping[language] || { name: 'template.txt', format: null };
-		resourceName = config.name;
+		resourceName = 'template'; //config.name;
 		format = config.format;
 	}
 </script>

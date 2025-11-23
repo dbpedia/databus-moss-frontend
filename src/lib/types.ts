@@ -21,9 +21,39 @@ export interface MossModule {
     language: string;
 }
 
+export interface MossTerminology {
+    id: string;
+    label: string;
+    language: string;
+}
+
+
 export interface DatabusResource {
     id: string;
     title: string;
     abstract: string;
     description: string;
+}
+
+export interface SearchTag {
+    id: string;
+    label: string;
+}
+
+export interface SearchConfig {
+    lookupBaseUrl: string;
+    module: string;
+    predicate: string;
+    selection: SearchTag[];
+    countQuery: string;
+}
+
+export interface FacetConfig {
+    id: string;
+    label: string;
+	lookupBaseUrl: string;
+	module: string;
+	predicate: string;
+    isLiteral: boolean;
+	labelField: string;
 }

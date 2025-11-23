@@ -8,7 +8,12 @@ let tokenEndpointUrl: string | null = null;
 
 let providers : any = {};
 
+
 async function getProvider() : Promise<Provider> {
+
+  if (providers["oidc_provider"]) return providers["oidc_provider"];
+
+  
 
   setupFetchProxy();
 
@@ -17,7 +22,7 @@ async function getProvider() : Promise<Provider> {
   console.log(`AUTH_OIDC_ISSUER: ${env.AUTH_OIDC_ISSUER}`);
 
   if (!env.AUTH_OIDC_CLIENT_ID || !env.AUTH_OIDC_CLIENT_SECRET || !env.AUTH_OIDC_ISSUER) {
-    console.error("OIDC configuration is missing environment variables.");
+    // console.error("OIDC configuration is missing environment variables.");
     throw new Error("Missing OIDC environment variables");
   }
 
@@ -32,7 +37,7 @@ async function getProvider() : Promise<Provider> {
 
   if(env.AUTH_OIDC_DISCOVERY_URL != null) {
     try {
-      console.log("AUTH_OIDC_DISCOVERY_URL: " + env.AUTH_OIDC_DISCOVERY_URL);
+      //console.log("AUTH_OIDC_DISCOVERY_URL: " + env.AUTH_OIDC_DISCOVERY_URL);
       provider = await setupOidcProvider(provider, env.AUTH_OIDC_DISCOVERY_URL);
     } catch(e) {
       console.log("Failed to set up OIDC provider.");
@@ -52,22 +57,6 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
   callbacks: {
     async jwt({ token, user, account, profile }) {
       
-      /*
-      console.log("AUTH.JS JWT CALLBACK");
-      
-      console.log("========= TOKEN ============");
-      console.log(token);
-      
-      console.log("========= ACCOUNT ============");
-      console.log(account);
-
-      console.log("========= USER ============");
-      console.log(user);
-
-      console.log("========= PROFILE ============");
-      console.log(profile);
-      */
-
       if (profile) {
 
         if(token.email == undefined) {
@@ -91,11 +80,6 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
             };
 
             var userinfo = await provider.userinfo.request(context);
-
-            /*
-            console.log("========= USER INFO ============");
-            console.log(userinfo);
-            */
 
             if(userinfo != null) {
               if(token.email == undefined) {
@@ -129,14 +113,6 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
       return token;
     },
     async session({ session, token }) {
-      /*    
-      console.log("AUTH.JS SESSION CALLBACK");
-      console.log("AUTH.JS SESSION CALLBACK");
-      console.log("========= TOKEN ============");
-      console.log(token);
-      console.log("========= SESSION ============");
-      console.log(session);
-      */
       
       if(token == undefined) {
         return session;
@@ -160,7 +136,7 @@ export const { handle, signIn, signOut  } = SvelteKitAuth({
           token.expiresAt = tokenData.expiresAt;
           token.refreshToken = tokenData.refreshToken;
         } catch(err) {
-          console.log(err);
+          // console.log(err);
         }
       }
     
@@ -197,7 +173,7 @@ async function fetchNewAccessToken(refreshToken: string|null): Promise<any> {
   });
 
   if (!response.ok) {
-    console.log(response);
+    // console.log(response);
     throw new Error('Failed to refresh access token');
   }
 
@@ -250,13 +226,6 @@ async function fetchTokenEndpointUrl(issuer: string): Promise<string|null> {
     return null;
   }
 }
-
-/**
- *   clientId: "moss-dev",
-    clientSecret: "z7feqbX7lGyAFzPzGIaC4LT7vidPqrP5",
-    issuer: "https://auth.dbpedia.org/realms/dbpedia"
- */
-  
 
 /**
  * Fetches and sets up an OIDC provider dynamically from its discovery document.

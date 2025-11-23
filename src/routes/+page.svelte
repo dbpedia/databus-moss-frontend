@@ -1,12 +1,202 @@
 <script lang="ts">
 	import SearchResult from '$lib/components/search-result.svelte';
-	import AnnotationSearch from '$lib/components/annotation-search.svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { A, Input } from 'flowbite-svelte';
-	import { env } from '$env/dynamic/public';
-	import jsonld from 'jsonld';
-	import { JsonldUtils } from '$lib/utils/jsonld-utils';
-	import { RdfUris } from '$lib/utils/rdf-uris';
+
+	import type { FacetConfig, SearchConfig, SearchTag } from '$lib/types';
+	import LookupFacet from '$lib/components/lookup-facet.svelte';
+	import LiteralFacet from '$lib/components/literal-facet.svelte';
+
+	const INNER_SELECT_TEMPLATE = `
+		SELECT DISTINCT ?s WHERE 
+		{
+			%SELECTOR%
+		}
+	`;
+
+	const UNION_BLOCK_TEMPLATE = `
+		{
+			VALUES ?t { %VALUES% } ?s <%PREDICATE%> ?t .
+		}
+	`;
+
+	const SELECT_QUERY_TEMPLATE = `
+		SELECT DISTINCT ?s ?e ?g ?t WHERE 
+		{
+			{
+				%INNER_SELECT%
+			}
+
+			?e <http://dataid.dbpedia.org/ns/moss#extends> ?s .
+			?e <http://dataid.dbpedia.org/ns/moss#content> ?g .
+
+			GRAPH ?g {
+				%UNION_BLOCKS%
+			}
+		}
+	`;
+
+	let facetSelections: Record<string, SearchTag[]> = {};
+	let sparqlSelector: string;
+
+	const keywordFacet: FacetConfig = {
+		id: 'keyword',
+		label: 'Keywords',
+		lookupBaseUrl: 'http://localhost:5173/api/v1/search?label=',
+		module: 'http://localhost:8080/modules/keyword',
+		predicate: 'https://schema.org/keywords',
+		labelField: 'label',
+		isLiteral: true
+	};
+
+	const locationFacet: FacetConfig = {
+		id: 'location',
+		label: 'Location',
+		lookupBaseUrl: 'https://lookup.dbpedia.org/api/search?format=JSON&typeName=Location&query=',
+		module: 'http://localhost:8080/modules/oem-spatial',
+		predicate: 'http://purl.org/dc/terms/spatial',
+		labelField: 'label',
+		isLiteral: false
+	};
+
+	const fundingAgencyFacet: FacetConfig = {
+		id: 'fundingAgency',
+		label: 'Funding Agency',
+		module: 'http://localhost:8080/modules/oem-project',
+		lookupBaseUrl: 'http://localhost:5173/terminologies/reorg/search?query=',
+		predicate: 'https://dbpedia.org/ns/oem/fundingAgency',
+		labelField: 'label',
+		isLiteral: false
+	};
+
+	const oeoAnnotationFacet: FacetConfig = {
+		id: 'oeoAnnotation',
+		label: 'Referenced Concepts',
+		module: 'http://localhost:8080/modules/oemeta',
+		lookupBaseUrl: 'http://localhost:5173/terminologies/oeo/search?query=',
+		predicate: 'http://dataid.dbpedia.org/ns/moss#related',
+		labelField: 'label',
+		isLiteral: false
+	};
+
+	const facetMap: Record<string, FacetConfig> = {
+		[locationFacet.id]: locationFacet,
+		[fundingAgencyFacet.id]: fundingAgencyFacet,
+		[oeoAnnotationFacet.id]: oeoAnnotationFacet,
+		[keywordFacet.id]: keywordFacet
+	};
+
+	function formatValue(v: string, isLiteral: boolean) {
+		if (isLiteral) return `"${v.replace(/"/g, '\\"')}"`;
+		return `<${v}>`;
+	}
+
+	function crateInnerSelectClause(): string {
+		let selectorString: string = '';
+
+		for (const [module, selection] of Object.entries(facetSelections)) {
+			if (!selection || selection.length === 0) continue;
+
+			const predicate = facetMap[module]?.predicate;
+			const isLiteral = facetMap[module]?.isLiteral;
+
+			for (var s of selection) {
+				selectorString += `?s <${predicate}> ${formatValue(s.id, isLiteral)} .\n`;
+			}
+		}
+
+		return selectorString;
+	}
+
+	function createSelectQuery(): string {
+		if (!sparqlSelector || Object.keys(facetSelections).length === 0) return '';
+
+		const facets = Object.entries(facetSelections)
+			.filter(([id, tags]) => tags.length > 0 && facetMap[id])
+			.map(([id, tags]) => ({
+				predicate: facetMap[id]!.predicate,
+				values: tags.map((t) => `${formatValue(t.id, facetMap[id]!.isLiteral)}`)
+			}));
+
+		if (facets.length === 0) return '';
+
+		const unionBlocks = facets
+			.map((f) =>
+				UNION_BLOCK_TEMPLATE.replace('%VALUES%', f.values.join(' ')).replace(
+					'%PREDICATE%',
+					f.predicate
+				)
+			)
+			.join('\n    UNION\n    ');
+
+		const innerSelect = INNER_SELECT_TEMPLATE.replace('%SELECTOR%', sparqlSelector.trim());
+
+		return SELECT_QUERY_TEMPLATE.replace('%INNER_SELECT%', innerSelect)
+			.replace('%UNION_BLOCKS%', unionBlocks)
+			.trim();
+	}
+
+	async function updateSelection() {
+		queryString = createSelectQuery();
+
+		const response = await fetch('/sparql', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/sparql-query',
+				Accept: 'application/json'
+			},
+			body: queryString
+		});
+
+		const data = await response.json();
+		var results: any = {};
+
+		for (const result of data.results.bindings) {
+			// Databus resource
+			const databusUri = result.s.value;
+
+			if (results[databusUri] == undefined) {
+				results[databusUri] = {
+					uri: databusUri,
+					name: MossUtils.uriToName(databusUri),
+					entries: {},
+					hash: databusUri
+				};
+			}
+
+			const entryUri = result.e.value;
+
+			if (results[databusUri].entries[entryUri] == undefined) {
+				results[databusUri].entries[entryUri] = {
+					uri: entryUri,
+					name: MossUtils.uriToName(entryUri),
+					contentUri: result.g.value,
+					browseLink: MossUtils.getRelativeUri(result.e.value),
+					explanations: []
+				};
+			}
+
+			results[databusUri].entries[entryUri].explanations.push({
+				uri: result.t.value,
+				label: MossUtils.uriToName(result.t.value)
+			});
+		}
+
+		// Trigger Svelte reactivity
+		searchResults = results;
+	}
+
+	function onFacetChange(event: CustomEvent<{ id: string; selection: SearchTag[] }>) {
+		facetSelections[event.detail.id] = event.detail.selection;
+
+		// Create the selector here:
+		sparqlSelector = crateInnerSelectClause();
+
+		updateSelection();
+	}
+
+	sparqlSelector = crateInnerSelectClause();
+
+	let queryString: string = '';
 
 	let baseUrl = `/api/v1/search?query=`;
 	let joinSuffix = `&join=`;
@@ -21,55 +211,7 @@
 	let searchInput: string;
 	searchInput = '';
 
-	let publicationDateStart: string = '';
-	let publicationDateEnd: string = '';
-
-	let referenceDateStart: string = '';
-	let referenceDateEnd: string = '';
-
-	let grantNo: string = '';
-	let publisherEmail: string = '';
-
-	let format: string = '';
-	let licenseUri: string = '';
-
-	let searchRequestIndexCounter = 0;
 	let isSearching = false;
-
-	function onAnnotationClicked(event: CustomEvent) {
-		if (event.detail == undefined) {
-			return;
-		}
-
-		// Get the annotation tag from the event
-		let label = event.detail.label[0];
-		label = label.replace('<B>', '').replace('</B>', '');
-
-		var annotationTag = {
-			id: event.detail.id[0],
-			label: label
-		};
-
-		// Avoid duplicates based on `id`
-		if (annotationTags.some((tag: { id: string; label: string }) => tag.id === annotationTag.id)) {
-			return;
-		}
-
-		// Add and reassign for svelte
-		annotationTags.push(annotationTag);
-		annotationTags = [...annotationTags];
-
-		onSearchInputChanged();
-	}
-
-	// Callback function when 'x' is clicked
-	function removeTag(tag: { id: string; label: string }) {
-		// Remove the tag based on `id`
-		annotationTags = annotationTags.filter((t: any) => t.id !== tag.id);
-
-		// Trigger the search input change or any other logic
-		onSearchInputChanged();
-	}
 
 	async function query(searchInput: string, join?: string) {
 		let query = `${baseUrl}${searchInput}`;
@@ -106,175 +248,6 @@
 		return matchedFields;
 	}
 
-	async function onSearchInputChanged() {
-		let q = searchInput;
-		searchRequestIndexCounter++;
-		isSearching = true;
-
-		let requestIndex = searchRequestIndexCounter;
-
-		if (annotationTags.length > 0) {
-			q += '&annotation=';
-			for (let tag of annotationTags) {
-				q += tag.id + ' ';
-			}
-		}
-
-		if (publicationDateStart || publicationDateEnd) {
-			const start = publicationDateStart ?? '';
-			const end = publicationDateEnd ?? '';
-			q += `&publicationDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
-		}
-
-		if (grantNo) {
-			q += `&grantNo=${grantNo}`;
-		}
-
-		if (licenseUri) {
-			q += `&license=${licenseUri}`;
-		}
-
-		if (format) {
-			q += `&format=${format}`;
-		}
-
-		if (publisherEmail) {
-			q += `&publisher=${publisherEmail}`;
-		}
-
-		if (referenceDateStart || referenceDateEnd) {
-			const start = referenceDateStart ?? '';
-			const end = referenceDateEnd ?? '';
-			q += `&referenceDate=${encodeURIComponent(start)},${encodeURIComponent(end)}`;
-		}
-
-		const results: { docs: any } = await query(q);
-		const resultMap: Record<string, SearchResult> = {};
-
-		searchResults = resultMap;
-
-		for (var result of results.docs) {
-
-			let id: string = result.id[0];
-
-			if (!id.startsWith(env.PUBLIC_MOSS_BASE_URL)) {
-				continue;
-			}
-
-			try {
-				var response = await fetch(id, {
-					headers: {
-						Accept: 'application/ld+json'
-					}
-				});
-
-				if (response.status != 200) {
-					continue;
-				}
-
-				let layerGraphs = await jsonld.expand(await response.json());
-
-				if (requestIndex != searchRequestIndexCounter) {
-					return;
-				}
-
-				let layerGraph = JsonldUtils.getTypedGraph(layerGraphs, RdfUris.MOSS_ENTRY);
-				var databusResourceUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_EXTENDS);
-
-				if (resultMap[databusResourceUri] == undefined) {
-					try {
-						var response = await fetch(databusResourceUri, {
-							headers: {
-								Accept: 'application/ld+json'
-							}
-						});
-
-						var resourceGraphs = await jsonld.expand(await response.json());
-
-						if (requestIndex != searchRequestIndexCounter) {
-							return;
-						}
-
-						var resourceGraph = JsonldUtils.getGraphById(resourceGraphs, databusResourceUri);
-
-						var databusResourceData: any = {};
-						databusResourceData.uri = databusResourceUri;
-						databusResourceData.title = JsonldUtils.getValue(resourceGraph, RdfUris.DCT_TITLE);
-						databusResourceData.abstract = JsonldUtils.getValue(
-							resourceGraph,
-							RdfUris.DCT_ABSTRACT
-						);
-						databusResourceData.description = JsonldUtils.getValue(
-							resourceGraph,
-							RdfUris.DCT_DESCRIPTION
-						);
-						databusResourceData.browseLink = MossUtils.getRelativeBrowseLink(
-							MossUtils.getMossEntryURI(env.PUBLIC_MOSS_BASE_URL, databusResourceUri, '')
-						);
-						databusResourceData.layers = [];
-
-						resultMap[databusResourceUri] = databusResourceData;
-					} catch (e) {
-						console.log(e);
-					}
-				}
-
-				if (resultMap[databusResourceUri] == undefined) {
-					continue;
-				}
-
-				result.uri = result.id[0];
-				result.name = MossUtils.uriToName(result.uri);
-				result.contentUri = JsonldUtils.getValue(layerGraph, RdfUris.MOSS_CONTENT);
-				result.explanations = generateSearchExplanation(result, searchInput);
-
-				resultMap[databusResourceUri].layers.push(result);
-			} catch (e) {
-				console.log(e);
-			}
-
-			if (result.annotation != undefined) {
-				for (var annotationUri of result.annotation) {
-					for (let tag of annotationTags) {
-						if (annotationUri == tag.id) {
-							if (result.explanations['annotation'] == undefined) {
-								result.explanations['annotation'] = [];
-							}
-
-							result.explanations['annotation'].push({ label: tag.label, uri: tag.id });
-						}
-					}
-				}
-			}
-
-			const layerUris = resultMap[databusResourceUri].layers
-				.map((layer: any) => layer.uri)
-				.join(','); // Using 'any' for layer
-			const hashInput = databusResourceUri + layerUris + searchInput + annotationTags.length; // Create a string to hash
-			resultMap[databusResourceUri].hash = createHash(hashInput); // Assign the hash to a new property
-
-			if (requestIndex != searchRequestIndexCounter) {
-				return;
-			}
-
-			searchResults = resultMap;
-		}
-
-		searchResults = resultMap;
-		isSearching = false;
-		/*
-         
-        // Create hashes for each entry in resultMap
-        for (const [uri, data] of Object.entries(resultMap) as [string, any][]) {
-            // Concatenate the base uri with all layer uris
-            const layerUris = data.layers.map((layer: any) => layer.uri).join(','); // Using 'any' for layer
-            const hashInput = uri + layerUris + searchInput + annotationTags.length; // Create a string to hash
-            data.hash = createHash(hashInput); // Assign the hash to a new property
-        }
-        
-        */
-	}
-
 	function createHash(input: string) {
 		// In a real application, consider using a library like 'crypto-js' or the SubtleCrypto API
 		let hash = 0;
@@ -290,21 +263,17 @@
 	<div class="container">
 		<div class="columns">
 			<div class="column">
-				<Input
-					bind:value={searchInput}
-					on:keyup={onSearchInputChanged}
-					placeholder="Search files..."
-				/>
-				<ul class="tag-list">
-					{#each annotationTags as tag}
-						<li>
-							<div class="tag-box">
-								{@html tag.label}
-								<button class="close-btn" on:click={() => removeTag(tag)}>x</button>
-							</div>
-						</li>
-					{/each}
-				</ul>
+				<!--
+				<pre
+					style="font-size: 0.7em; max-width: 800px; overflow-x:scroll; background-color:#f8f8f8">
+					{sparqlSelector}
+				</pre>
+-->
+				<pre
+					style="font-size: 0.7em; max-width: 800px; overflow-x:scroll; background-color:#f8f8f8">
+					{queryString}
+				</pre>
+
 				<ul>
 					{#if isSearching}
 						<p>Searching...</p>
@@ -317,6 +286,77 @@
 				</ul>
 			</div>
 			<div class="column medium">
+				<LiteralFacet config={keywordFacet} {sparqlSelector} on:selectionChanged={onFacetChange} />
+				<LookupFacet config={locationFacet} {sparqlSelector} on:selectionChanged={onFacetChange} />
+
+				<LookupFacet
+					config={fundingAgencyFacet}
+					{sparqlSelector}
+					on:selectionChanged={onFacetChange}
+				/>
+
+				<LookupFacet
+					config={oeoAnnotationFacet}
+					{sparqlSelector}
+					on:selectionChanged={onFacetChange}
+				/>
+
+				<!--
+
+					
+				<h2>Keyword</h2>
+				<Input
+					bind:value={searchInput}
+					on:keyup={onSearchInputChanged}
+					placeholder="Search files..."
+				/>
+
+				<h2>Location</h2>
+				<div class="facet-input" style="margin-bottom: .5rem;">
+					<LookupSearch
+						lookupBaseUrl={locationWidgetConfig.lookupBaseUrl}
+						sparqlDistinctQuery={locationWidgetConfig.countQuery}
+						labelField="label"
+						on:select={(e) => {
+							locationWidgetConfig.selection = [...locationWidgetConfig.selection, e.detail];
+							onSelectionChanged(locationWidgetConfig, locationWidgetConfig.selection);
+						}}
+					/>
+				</div>
+				<TagList bind:items={locationWidgetConfig.selection} />
+
+				<h2>OEO Annotation</h2>
+				<div class="facet-input" style="margin-bottom: .5rem;">
+					<LookupSearch
+						lookupBaseUrl={annotationWidgetConfig.lookupBaseUrl}
+						sparqlDistinctQuery={annotationWidgetConfig.countQuery}
+						labelField="label"
+						on:select={(e) => {
+							annotationWidgetConfig.selection = [...annotationWidgetConfig.selection, e.detail];
+							onSelectionChanged(annotationWidgetConfig, annotationWidgetConfig.selection);
+						}}
+					/>
+				</div>
+				<TagList bind:items={annotationWidgetConfig.selection} />
+
+				<h2>Funding Agency</h2>
+				<div class="facet-input" style="margin-bottom: .5rem;">
+					<LookupSearch
+						lookupBaseUrl={fundingAgencyWidgetConfig.lookupBaseUrl}
+						sparqlDistinctQuery={fundingAgencyWidgetConfig.countQuery}
+						labelField="label"
+						on:select={(e) => {
+							fundingAgencyWidgetConfig.selection = [
+								...fundingAgencyWidgetConfig.selection,
+								e.detail
+							];
+							onSelectionChanged(fundingAgencyWidgetConfig, fundingAgencyWidgetConfig.selection);
+						}}
+					/>
+				</div>
+				<TagList bind:items={fundingAgencyWidgetConfig.selection} />
+
+			
 				<h2>Publication Date</h2>
 				<div class="facet-input">
 					<Input
@@ -395,6 +435,7 @@
 
 				<h2>Ontology Annotations</h2>
 				<AnnotationSearch on:annotationClick={onAnnotationClicked}></AnnotationSearch>
+				-->
 			</div>
 		</div>
 	</div>
@@ -403,10 +444,6 @@
 <style>
 	:global(body) {
 		margin: 0;
-	}
-
-	.facet-input {
-		margin-bottom: 0.2em;
 	}
 
 	ul {
@@ -421,29 +458,5 @@
 	.column.medium {
 		min-width: 256px;
 		width: 256px;
-	}
-
-	.tag-list {
-		display: flex;
-		gap: 0.5em;
-		margin-top: 0.5em;
-		flex-wrap: wrap;
-	}
-
-	.tag-box {
-		display: inline-block;
-		background-color: #e0e0e0;
-		padding: 8px 10px;
-		border-radius: 12px;
-		line-height: 1;
-		font-size: 14px;
-		position: relative;
-		cursor: pointer;
-	}
-
-	.tag-box .close-btn {
-		margin-left: 10px;
-		font-weight: bold;
-		cursor: pointer;
 	}
 </style>

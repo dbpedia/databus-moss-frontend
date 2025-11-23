@@ -1,4 +1,5 @@
 import { env as ENV } from '$env/dynamic/public';  
+import { MossUtils } from '$lib/utils/moss-utils.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals, parent }) {
@@ -8,14 +9,12 @@ export async function load({ locals, parent }) {
 		return { userData: parentData?.userData ?? null, modules: [] };
 	}
 
-	const res = await fetch(ENV.PUBLIC_MOSS_BASE_URL + '/api/v1/modules');
-	const modules = res.ok ? await res.json() : [];
-
-    console.log(modules);
+	
+    //console.log( moduleListResource._embedded.modules);
     
 
 	return {
 		...parentData,
-		modules
+		//modules: moduleListResource._embedded.modules
 	};
 }

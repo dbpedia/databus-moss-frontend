@@ -4,31 +4,51 @@
 	import ModuleForm from './module-form.svelte';
 	import ModuleDeleter from './module-deleter.svelte';
 	import ModuleDetail from './module-detail.svelte';
-	import type { MossModule } from '$lib/types';
+	import type { MossModule, MossTerminology } from '$lib/types';
 	import { env } from '$env/dynamic/public';
 	import { writable, derived } from 'svelte/store';
 	import { page } from '$app/stores';
 	import LoginWall from '$lib/components/login-wall.svelte';
+	import { goto } from '$app/navigation';
+
+	import { MossUtils } from '$lib/utils/moss-utils';
 
 	const modules = writable<MossModule[]>([]);
+	const terminologies = writable<MossTerminology[]>([]);
 
 	async function fetchModules() {
 		try {
-			const res = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules`);
-			if (res.ok) modules.set(await res.json());
+			const moduleListResource = await MossUtils.fetchJSON(env.PUBLIC_MOSS_BASE_URL, '/modules');
+			modules.set(moduleListResource._embedded.modules);
 		} catch (err) {
 			console.error('Failed to fetch modules:', err);
 		}
 	}
 
-	onMount(fetchModules);
+	async function fetchTerminologies() {
+		try {
+			const terminologyListResource = await MossUtils.fetchJSON(env.PUBLIC_MOSS_BASE_URL, '/terminologies');
+			terminologies.set(terminologyListResource._embedded.terminologies);
+		} catch (err) {
+			console.error('Failed to fetch terminologies:', err);
+		}
+	}
+
+	onMount(() => {
+		fetchModules();
+		fetchTerminologies();
+	});
 
 	function showCreateForm() {
 		hashStore.navigate('create-module');
 	}
 
-	function openDetail(mod: MossModule) {
+	function editModule(mod: MossModule) {
 		hashStore.navigate(`edit-module?id=${encodeURIComponent(mod.id)}`);
+	}
+
+	function showTerminology(terminology: MossTerminology) {
+		goto(`/terminologies/${terminology.id}`);
 	}
 
 	function backToList() {
@@ -42,7 +62,7 @@
 
 	async function handleCreated(moduleData: MossModule) {
 		try {
-			const res = await fetch(`/api/v1/modules`, {
+			const res = await fetch(`/modules`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(moduleData)
@@ -63,7 +83,7 @@
 
 	async function handleDelete(id: string) {
 		try {
-			const res = await fetch(`/api/v1/modules/${id}`, { method: 'DELETE' });
+			const res = await fetch(`/modules/${id}`, { method: 'DELETE' });
 
 			console.log(res);
 
@@ -84,19 +104,36 @@
 		<div class="container">
 			<div class="admin-page">
 				{#if $hashStore.view === 'list'}
-					<div class="top-bar">
-						<h1>Modules</h1>
-						<button class="btn-create" on:click={showCreateForm}>+ Create Module</button>
-					</div>
+					<div class="box">
+						<div class="top-bar">
+							<h1>Modules</h1>
+							<button class="btn-create" on:click={showCreateForm}>+ Create Module</button>
+						</div>
 
-					<div class="grid">
-						{#each $modules as module}
-							<button class="card" on:click={() => openDetail(module)}>
-								<h2>{module.label}</h2>
-								<p>{module.description}</p>
-								<div class="meta"><strong>Language:</strong> {module.language}</div>
-							</button>
-						{/each}
+						<div class="grid">
+							{#each $modules as module}
+								<button class="card" on:click={() => editModule(module)}>
+									<h2>{module.label}</h2>
+									<p>{module.description}</p>
+									<div class="meta"><strong>Language:</strong> {module.language}</div>
+								</button>
+							{/each}
+						</div>
+					</div>
+					<div class="box">
+						<div class="top-bar">
+							<h1>Terminologies</h1>
+							<!-- button class="btn-create" on:click={showCreateForm}>+ Create Module</button>-->
+						</div>
+
+						<div class="grid">
+							{#each $terminologies as terminology}
+								<button class="card" on:click={() => showTerminology(terminology)}>
+									<h2>{terminology.label}</h2>
+									<div class="meta"><strong>Language:</strong> {terminology.language}</div>
+								</button>
+							{/each}
+						</div>
 					</div>
 				{/if}
 
@@ -138,6 +175,10 @@
 		margin: 0;
 		padding: 0;
 		color: #111827;
+	}
+
+	.box {
+		margin-bottom: 3rem;
 	}
 
 	.top-bar {

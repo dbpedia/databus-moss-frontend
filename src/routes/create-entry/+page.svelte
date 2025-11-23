@@ -42,7 +42,7 @@
 	let errorMessage = '';
 	let validationMessages: string[] = [];
 	let validationSuccess = false;
-	let activeModule: MossModule | null = null;
+	let activeModule: any | null = null;
 	let moduleList: any[] = [];
 	let entryUri: string | null;
 
@@ -72,6 +72,18 @@
 	}
 
 	function createHeaderInfo() {
+
+		let mimeType = RdfFormats.getFormatByMimeType(activeModule?.language ?? '');
+
+
+		let info: any = {};
+		info._links = { "self": { "href": entryUri } };
+		info.module = MossUtils.getModuleUri(moduleId);
+		info.extends = databusResource;
+		info.contentGraph = MossUtils.getContentGraphUri(databusResource, moduleId, mimeType);
+		info.isFake = true;
+
+		/*
 		let info: { key: string; value: string; type?: string }[] = [];
 
 		info.push({
@@ -105,15 +117,15 @@
 			value: MossUtils.getContentGraphUri(databusResource, moduleId, mimeType),
 			type: 'placeholder'
 		});
+		*/
 
 		headerInfo = info;
 	}
 
 	function goToEntry() {
 		if (entryUri == null || activeModule == null) return;
-		let formatInfo = RdfFormats.getFormatByMimeType(activeModule.language);
-		let browseLink = MossUtils.getRelativeBrowseLink(entryUri, formatInfo);
-		goto(browseLink);
+		
+		goto(MossUtils.getRelativeUri(entryUri));
 	}
 
 	async function checkEntryExists() {
@@ -130,8 +142,6 @@
 		}
 	}
 
-	let resourceName: string;
-	let format: TemplateFormat = null;
 	let templateContent = '';
 
 	onMount(async () => {
@@ -139,18 +149,42 @@
 		if (step2) {
 			moduleId = params.get('module')!;
 			databusResource = params.get('resource')!;
-			updateActiveModule();
+			await updateActiveModule();
 			await loadTemplate();
 		}
 	});
 
 	$: if (moduleId) updateActiveModule();
 
-	function updateActiveModule() {
-		activeModule = moduleList.find((mod) => mod.id === moduleId) ?? null;
+	async function updateActiveModule() {
+		if (!moduleId) {
+			activeModule = null;
+			return;
+		}
 
-		if (activeModule && databusResource) {
-			createHeaderInfo();
+		// Find the module in the list to get the self link
+		const moduleEntry = moduleList.find((mod) => mod.id === moduleId);
+		if (!moduleEntry?._links?.self) {
+			activeModule = null;
+			return;
+		}
+
+		try {
+			const res = await fetch(moduleEntry._links.self.href, {
+				headers: { Accept: 'application/hal+json' }
+			});
+			if (res.ok) {
+				activeModule = await res.json();
+				if (databusResource) {
+					createHeaderInfo();
+				}
+			} else {
+				console.error(`Failed to fetch module HAL: ${res.status}`);
+				activeModule = null;
+			}
+		} catch (err) {
+			console.error('Error fetching module HAL:', err);
+			activeModule = null;
 		}
 	}
 
@@ -225,20 +259,24 @@
 	}
 
 	async function loadTemplate() {
-		if (!activeModule) return;
-		({ name: resourceName, format } = getTemplateFile(activeModule.language));
+		if (!activeModule || !activeModule._links?.template) return;
+
 		try {
-			const response = await fetch(`/api/v1/modules/${moduleId}/${resourceName}`);
+			const response = await fetch(activeModule._links.template.href, {
+				headers: { Accept: 'application/ld+json' }
+			});
+
 			if (response.ok) {
 				templateContent = await response.text();
 				templateContent = templateContent.replace(/\$DATABUS_RESOURCE/g, databusResource);
 			} else {
-				templateContent = `# Could not load template ${resourceName}`;
+				templateContent = `# Could not load template ${activeModule._links.template.href}`;
 			}
 		} catch (err: any) {
 			templateContent = `# Error loading template: ${err.message}`;
 		}
 	}
+
 </script>
 
 {#if $page.data.userData}
@@ -312,7 +350,7 @@
 						</div>
 					</div>
 				{:else}
-					<MossEntryHeader module={activeModule} entryData={headerInfo}></MossEntryHeader>
+					<MossEntryHeader module={activeModule} entry={headerInfo}></MossEntryHeader>
 
 					<div style="display:flex; gap: 1rem">
 						<div style="flex: 3">
@@ -338,7 +376,7 @@
 
 						<div style="width: 500px">
 							<MossModuleWidget
-								bind:moduleId={activeModule.id}
+								bind:module={activeModule}
 								content={templateContent}
 								resourceUri={databusResource}
 								on:testIndexer={(e) => console.log('Test Indexer', e.detail)}

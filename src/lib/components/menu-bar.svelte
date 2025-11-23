@@ -23,10 +23,11 @@
     <NavHamburger  />
     <NavUl>
         <NavLi href="/">Home</NavLi>
-        <NavLi href="/browse">Browse</NavLi>
+        <NavLi href="/entries">Entries</NavLi>
+        <NavLi href="/modules">Modules</NavLi>
+        <NavLi href="/terminologies">Terminologies</NavLi>
 
         {#if $page.data.userData != undefined}
-        <NavLi href="/create-entry">Create Entry</NavLi>
         <NavLi href="/admin">Admin Settings</NavLi>
         {/if}
     </NavUl>

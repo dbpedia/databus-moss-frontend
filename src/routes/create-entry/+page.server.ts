@@ -13,11 +13,10 @@ export async function load({ locals, parent }: any) {
         return null;
     }
 
-    const moduleListResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules`);
-    const moduleList = await moduleListResponse.json();
+    const moduleListResponse = await MossUtils.fetchJSON(env.PUBLIC_MOSS_BASE_URL, `/modules`);
     
     return { 
         ...parentData,
-        modules: moduleList
+        modules: moduleListResponse._embedded.modules
     }
 }

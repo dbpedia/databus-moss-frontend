@@ -29,7 +29,7 @@
 
 	async function loadContent() {
 		try {
-			const res = await fetch(`/api/v1/modules/${moduleId}/${resourceName}`);
+			const res = await fetch(`/modules/${moduleId}/${resourceName}`);
 			if (res.ok) {
 				content = await res.text();
 			} else if (res.status === 404) {
@@ -67,7 +67,7 @@
 
 	async function save() {
 		try {
-			const res = await fetch(`/api/v1/modules/${moduleId}/${resourceName}`, {
+			const res = await fetch(`/modules/${moduleId}/${resourceName}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				body: code
@@ -85,7 +85,7 @@
 		if (!confirm(`Are you sure you want to delete ${resourceName}? This cannot be undone.`)) return;
 
 		try {
-			const res = await fetch(`/api/v1/modules/${moduleId}/${resourceName}`, {
+			const res = await fetch(`/modules/${moduleId}/${resourceName}`, {
 				method: 'DELETE'
 			});
 			if (!res.ok) console.error(await res.text());

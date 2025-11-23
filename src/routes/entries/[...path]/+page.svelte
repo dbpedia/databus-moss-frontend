@@ -34,6 +34,7 @@
 	let errors: any;
 
 	const module: MossModule = data.module;
+
 	errors = [];
 
 	$: backLink = MossUtils.createListGroupNavigationItems(['..'], $page.url.pathname);
@@ -63,17 +64,15 @@
 	}
 
 	export async function saveEntry(): Promise<Response> {
-		let moduleData: any = $page.data.props.moduleData;
-		let moduleURI = moduleData[RdfUris.JSONLD_ID];
-		let moduleId = MossUtils.uriToName(moduleURI);
+		let moduleData: any = $page.data.module;
+		let moduleId = moduleData.id;
 
 		if (moduleId == null) {
 			throw 'Nope';
 		}
 
-		let language = JsonldUtils.getValue(moduleData, RdfUris.MOSS_MIME_TYPE);
-		let extensionData: any = $page.data.props.extensionData;
-		const requestURL = MossUtils.getSaveRequestURL(extensionData.databusResourceURI, moduleId);
+		let language = moduleData.language;
+		const requestURL = MossUtils.getSaveRequestURL($page.data.entry.extends, moduleId);
 
 		let content = data.content;
 		while (content.endsWith('\n') || content.endsWith('\r')) {
@@ -90,6 +89,9 @@
 			headers: headers,
 			body: content
 		});
+	}
+	function showCreateForm() {
+		goto('/create-entry');
 	}
 
 	async function onSaveButtonClicked() {
@@ -139,6 +141,7 @@
 <div class="container">
 	<div class="top-bar-container">
 		<TopBar segments={data.props.segments} />
+		<button class="btn-create" on:click={showCreateForm}>+ Create Entry</button>
 	</div>
 
 	{#if !data.props.isDocument}
@@ -154,7 +157,7 @@
 	{/if}
 
 	{#if data.props.isDocument}
-		<MossEntryHeader module={data.module} entryData={data.props.headerInfo}></MossEntryHeader>
+		<MossEntryHeader module={data.module} entry={data.entry}></MossEntryHeader>
 
 		<div style="display:flex; gap: 1rem">
 			<div style="flex: 3">
@@ -237,7 +240,7 @@
 
 			<div style="width: 450px">
 				<MossModuleWidget
-					bind:moduleId={data.props.moduleId}
+					bind:module={data.module}
 					content={data.content}
 					resourceUri={data.props.extensionData.databusResourceURI}
 					on:testIndexer={(e) => console.log('Test Indexer', e.detail)}
@@ -267,9 +270,30 @@
 		width: 100%;
 	}
 
+	.btn-create {
+		padding: 0.5em 1em;
+		margin-top: 0.5rem;
+		height: 40px;
+		width: 160px;
+		background-color: #4f46e5;
+		color: white;
+		border: none;
+		border-radius: 0.375rem;
+		cursor: pointer;
+		font-weight: 600;
+		transition: background 0.2s;
+	}
+
+	.btn-create:hover {
+		background-color: #6366f1;
+	}
+
 	.top-bar-container {
 		width: 100%;
 		padding-bottom: 0.5em;
+		display: flex;
+		margin-top: 1em;
+		margin-bottom: 0.5em;
 	}
 
 	.editor-container {

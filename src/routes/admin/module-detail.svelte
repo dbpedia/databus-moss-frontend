@@ -45,7 +45,7 @@
 		errorMessage = '';
 
 		try {
-			const res = await fetch(`/api/v1/modules/${activeModule.id}`, {
+			const res = await fetch(`modules/${activeModule.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ label, description, language })
@@ -157,7 +157,7 @@
 				</p>
 
 				<div style="margin-bottom: 0.5rem">
-					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/api/v1/${activeModule.id}/context.jsonld`}></ResourceUri>
+					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules/${activeModule.id}/context.jsonld`}></ResourceUri>
 				</div>
 				<SubResourceEditor
 					moduleId={activeModule.id}
@@ -172,7 +172,7 @@
 				<p class="resource-info">
 					The SHACL shapes define constraints and validation rules for your RDF data.
 				</p>
-				<SubResourceEditor moduleId={activeModule.id} resourceName="shapes.ttl" format="turtle" />
+				<SubResourceEditor moduleId={activeModule.id} resourceName="shapes" format="turtle" />
 			</div>
 		{/if}
 
@@ -182,7 +182,7 @@
 					The indexer YAML config controls how information in this module is selected and processed
 					by the search index system.
 				</p>
-				<SubResourceEditor moduleId={activeModule.id} resourceName="indexer.yml" format="yaml" />
+				<SubResourceEditor moduleId={activeModule.id} resourceName="indexer" format="yaml" />
 			</div>
 		{/if}
 

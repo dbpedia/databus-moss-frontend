@@ -1,15 +1,18 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+
 	export let uri: string | null | undefined;
-	export let fontSize: string = "0.65rem";
+	export let fontSize: string = '0.8rem';
+	export let isRelative: boolean = false;
 
 	let copied = false;
 	let timeout: ReturnType<typeof setTimeout> | null = null;
 
-	async function copyToClipboard() {
+	$: displayUri =
+		uri && isRelative && browser ? new URL(uri, window.location.origin).pathname : uri;
 
-		if(uri == null) {
-			return;
-		}
+	async function copyToClipboard() {
+		if (!uri) return;
 
 		try {
 			await navigator.clipboard.writeText(uri);
@@ -17,20 +20,19 @@
 			if (timeout) clearTimeout(timeout);
 			timeout = setTimeout(() => (copied = false), 1200);
 		} catch (e) {
-			console.error("Clipboard copy failed:", e);
+			console.error('Clipboard copy failed:', e);
 		}
 	}
 </script>
 
 <div class="uri-wrapper" style={`font-size: ${fontSize}`}>
-	<a class="uri-link" href={uri} target="_blank" rel="noopener noreferrer">{uri}</a>
+	<a class="uri-link" href={uri} target="_blank" rel="noopener noreferrer">{displayUri}</a>
 	<button
 		type="button"
 		class="copy-btn {copied ? 'copied' : ''}"
 		on:click={copyToClipboard}
 		title="Copy to clipboard"
 	>
-		<!-- Idle copy icon -->
 		<svg
 			viewBox="0 0 64 64"
 			style="width: 20px;"
@@ -41,10 +43,11 @@
 			class="icon clipboard-idle"
 		>
 			<rect x="11.13" y="17.72" width="33.92" height="36.85" rx="2.5" />
-			<path d="M19.35,14.23V13.09a3.51,3.51,0,0,1,3.33-3.66H49.54a3.51,3.51,0,0,1,3.33,3.66V42.62a3.51,3.51,0,0,1-3.33,3.66H48.39" />
+			<path
+				d="M19.35,14.23V13.09a3.51,3.51,0,0,1,3.33-3.66H49.54a3.51,3.51,0,0,1,3.33,3.66V42.62a3.51,3.51,0,0,1-3.33,3.66H48.39"
+			/>
 		</svg>
 
-		<!-- Clipboard with checkmark -->
 		<svg
 			viewBox="0 0 15 15"
 			style="width: 16px;"
@@ -111,7 +114,9 @@
 		position: absolute;
 		width: 1.2rem;
 		height: 1.2rem;
-		transition: opacity 0.25s ease, transform 0.25s ease;
+		transition:
+			opacity 0.25s ease,
+			transform 0.25s ease;
 	}
 
 	.clipboard-idle {

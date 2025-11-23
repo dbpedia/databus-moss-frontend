@@ -1,22 +1,27 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import ResourceUri from './resource-uri.svelte';
-	import type { DatabusResource, MossModule } from '$lib/types';
+	import type { MossModule } from '$lib/types';
 	import { MossUtils } from '$lib/utils/moss-utils';
 
 	export let module: MossModule;
-	export let entryData: { key: string; value: string | null; type? : string }[] = [];
+	export let entry: any;
 
-	const getEntry = (key: string) =>
-		entryData.find(f => f.key === key);
+	let extendsResourceTitle: string | null = '';
+	let loadingExtends = true;
 
-	const idEntry = getEntry('id');
-	const rdfTypeEntry = getEntry('rdf:type');
-	const mossInstanceOfEntry = getEntry('moss:instanceOf');
-	const mossContentEntry = getEntry('moss:content');
-	const mossExtendsEntry = getEntry('moss:extends');
-	const createdEntry = getEntry('dct:created');
-	const modifiedEntry = getEntry('dct:modified');
+	onMount(async () => {
+		if (entry?.extends) {
+			try {
+				const resource = await MossUtils.fetchDatabusResource(entry.extends);
+				extendsResourceTitle = resource.title || MossUtils.uriToName(entry.extends);
+			} catch {
+				extendsResourceTitle = MossUtils.uriToName(entry.extends);
+			} finally {
+				loadingExtends = false;
+			}
+		}
+	});
 
 	const formatDate = (iso?: string | null) => {
 		if (!iso) return '';
@@ -30,104 +35,66 @@
 			second: '2-digit'
 		}).format(date);
 	};
-
-	let extendsResourceTitle: string | null = '';
-	let loadingExtends = true;
-
-	onMount(async () => {
-		if (mossExtendsEntry) {
-			try {
-				const resource = await MossUtils.fetchDatabusResource(mossExtendsEntry.value ?? '');
-				extendsResourceTitle = resource.title || MossUtils.uriToName(mossExtendsEntry.value ?? '');
-			} catch (e) {
-				console.error('Failed to fetch mossExtends resource', e);
-				extendsResourceTitle = MossUtils.uriToName(mossExtendsEntry.value ?? '');
-			} finally {
-				loadingExtends = false;
-			}
-		}
-	});
-
 </script>
 
 <div class="entry-box">
 	<div class="entry-header">ENTRY INFO</div>
 
 	<div class="fields">
-		{#if idEntry}
-			<div class="id">
-				<h1>
-					{#if loadingExtends}
-						Loading...
-					{:else}
-						{module?.label} for {extendsResourceTitle}
-					{/if}
-				</h1>
-				{#if idEntry.type === 'uri'}
-					<ResourceUri uri={idEntry.value} />
+		<div>
+			<h1>
+				{#if loadingExtends}
+					Loading...
 				{:else}
-					<div class="value placeholder">{idEntry.value}</div>
+					{module?.label} for {extendsResourceTitle}
 				{/if}
-			</div>
-		{/if}
+			</h1>
+			{#if entry.isFake}
+				<p class="fake-uri">{entry._links?.self?.href}</p>
+			{:else}
+				<ResourceUri uri={entry._links?.self?.href} fontSize="0.8em" />
+			{/if}
+		</div>
 
 		<hr class="section-divider" />
 
-		{#if rdfTypeEntry}
+		{#if entry.module}
 			<div class="field">
-				<div class="label">{rdfTypeEntry.key}</div>
-				{#if rdfTypeEntry.type === 'uri'}
-					<ResourceUri uri={rdfTypeEntry.value} />
+				<div class="label">module</div>
+				<ResourceUri uri={entry.module} isRelative={true} />
+			</div>
+		{/if}
+
+		{#if entry.extends}
+			<div class="field">
+				<div class="label">extends</div>
+				<ResourceUri uri={entry.extends} />
+			</div>
+		{/if}
+
+		{#if entry.contentGraph}
+			<div class="field">
+				<div class="label">contentGraph</div>
+
+				{#if entry.isFake}
+					<p class="fake-uri" style="font-size: 0.65rem">{entry.contentGraph}</p>
 				{:else}
-					<div class="value placeholder">{rdfTypeEntry.value}</div>
+					<ResourceUri uri={entry.contentGraph} isRelative={true} />
 				{/if}
 			</div>
 		{/if}
 
-		{#if mossInstanceOfEntry}
+		{#if entry.created}
 			<div class="field">
-				<div class="label">{mossInstanceOfEntry.key}</div>
-				{#if mossInstanceOfEntry.type === 'uri'}
-					<ResourceUri uri={mossInstanceOfEntry.value} />
-				{:else}
-					<div class="value placeholder">{mossInstanceOfEntry.value}</div>
-				{/if}
+				<div class="label">created</div>
+				<div class="value">{formatDate(entry.created)}</div>
 			</div>
 		{/if}
 
-		{#if mossContentEntry}
+		{#if entry.modified}
 			<div class="field">
-				<div class="label">{mossContentEntry.key}</div>
-				{#if mossContentEntry.type === 'uri'}
-					<ResourceUri uri={mossContentEntry.value} />
-				{:else}
-					<div class="value placeholder">{mossContentEntry.value}</div>
-				{/if}
-			</div>
-		{/if}
-
-		{#if mossExtendsEntry}
-			<div class="field">
-				<div class="label">{mossExtendsEntry.key}</div>
-				{#if mossExtendsEntry.type === 'uri'}
-					<ResourceUri uri={mossExtendsEntry.value} />
-				{:else}
-					<div class="value placeholder">{mossExtendsEntry.value}</div>
-				{/if}
-			</div>
-		{/if}
-
-		{#if createdEntry}
-			<div class="field">
-				<div class="label">{createdEntry.key}</div>
-				<div class="value">{formatDate(createdEntry.value)}</div>
-			</div>
-		{/if}
-
-		{#if modifiedEntry}
-			<div class="field">
-				<div class="label">{modifiedEntry.key}</div>
-				<div class="value">{formatDate(modifiedEntry.value)}</div>
+				<div class="label">modified</div>
+				<div class="value">{formatDate(entry.modified)}</div>
 			</div>
 		{/if}
 	</div>
@@ -135,11 +102,16 @@
 
 <style>
 	h1 {
-		padding: 0;
-		margin: 0;
 		font-weight: 600;
 		color: #3b3f44;
-		margin-bottom: -0.15rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	.fake-uri {
+		font-family: 'monospatial';
+		font-size: 0.8em;
+		color: grey;
 	}
 
 	.entry-box {
@@ -157,17 +129,17 @@
 		font-size: 0.75rem;
 		letter-spacing: 1px;
 		text-transform: uppercase;
-		margin: 0;
+		margin-bottom: 0;
 	}
 
-	.id {
+	.fields {
 		display: flex;
 		flex-direction: column;
 	}
 
-	.field {
+	.field,
+	.id {
 		display: flex;
-		flex-direction: row;
 		align-items: center;
 		min-height: 32px;
 	}
@@ -184,20 +156,13 @@
 		font-family: monospace;
 		width: 160px;
 		flex-shrink: 0;
-		margin-left: 1rem;
-	}
-
-	.value.placeholder {
-		color: #878b94;
-		height: 32px;
-		line-height: 32px;
+		margin-right: 1rem;
 	}
 
 	.value {
 		font-size: 0.85rem;
 		color: #1f2937;
 		font-family: monospace;
-		flex-grow: 1;
 		word-break: break-word;
 	}
 </style>

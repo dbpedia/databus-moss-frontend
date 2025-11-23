@@ -9,9 +9,9 @@ export function setupFetchProxy() {
     const httpProxy = env.HTTP_PROXY || env.http_proxy;
     const noProxy = env.NO_PROXY || env.no_proxy;
 
-    console.log(`HTTPS_PROXY: ${httpsProxy}`);
-    console.log(`HTTP_PROXY: ${httpProxy}`);
-    console.log(`NO_PROXY: ${noProxy}`);
+    //console.log(`HTTPS_PROXY: ${httpsProxy}`);
+    //console.log(`HTTP_PROXY: ${httpProxy}`);
+    //console.log(`NO_PROXY: ${noProxy}`);
 
     // If both HTTP and HTTPS proxies are set, prioritize HTTPS for HTTPS requests.
     const proxy = httpsProxy || httpProxy;

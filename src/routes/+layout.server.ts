@@ -11,6 +11,8 @@ async function fetchUserData(session: any) {
 
     const accessToken = session.accessToken;
 
+    
+
     const headers: any = {
         Accept: 'application/json',
         Authorization: 'Bearer ' + accessToken
@@ -21,15 +23,11 @@ async function fetchUserData(session: any) {
         headers: headers,
     });
 
-
-    console.log(JSON.stringify(response, null, 3));
-
     if (response.ok) {
         const data = await response.json();
         return data;
     }
 
-    console.log("nix user");
     return null;
 }
 
@@ -37,6 +35,7 @@ export const load: LayoutServerLoad = async (event) => {
 
     let userData = null;
     // console.log(`Fetching user data....`);
+
 
     try {
         const session = await event.locals.auth() as any;
@@ -51,7 +50,7 @@ export const load: LayoutServerLoad = async (event) => {
     }
 
     // console.log(JSON.stringify(userData, null, 3));
-
+ 
     return {
         userData: userData
     };

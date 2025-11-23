@@ -8,7 +8,7 @@
 
 <div>
 	<h1>{moduleInfo.label}</h1>
-	<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/module/${moduleInfo.id}`} />
+	<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/modules/${moduleInfo.id}`} isRelative={true} />
 	<div class="desc">{moduleInfo.description}</div>
 	<div class="meta">Language: {moduleInfo.language}</div>
 </div>

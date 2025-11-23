@@ -11,6 +11,14 @@ export class MossUtils {
         return `${env.PUBLIC_MOSS_BASE_URL}/module/${id}`;
     }
 
+    static getRelativeUri(uri: string): string {
+        try {
+            return new URL(uri).pathname;
+        } catch {
+            return uri;
+        }
+    }
+
     static async fetchDatabusResource(uri: string): Promise<DatabusResource> {
         const response = await fetch(uri, {
             headers: { Accept: 'application/ld+json' }
@@ -88,7 +96,11 @@ export class MossUtils {
 
     static async fetchJSON(baseUrl: string, searchInput: string) {
         const query = `${baseUrl}${searchInput}`;
-        const data = await fetch(query);
+        const data = await fetch(query, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
         return await data.json() ?? [];
     }
 
@@ -101,7 +113,7 @@ export class MossUtils {
 
     static getEntryURIFromBrowsePath(baseUrl: string, browsePath: string) {
         // Remove the static part of the browse path
-        const prefix = '/browse/';
+        const prefix = '/entries/';
 
         if (!browsePath.startsWith(prefix)) {
             throw new Error("Invalid browse path");
@@ -145,12 +157,12 @@ export class MossUtils {
     static getMossEntryURI(baseUrl: string, resource: string, layerId: string): string {
         const moduleId = MossUtils.getResourceNameFromId(layerId);
         const databusResourceURIFragments = MossUtils.getMossDocumentUriFragments(resource);
-        return `${baseUrl}/entry/${databusResourceURIFragments}/${moduleId}`;
+        return `${baseUrl}/entries/${databusResourceURIFragments}/${moduleId}`;
     }
 
     static getRelativeBrowseLink(entryUrl: string, formatInfo: RdfFormatInfo | null = null): string {
         let url = new URL(entryUrl);
-        let result = url.pathname.replace("entry", "browse");
+        let result = url.pathname.replace("entry", "entries");
 
         if (formatInfo != null) {
             result += `.${formatInfo.extensions[0]}`;
@@ -265,7 +277,7 @@ export class MossUtils {
     }
 
     static buildBrowseLink(linkURI: string, item: string): string {
-        let url = "/browse/";
+        let url = "/entries";
         if (!linkURI) {
             return url + item;
         }
