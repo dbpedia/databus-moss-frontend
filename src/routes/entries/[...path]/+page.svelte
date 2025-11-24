@@ -40,26 +40,8 @@
 	$: backLink = MossUtils.createListGroupNavigationItems(['..'], $page.url.pathname);
 
 	export async function deleteEntry(): Promise<Response> {
-		let moduleData: any = $page.data.props.moduleData;
-		let moduleURI = moduleData[RdfUris.JSONLD_ID];
-		let moduleId = MossUtils.uriToName(moduleURI);
-
-		if (moduleId == null) {
-			throw 'Nope';
-		}
-
-		let language = JsonldUtils.getValue(moduleData, RdfUris.MOSS_MIME_TYPE);
-		let extensionData: any = $page.data.props.extensionData;
-		const requestURL = MossUtils.getDeletionRequestURL(extensionData.databusResourceURI, moduleId);
-
-		const headers: any = {
-			Accept: 'application/json',
-			'Content-Type': language
-		};
-
-		return await fetch(requestURL, {
-			method: 'POST',
-			headers: headers
+		return await fetch(MossUtils.getRelativeUri($page.data.entry.uri), {
+			method: 'DELETE'
 		});
 	}
 
@@ -122,15 +104,20 @@
 		feedback.clearMessage();
 		indicatorColor = 'none';
 		displayDelete.set(true);
+		let response: Response;
 
-		let response = await deleteEntry();
+		try {
+			response = await deleteEntry();
 
-		if (response.ok) {
-			await goto('/browse');
-		} else {
-			let data = await response.json();
+			if (response.ok) {
+				await goto('/entries');
+			} else {
+				// let data = await response.text();
+				throw { message: response.statusText };
+			}
+		} catch (e: any) {
 			feedback.showMessage('Failed to delete document.', false);
-			errors.push(data.message);
+			errors.push(e.message);
 			errors = [...errors];
 		}
 
@@ -242,7 +229,7 @@
 				<MossModuleWidget
 					bind:module={data.module}
 					content={data.content}
-					resourceUri={data.props.extensionData.databusResourceURI}
+					resourceUri={data.entry.extends}
 					on:testIndexer={(e) => console.log('Test Indexer', e.detail)}
 				/>
 			</div>

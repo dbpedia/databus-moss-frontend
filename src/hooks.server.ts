@@ -6,7 +6,7 @@ import type { Handle, RequestEvent } from "@sveltejs/kit";
 let proxyRoutes: string[] = [
     `/terminologies`,
     `/modules`,
-    `/api`
+    `/api`,
 ];
 
 async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, string>>, string | null>, accessToken: string, requestURL: URL) {
@@ -44,8 +44,13 @@ const apiProxy: Handle = async ({ event, resolve }) => {
     const accept = event.request.headers.get('accept') ?? '';
     const requestURL = new URL(event.request.url);
 
+    console.log(requestURL.pathname);
+    
+
     const session = await event.locals.auth?.() as any;
     const accessToken = session?.accessToken ?? '';
+
+    
 
     for (var route of proxyRoutes) {
         if (requestURL.pathname.startsWith(route)) {
@@ -56,6 +61,9 @@ const apiProxy: Handle = async ({ event, resolve }) => {
 
     // HTML requests and /auth routes go through normal SvelteKit + auth flow
     if (accept.includes('text/html') || requestURL.pathname.startsWith('/auth') || requestURL.pathname.endsWith('__data.json')) {
+
+        console.log("WHAAAT");
+        
         var response = await resolve(event);
 
         if (response.status !== 404) {

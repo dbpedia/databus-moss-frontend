@@ -137,8 +137,8 @@
 		flex-direction: column;
 	}
 
-	.field,
-	.id {
+	.field
+	{
 		display: flex;
 		align-items: center;
 		min-height: 32px;
