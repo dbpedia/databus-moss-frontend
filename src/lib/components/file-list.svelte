@@ -4,10 +4,7 @@
 
     export let collection: any[];
     export let files = true;
-    let iconType = files ? FileOutline : FolderOpenOutline;
-
-    // Debug: Print the first artifact to inspect fields (title, artifact, name, etc.)
-    console.log("Artifact sample:", collection?.[0]);
+    let iconType = files ? FileOutline : FolderOpenOutline;   
 </script>
 
 <ul>
