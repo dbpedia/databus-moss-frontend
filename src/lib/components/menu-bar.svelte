@@ -18,7 +18,7 @@
         <img src="/moss.svg" class="me-3 h-6 sm:h-9" alt="Moss Logo" />
         <!-- <img src="/icon.svg" class="me-3 h-6 sm:h-9" alt="Moss Logo" /> -->
         <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">MOSS</span>
-        <span style="color: #aaa; margin-left: 0.5em">0.2.0</span>
+        <span style="color: #aaa; margin-left: 0.5em">0.2.2</span>
     </NavBrand>
     <NavHamburger  />
     <NavUl>

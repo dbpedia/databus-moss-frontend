@@ -6,7 +6,10 @@ export async function load({ locals, parent }) {
 	const parentData = await parent();
 
 	if (!parentData?.userData?.isAdmin) {
-		return { userData: parentData?.userData ?? null, modules: [] };
+
+		return {
+			isAdmin: false
+		}
 	}
 
 	
@@ -15,6 +18,7 @@ export async function load({ locals, parent }) {
 
 	return {
 		...parentData,
+		isAdmin: true
 		//modules: moduleListResource._embedded.modules
 	};
 }

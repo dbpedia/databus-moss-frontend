@@ -1,9 +1,58 @@
 <script lang="ts">
+	/**
+	 * <databus_resource> <resource> <resource1>
+	 * <resource1> <published> <carsten>
+	 *
+	 * <predicate>/<published>
+	 */
+	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
+	import { goto } from '$app/navigation';
 	import SearchResult from '$lib/components/search-result.svelte';
-	import { MossUtils } from '$lib/utils/moss-utils';
+	import { MossUtils } from '$lib/utils/moss-utils';	
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
-	import type { FacetConfig, SearchConfig, SearchTag } from '$lib/types';
+	import type { MossFacet, SearchTag } from '$lib/types';
 	import LookupFacet from '$lib/components/lookup-facet.svelte';
+
+	export let data;
+
+	function loadFacetsFromUrl() {
+		const params = get(page).url.searchParams;
+		const selections: Record<string, SearchTag[]> = {};
+
+		for (const [facetId] of Object.entries(facetMap)) {
+			const values = params.getAll(facetId);
+			if (values.length === 0) continue;
+
+			selections[facetId] = values.map((v) => ({
+				id: v,
+				label: MossUtils.uriToName(v) ?? v
+			}));
+		}
+
+		facetSelections = selections;
+		sparqlSelector = createInnerSelectClause();
+	}
+
+	function updateUrlFromFacets() {
+		const url = new URL(get(page).url);
+
+		url.search = '';
+
+		for (const [facetId, tags] of Object.entries(facetSelections)) {
+			for (const tag of tags) {
+				url.searchParams.append(facetId, tag.id);
+			}
+		}
+
+		goto(url, {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
+	}
 
 	const INNER_SELECT_TEMPLATE = `
 		SELECT DISTINCT ?s WHERE 
@@ -14,12 +63,12 @@
 
 	const UNION_BLOCK_TEMPLATE = `
 		{
-			VALUES ?t { %VALUES% } ?s <%PREDICATE%> ?t .
+			VALUES ?t { %VALUES% } ?s %PREDICATE% ?t .
 		}
 	`;
 
 	const SELECT_QUERY_TEMPLATE = `
-		SELECT DISTINCT ?s ?e ?g ?t WHERE 
+		SELECT DISTINCT ?s ?e ?g ?t SAMPLE(?l) as ?l WHERE 
 		{
 			{
 				%INNER_SELECT%
@@ -31,75 +80,37 @@
 			GRAPH ?g {
 				%UNION_BLOCKS%
 			}
+
+      		OPTIONAL { ?t <http://www.w3.org/2000/01/rdf-schema#label> ?l . }
 		}
 	`;
 
 	let facetSelections: Record<string, SearchTag[]> = {};
 	let sparqlSelector: string;
+	let facetConfigs: any = data.facetConfigs;
 
-	const keywordFacet: FacetConfig = {
-		id: 'keyword',
-		label: 'Keywords',
-		lookupBaseUrl: 'http://localhost:5173/api/v1/search?label=',
-		module: 'http://localhost:8080/modules/keyword',
-		predicate: 'https://schema.org/keywords',
-		labelField: 'label',
-		isLiteral: true
-	};
+	const facetMap: Record<string, MossFacet> = {};
 
-	const locationFacet: FacetConfig = {
-		id: 'location',
-		label: 'Location',
-		lookupBaseUrl: 'https://lookup.dbpedia.org/api/search?format=JSON&typeName=Location&query=',
-		module: 'http://localhost:8080/modules/oem-spatial',
-		predicate: 'http://purl.org/dc/terms/spatial',
-		labelField: 'label',
-		isLiteral: false
-	};
-
-	const fundingAgencyFacet: FacetConfig = {
-		id: 'fundingAgency',
-		label: 'Funding Agency',
-		module: 'http://localhost:8080/modules/oem-project',
-		lookupBaseUrl: 'http://localhost:5173/terminologies/reorg/search?query=',
-		predicate: 'https://dbpedia.org/ns/oem/fundingAgency',
-		labelField: 'label',
-		isLiteral: false
-	};
-
-	const oeoAnnotationFacet: FacetConfig = {
-		id: 'oeoAnnotation',
-		label: 'Referenced Concepts',
-		module: 'http://localhost:8080/modules/oemeta',
-		lookupBaseUrl: 'http://localhost:5173/terminologies/oeo/search?query=',
-		predicate: 'http://dataid.dbpedia.org/ns/moss#related',
-		labelField: 'label',
-		isLiteral: false
-	};
-
-	const facetMap: Record<string, FacetConfig> = {
-		[locationFacet.id]: locationFacet,
-		[fundingAgencyFacet.id]: fundingAgencyFacet,
-		[oeoAnnotationFacet.id]: oeoAnnotationFacet,
-		[keywordFacet.id]: keywordFacet
-	};
+	for (const config of facetConfigs) {
+		facetMap[config.id] = config;
+	}
 
 	function formatValue(v: string, isLiteral: boolean) {
 		if (isLiteral) return `"${v.replace(/"/g, '\\"')}"`;
 		return `<${v}>`;
 	}
 
-	function crateInnerSelectClause(): string {
+	function createInnerSelectClause(): string {
 		let selectorString: string = '';
 
 		for (const [module, selection] of Object.entries(facetSelections)) {
 			if (!selection || selection.length === 0) continue;
 
 			const predicate = facetMap[module]?.predicate;
-			const isLiteral = facetMap[module]?.isLiteral;
 
 			for (var s of selection) {
-				selectorString += `?s <${predicate}> ${formatValue(s.id, isLiteral)} .\n`;
+				var isLiteral = !MossUtils.isIri(s.id);
+				selectorString += `?s ${predicate} ${formatValue(s.id, isLiteral)} .\n`;
 			}
 		}
 
@@ -113,7 +124,7 @@
 			.filter(([id, tags]) => tags.length > 0 && facetMap[id])
 			.map(([id, tags]) => ({
 				predicate: facetMap[id]!.predicate,
-				values: tags.map((t) => `${formatValue(t.id, facetMap[id]!.isLiteral)}`)
+				values: tags.map((t) => `${formatValue(t.id, !MossUtils.isIri(t.id))}`)
 			}));
 
 		if (facets.length === 0) return '';
@@ -137,7 +148,7 @@
 	async function updateSelection() {
 		queryString = createSelectQuery();
 
-		if(queryString == undefined || queryString.length == 0) {
+		if (queryString == undefined || queryString.length == 0) {
 			searchResults = {};
 			return;
 		}
@@ -181,7 +192,7 @@
 
 			results[databusUri].entries[entryUri].explanations.push({
 				uri: result.t.value,
-				label: MossUtils.uriToName(result.t.value)
+				label: getItemLabel(result)
 			});
 		}
 
@@ -189,14 +200,20 @@
 		searchResults = results;
 	}
 
+	function getItemLabel(d: any): string {
+		return d.l?.value ?? MossUtils.uriToName(d.t.value);
+	}
+
 	function onFacetChange(event: CustomEvent<{ id: string; selection: SearchTag[] }>) {
 		facetSelections[event.detail.id] = event.detail.selection;
-		// Create the selector here:
-		sparqlSelector = crateInnerSelectClause();
+
+		sparqlSelector = createInnerSelectClause();
+
+		updateUrlFromFacets();
 		updateSelection();
 	}
 
-	sparqlSelector = crateInnerSelectClause();
+	sparqlSelector = createInnerSelectClause();
 
 	let queryString: string = '';
 
@@ -211,13 +228,24 @@
 
 	let isSearching = false;
 
+
+
+	$: {
+		$page.url;
+		loadFacetsFromUrl();
+	}
+
+	onMount(() => {
+		if (browser) {
+			updateSelection();
+		}
+	});
 </script>
 
 <div class="section">
 	<div class="container">
 		<div class="columns">
-			<div class="column">
-			
+			<div class="column" style="width: 70%;">
 				<ul>
 					{#if isSearching}
 						<p>Searching...</p>
@@ -230,20 +258,9 @@
 				</ul>
 			</div>
 			<div class="column medium">
-				<LookupFacet config={keywordFacet} {sparqlSelector} on:selectionChanged={onFacetChange} />
-				<LookupFacet config={locationFacet} {sparqlSelector} on:selectionChanged={onFacetChange} />
-
-				<LookupFacet
-					config={fundingAgencyFacet}
-					{sparqlSelector}
-					on:selectionChanged={onFacetChange}
-				/>
-
-				<LookupFacet
-					config={oeoAnnotationFacet}
-					{sparqlSelector}
-					on:selectionChanged={onFacetChange}
-				/>
+				{#each facetConfigs as config (config.id)}
+					<LookupFacet selected={facetSelections[config.id] ?? []}  {config} {sparqlSelector} on:selectionChanged={onFacetChange} />
+				{/each}
 			</div>
 		</div>
 	</div>
@@ -264,7 +281,8 @@
 	}
 
 	.column.medium {
-		min-width: 256px;
-		width: 256px;
+		min-width: 35%;
+		max-width: 35%;
+		width: 35%;
 	}
 </style>

@@ -1,44 +1,44 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { MossModule } from '$lib/types';
-	import { hashStore } from '$lib/stores/hash-navigation';
+	import type { MossTerminology } from '$lib/types';
 
-	export let activeModule: MossModule;
+	export let activeTerminology: MossTerminology;
 	const dispatch = createEventDispatcher();
 
 	let inputId = '';
 
 	function submitDelete() {
-		if (inputId === activeModule.id) {
+		if (inputId === activeTerminology.id) {
 			dispatch('delete', { id: inputId });
 		} else {
-			alert('Module ID does not match.');
+			alert('Terminology ID does not match.');
 		}
 	}
 
 	function cancel() {
 		dispatch('cancel');
 	}
+
 </script>
 
 <div class="form-card">
-	<h2>Delete Module</h2>
-	<p>Type the module ID to confirm deletion: <strong>{activeModule.id}</strong></p>
+	<h2>Delete Terminology</h2>
+	<p>Type the Terminology ID to confirm deletion: <strong>{activeTerminology.id}</strong></p>
 
 	<form on:submit|preventDefault={submitDelete}>
 		<div class="form-group">
-			<label for="delete-id">Module ID</label>
+			<label for="delete-id">Terminology ID</label>
 			<input
 				id="delete-id"
 				type="text"
 				bind:value={inputId}
-				placeholder="Enter module ID"
+				placeholder="Enter terminology ID"
 				required
 			/>
 		</div>
 
 		<div class="form-actions">
-			<button type="submit" class="btn-danger">Delete Module</button>
+			<button type="submit" class="btn-danger">Delete Terminology</button>
 			<button type="button" class="btn-secondary" on:click={cancel}>Cancel</button>
 		</div>
 	</form>

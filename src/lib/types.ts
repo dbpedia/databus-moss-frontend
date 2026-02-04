@@ -48,12 +48,9 @@ export interface SearchConfig {
     countQuery: string;
 }
 
-export interface FacetConfig {
+export interface MossFacet {
     id: string;
     label: string;
-	lookupBaseUrl: string;
-	module: string;
 	predicate: string;
-    isLiteral: boolean;
-	labelField: string;
+    sortOrder: number;
 }

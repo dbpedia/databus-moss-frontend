@@ -1,31 +1,62 @@
 <script lang="ts">
-	import { MossUtils } from "$lib/utils/moss-utils";
+	import { onMount } from "svelte";
+	import jsonld from "jsonld";
 	import ResourceUri from "./resource-uri.svelte";
+	import { JsonldUtils } from "$lib/utils/jsonld-utils";
+	import { RdfUris } from "$lib/utils/rdf-uris";
 	export let data: any;
 
 	let resource = data.uri;
-	let title = data.name;
-	let abstract = data.abstract ?? "";
+	let title: string | null = data.name ?? null;
+	let abstract: string | null = data.abstract ?? null;
 
-    let entries: any[] = [];
-    $: entries = Object.values(data.entries);
+	let isLoading = true;
 
-	// Convert explanations to string
+	let entries: any[] = [];
+	$: entries = Object.values(data.entries ?? {});
+
 	function getExplanationString(explanations: any[]) {
-		return explanations.map(e => e.label).join(", ");
+		return explanations?.map(e => e.label).join(", ") ?? "";
 	}
 
-	if (!title) title = MossUtils.getLastPathSegment(resource);
+	onMount(async () => {
+		try {
+			const response = await fetch(resource, {
+				headers: {
+					Accept: "application/ld+json"
+				}
+			});
+
+			const databusResourceGraphs = await jsonld.expand(await response.json());
+			let versionGraph = JsonldUtils.getGraphById(databusResourceGraphs, data.uri)
+
+			title = JsonldUtils.getValue(versionGraph, RdfUris.DCT_TITLE);
+			abstract = JsonldUtils.getValue(versionGraph, RdfUris.DCT_ABSTRACT);
+		} catch (_) {
+		} finally {
+			isLoading = false;
+		}
+	});
 </script>
 
 <div class="result">
 	<div class="header">
-		<h1 class="result-header">{title}</h1>
-        <ResourceUri uri={resource} fontSize="0.8rem" />
-		<div class="desc">{abstract || 'No description available'}</div>
+		{#if isLoading}
+			<div class="skeleton title"></div>
+		{:else}
+			<h1 class="result-header">{title || "Untitled"}</h1>
+		{/if}
+
+		<ResourceUri uri={resource} fontSize="0.8rem" />
+
+		{#if isLoading}
+			<div class="skeleton abstract"></div>
+			<div class="skeleton abstract short"></div>
+		{:else}
+			<div class="desc">{abstract || "No description available"}</div>
+		{/if}
 	</div>
 
-	<!-- Footer with entries -->
 	<div class="entry-tags">
 		{#each entries as entry (entry.uri)}
 			<a class="entry-tag" href={entry.browseLink} target="_blank">
@@ -43,10 +74,43 @@
 		margin: 1em 0;
 	}
 
+	.skeleton {
+		background: linear-gradient(
+			90deg,
+			#e2e2e2 0%,
+			#f3f3f3 50%,
+			#e2e2e2 100%
+		);
+		background-size: 200% 100%;
+		animation: shimmer 1.3s infinite;
+		border-radius: 4px;
+	}
+
+	.title {
+		width: 60%;
+		height: 1.4em;
+		margin-bottom: 0.4em;
+	}
+
+	.abstract {
+		width: 100%;
+		height: 0.9em;
+		margin-bottom: 0.4em;
+	}
+
+	.abstract.short {
+		width: 80%;
+	}
+
+	@keyframes shimmer {
+		0% { background-position: 200% 0; }
+		100% { background-position: -200% 0; }
+	}
+
 	.result-header {
 		font-size: 1.2em;
 		font-weight: 600;
-		margin: 0 0 0.0em 0;
+		margin: 0 0 0.4em 0;
 	}
 
 	.desc {

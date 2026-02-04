@@ -6,7 +6,6 @@
 	import SubResourceEditor from './sub-resource-editor.svelte';
 	import TemplateEditor from './template-editor.svelte';
 	import ResourceUri from '$lib/components/resource-uri.svelte';
-	import { PUBLIC_MOSS_BASE_URL } from '$env/static/public';
 
 	export let activeModule: MossModule;
 	const dispatch = createEventDispatcher();
@@ -144,7 +143,6 @@
 							{saving ? 'Saving...' : 'Save Changes'}
 						</button>
 
-						<button class="btn-delete" on:click={onDelete}>Delete</button>
 					</div>
 				</form>
 			</div>
@@ -157,11 +155,11 @@
 				</p>
 
 				<div style="margin-bottom: 0.5rem">
-					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/api/v1/modules/${activeModule.id}/context.jsonld`}></ResourceUri>
+					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/modules/${activeModule.id}/context`}></ResourceUri>
 				</div>
 				<SubResourceEditor
 					moduleId={activeModule.id}
-					resourceName="context.jsonld"
+					resourceName="context"
 					format="json-ld"
 				/>
 			</div>
@@ -384,18 +382,5 @@
 		color: #374151;
 	}
 
-	.btn-delete {
-		background-color: #ef4444;
-		color: white;
-		font-weight: 600;
-		border-radius: 0.5rem;
-		padding: 0.4rem 0.8rem;
-		border: none;
-		cursor: pointer;
-		transition: background 0.2s;
-	}
-
-	.btn-delete:hover {
-		background-color: #dc2626;
-	}
+	
 </style>

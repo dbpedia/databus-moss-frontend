@@ -36,36 +36,60 @@
 	const dispatch = createEventDispatcher();
 
 	async function fetchOptionalResources() {
-		try {
-			if (module._links.shapes) {
+		if (module._links == undefined) {
+			return;
+		}
+
+		if (module._links.shapes) {
+			try {
 				const res = await fetch(module._links.shapes.href, {
 					headers: { Accept: 'text/turtle' }
 				});
+
 				if (res.ok) {
 					shaclExists = true;
 					shaclContent = await res.text();
-				} else activeTab = 'indexer';
+				} else if (res.status === 404) {
+					shaclExists = false;
+				} else {
+					activeTab = 'indexer';
+				}
+			} catch {
+				shaclExists = false;
 			}
+		}
 
-			if (module._links.indexer) {
+		if (module._links.indexer) {
+			try {
 				const res = await fetch(module._links.indexer.href);
+
 				if (res.ok) {
 					indexerExists = true;
 					indexerContent = await res.text();
-				} else activeTab = 'context';
+				} else if (res.status === 404) {
+					indexerExists = false;
+				} else {
+					activeTab = 'context';
+				}
+			} catch {
+				indexerExists = false;
 			}
+		}
 
-			if (module._links.context) {
+		if (module._links.context) {
+			try {
 				const res = await fetch(module._links.context.href);
+
 				if (res.ok) {
 					contextExists = true;
 					contextUri = module._links.context.href;
 					contextContent = await res.text();
+				} else if (res.status === 404) {
+					contextExists = false;
 				}
+			} catch {
+				contextExists = false;
 			}
-		} catch (e) {
-			console.error('Failed to fetch optional resources', e);
-			errorMessage = 'Failed to load module resources';
 		}
 	}
 
@@ -155,13 +179,9 @@
 		testView = false;
 	}
 
-	onMount(async () => {
-		if (!module) {
-			errorMessage = 'No module HAL provided';
-			return;
-		}
-		await fetchOptionalResources();
-	});
+	$: if (module && module._links) {
+		fetchOptionalResources();
+	}
 </script>
 
 {#if errorMessage}

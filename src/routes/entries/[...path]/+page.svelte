@@ -2,41 +2,33 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { writable } from 'svelte/store';
-	// @ts-ignore
-	import jsonld from 'jsonld';
 	import CodeMirror from '$lib/components/code-mirror.svelte';
-	import { JsonldUtils } from '$lib/utils/jsonld-utils';
-	import { MossUris } from '$lib/utils/moss-uris';
 	import FileList from '$lib/components/file-list.svelte';
 	import TopBar from '$lib/components/top-bar.svelte';
 	import { Button, Toast, Spinner, Indicator, GradientButton } from 'flowbite-svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import { A } from 'flowbite-svelte';
-	import { CheckCircleOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import FeedbackMessage from '$lib/components/feedback-message.svelte';
-	import { env } from '$env/dynamic/public';
-	import { RdfUris } from '$lib/utils/rdf-uris';
 	import MossModuleWidget from '$lib/components/moss-module-widget.svelte';
-	import ResourceUri from '$lib/components/resource-uri.svelte';
 	import MossEntryHeader from '$lib/components/moss-entry-header.svelte';
 	import type { MossModule } from '$lib/types';
 
 	export let data: any;
 
 	let buttonName = writable('Save Entry');
-	let validationErrorMsg = '';
-	let displayFeedback = writable(false);
 	let displaySave = writable(false);
 	let displayDelete = writable(false);
 	let indicatorColor: 'green' | 'red' | 'none' = 'none';
-	let indicatorVisible = writable(false);
 	let feedback: any;
-	let errors: any;
+	let errors: any[] = [];
 
-	const module: MossModule = data.module;
+	let module: MossModule | null = data?.module ?? null;
 
-	errors = [];
+	$: if (data?.module) {
+		module = data.module;
+	}
 
+	$: isDocument = data?.props?.isDocument && data?.content != null;
 	$: backLink = MossUtils.createListGroupNavigationItems(['..'], $page.url.pathname);
 
 	export async function deleteEntry(): Promise<Response> {
@@ -47,16 +39,16 @@
 
 	export async function saveEntry(): Promise<Response> {
 		let moduleData: any = $page.data.module;
-		let moduleId = moduleData.id;
+		let moduleId = moduleData?.id;
 
 		if (moduleId == null) {
-			throw 'Nope';
+			throw 'No module id';
 		}
 
 		let language = moduleData.language;
 		const requestURL = MossUtils.getSaveRequestURL($page.data.entry.extends, moduleId);
 
-		let content = data.content;
+		let content = data.content ?? '';
 		while (content.endsWith('\n') || content.endsWith('\r')) {
 			content = content.slice(0, -1);
 		}
@@ -68,15 +60,18 @@
 
 		return await fetch(requestURL, {
 			method: 'POST',
-			headers: headers,
+			headers,
 			body: content
 		});
 	}
+
 	function showCreateForm() {
 		goto('/create-entry');
 	}
 
 	async function onSaveButtonClicked() {
+		if (!isDocument) return;
+
 		errors = [];
 		feedback.clearMessage();
 		indicatorColor = 'none';
@@ -89,14 +84,15 @@
 		} else {
 			let data = await response.json();
 			feedback.showMessage('Failed to save document.', false);
-			errors.push(data.message);
-			errors = [...errors];
+			errors = [...errors, data.message];
 		}
 
 		displaySave.set(false);
 	}
 
 	async function onDeleteButtonClicked() {
+		if (!isDocument) return;
+
 		const confirmed = confirm('Are you sure you want to delete this entry?');
 		if (!confirmed) return;
 
@@ -104,21 +100,18 @@
 		feedback.clearMessage();
 		indicatorColor = 'none';
 		displayDelete.set(true);
-		let response: Response;
 
 		try {
-			response = await deleteEntry();
+			const response = await deleteEntry();
 
 			if (response.ok) {
 				await goto('/entries');
 			} else {
-				// let data = await response.text();
 				throw { message: response.statusText };
 			}
 		} catch (e: any) {
 			feedback.showMessage('Failed to delete document.', false);
-			errors.push(e.message);
-			errors = [...errors];
+			errors = [...errors, e.message];
 		}
 
 		displayDelete.set(false);
@@ -131,23 +124,23 @@
 		<button class="btn-create" on:click={showCreateForm}>+ Create Entry</button>
 	</div>
 
-	{#if !data.props.isDocument}
+	{#if !isDocument}
 		<div class="list-container">
-			<FileList collection={backLink} files={false}></FileList>
+			<FileList collection={backLink} files={false} />
 			{#if data.props.folders?.length}
-				<FileList collection={data.props.folders} files={false}></FileList>
+				<FileList collection={data.props.folders} files={false} />
 			{/if}
 			{#if data.props.files?.length}
-				<FileList collection={data.props.files}></FileList>
+				<FileList collection={data.props.files} />
 			{/if}
 		</div>
 	{/if}
 
-	{#if data.props.isDocument}
-		<MossEntryHeader module={data.module} entry={data.entry}></MossEntryHeader>
+	{#if isDocument && module}
+		<MossEntryHeader {module} entry={data.entry} />
 
 		<div style="display:flex; gap: 1rem">
-			<div style="flex: 3">
+			<div class="editing">
 				<div class="editor-container">
 					<div class="buttons">
 						<A href={'./'}>
@@ -155,47 +148,16 @@
 						</A>
 						<div class="button-group-right">
 							<div class="btn-size">
-								<div class="valid-label-container">
-									<div class="feedback">
-										{#if $displayFeedback}
-											<Toast
-												class="validation"
-												dismissable={true}
-												divClass="w-full max-w-xs p-2 text-gray-500 bg-white shadow dark:text-gray-400 dark:bg-gray-800 gap-3"
-												contentClass="flex space-x-4 divide-x divide-gray-200 dark:divide-gray-700"
-											>
-												{#if validationErrorMsg}
-													<ExclamationCircleOutline
-														class="h-5 w-5 text-primary-600 dark:text-primary-500"
-													/>
-												{:else}
-													<CheckCircleOutline class="h-5 w-5 text-green-600 dark:text-green-500" />
-												{/if}
-												<div class="ps-2 text-sm font-normal">
-													{#if validationErrorMsg}
-														<p class="text-primary-600 dark:text-primary-500">
-															{validationErrorMsg}
-														</p>
-													{:else}
-														<p class="text-green-600 dark:text-green-500">Valid Document</p>
-													{/if}
-												</div>
-											</Toast>
-										{/if}
-									</div>
-								</div>
-								<FeedbackMessage bind:feedback></FeedbackMessage>
+								<FeedbackMessage bind:feedback />
 
 								<GradientButton
 									color="cyanToBlue"
 									size="md"
-									class="button-group-size relative"
+									disabled={!isDocument}
 									on:click={onSaveButtonClicked}
 								>
 									{#if $displaySave}
 										<Spinner class="me-3" size="4" color="white" />
-									{:else if $indicatorVisible}
-										<Indicator color={indicatorColor} size="lg" placement="top-right" />
 									{/if}
 									{$buttonName}
 								</GradientButton>
@@ -203,41 +165,48 @@
 								<GradientButton
 									color="red"
 									size="md"
-									class="button-group-size relative"
+									disabled={!isDocument}
 									on:click={onDeleteButtonClicked}
 								>
 									{#if $displayDelete}
 										<Spinner class="me-3" size="4" color="white" />
-									{:else if $indicatorVisible}
-										<Indicator color={indicatorColor} size="lg" placement="top-right" />
 									{/if}
 									Delete
 								</GradientButton>
 							</div>
 						</div>
 					</div>
+
 					{#each errors as error}
 						<div class="error-box">{error}</div>
 					{/each}
+
 					<div class="code-area">
-						<CodeMirror format={data.module?.language} bind:value={data.content} />
+						<CodeMirror format={module?.language} bind:value={data.content} />
 					</div>
 				</div>
 			</div>
 
-			<div style="width: 450px">
-				<MossModuleWidget
-					bind:module={data.module}
-					content={data.content}
-					resourceUri={data.entry.extends}
-					on:testIndexer={(e) => console.log('Test Indexer', e.detail)}
-				/>
+			<div class="sidebar">
+				<MossModuleWidget {module} content={data.content} resourceUri={data.entry?.extends} />
 			</div>
 		</div>
 	{/if}
 </div>
 
 <style>
+	.editing {
+		min-width: 70%;
+		max-width: 70%;
+		width: 70%;
+	}
+
+	.sidebar {
+		min-width: 30%;
+		max-width: 30%;
+		width: 30%;
+		padding-right: 1rem;
+	}
 	.code-area {
 		border: 1px solid #e5e7eb;
 	}

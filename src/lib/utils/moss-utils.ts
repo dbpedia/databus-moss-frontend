@@ -7,6 +7,15 @@ import jsonld from 'jsonld';
 export class MossUtils {
 
 
+    static isIri(value: string): boolean {
+        try {
+            const url = new URL(value);
+            return url.protocol.length > 0;
+        } catch {
+            return false;
+        }
+    }
+
     static getModuleUri(id: string): string {
         return `${env.PUBLIC_MOSS_BASE_URL}/module/${id}`;
     }

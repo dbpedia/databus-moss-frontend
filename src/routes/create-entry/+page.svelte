@@ -353,7 +353,7 @@
 					<MossEntryHeader module={activeModule} entry={headerInfo}></MossEntryHeader>
 
 					<div style="display:flex; gap: 1rem">
-						<div style="flex: 3">
+						<div class="editing">
 							<div class="form-actions" style="justify-content: space-between;">
 								<Button
 									color="alternative"
@@ -374,7 +374,7 @@
 							</div>
 						</div>
 
-						<div style="width: 500px">
+						<div class="sideinfo">
 							<MossModuleWidget
 								bind:module={activeModule}
 								content={templateContent}
@@ -404,6 +404,20 @@
 {/if}
 
 <style>
+
+	.editing {
+		min-width: 70%;
+		max-width: 70%;
+		width: 70%;
+	}
+
+	.sideinfo {
+		min-width: 30%;
+		max-width: 30%;
+		width: 30%;
+		padding-right: 1rem;
+	}
+
 	.section {
 		padding: 2rem 0;
 	}

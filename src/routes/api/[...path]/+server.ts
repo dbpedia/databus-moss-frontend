@@ -13,13 +13,16 @@ async function proxyHandler({ request, locals }: any) {
         headers.set('Authorization', `Bearer ${accessToken}`);
     }
 
-    const proxyOptions: RequestInit = {
-        method: request.method,
-        headers,
-        body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text()
-    };
+
 
     try {
+
+        const proxyOptions: RequestInit = {
+            method: request.method,
+            headers,
+            body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text()
+        };
+
         const res = await fetch(backendUrl, proxyOptions);
 
         const responseHeaders = new Headers(res.headers);

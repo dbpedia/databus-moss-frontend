@@ -1,21 +1,32 @@
 import { MossUtils } from '$lib/utils/moss-utils';
 import { RdfUris } from '$lib/utils/rdf-uris';
 import { error } from '@sveltejs/kit';
-import { env } from '$env/dynamic/public';
+import { env } from '$env/dynamic/private';
 import type { DatabusResource, MossModule } from '$lib/types';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url, locals, setHeaders }: any) {
-    const resourceUrl = `${env.PUBLIC_MOSS_API_SERVER_URL}${url.pathname}`;
+    const resourceUrl = `${env.MOSS_API_SERVER_URL}${url.pathname}`;
+    const session = await locals.auth();
+
+    let response: Response;
 
     // Fetch HAL description
-    const response = await fetch(resourceUrl, {
+    response = await fetch(resourceUrl, {
         headers: { Accept: 'application/hal+json' }
     });
 
     if (!response.ok) {
-        throw error(response.status, response.statusText);
+        return {
+            content: null,
+            token: session?.accessToken,
+            props: {
+                segments: [],
+                isDocument: false
+            }
+        };
     }
+
 
     // Forward ALL Link headers from Moss API → client
     const linkHeader = response.headers.get('link');
@@ -43,6 +54,9 @@ export async function load({ url, locals, setHeaders }: any) {
             if (item.type === 'folder') folders.push(item);
         }
     } else {
+
+        console.log("ENTRY!");
+        
         // Single entry
         try {
             moduleData = await MossUtils.fetchJSON(responseData.module, '');
@@ -55,7 +69,6 @@ export async function load({ url, locals, setHeaders }: any) {
     }
 
     const segments = MossUtils.getUriSegments(url.pathname);
-    const session = await locals.auth();
 
     return {
         content,
