@@ -12,7 +12,7 @@ let proxyRoutes: string[] = [
 
 async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, string>>, string | null>, accessToken: string, requestURL: URL) {
 
-    var text = await event.request.text();
+    // var text = await event.request.text();
 
     // API request: use session to append Bearer token
     const headers = new Headers(event.request.headers);
@@ -23,7 +23,11 @@ async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, str
     const proxyOptions: RequestInit = {
         method: event.request.method,
         headers,
-        body: ['GET', 'HEAD'].includes(event.request.method) ? undefined : text
+        body: ['GET', 'HEAD'].includes(event.request.method)
+            ? undefined
+            : event.request.body,
+        // @ts-expect-error duplex is required for streaming
+        duplex: 'half'
     };
 
     const res = await fetch(backendUrl, proxyOptions);
@@ -45,20 +49,16 @@ const apiProxy: Handle = async ({ event, resolve }) => {
     const accept = event.request.headers.get('accept') ?? '';
     const requestURL = new URL(event.request.url);
 
-    console.log(requestURL.pathname);
-
+    // console.log(requestURL.pathname);
 
     const session = await event.locals.auth?.() as any;
     const accessToken = session?.accessToken ?? '';
-
-
 
     for (var route of proxyRoutes) {
         if (requestURL.pathname.startsWith(route)) {
             return await fetchProxyResponse(event, accessToken, requestURL);
         }
     }
-
 
     // HTML requests and /auth routes go through normal SvelteKit + auth flow
     if (accept.includes('text/html') || requestURL.pathname.startsWith('/auth') || requestURL.pathname.endsWith('__data.json')) {
