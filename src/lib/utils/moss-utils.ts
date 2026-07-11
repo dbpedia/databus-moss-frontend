@@ -248,6 +248,65 @@ export class MossUtils {
         return `/entries/validate?module=${moduleId}&resource=${resourceUri}`;
     }
 
+    static getValidationHeaders(contentMimeType: string): Record<string, string> {
+        return {
+            Accept: 'text/turtle',
+            'Content-Type': contentMimeType
+        };
+    }
+
+    static parseShaclTurtleReport(turtle: string): { conforms: boolean; messages: string[] } {
+        const conformsMatch = turtle.match(/sh:conforms\s+(true|false)/i);
+        const conforms = conformsMatch?.[1]?.toLowerCase() === 'true';
+        const messages: string[] = [];
+        const messageRegex =
+            /sh:resultMessage\s+(?:"((?:\\.|[^"\\])*)"|'''([\s\S]*?)'''|"""([\s\S]*?)""")/g;
+
+        let match: RegExpExecArray | null;
+        while ((match = messageRegex.exec(turtle)) !== null) {
+            const message = (match[1] ?? match[2] ?? match[3] ?? '').replace(/\\"/g, '"');
+            if (message) messages.push(message);
+        }
+
+        return { conforms, messages };
+    }
+
+    static async submitValidation(
+        resourceUri: string,
+        moduleId: string,
+        content: string,
+        contentMimeType: string
+    ): Promise<{ conforms: boolean; messages: string[] }> {
+        const response = await fetch(MossUtils.getValidationRequestURL(resourceUri, moduleId), {
+            method: 'POST',
+            headers: MossUtils.getValidationHeaders(contentMimeType),
+            body: content
+        });
+
+        const text = await response.text();
+        if (!text) {
+            throw new Error(
+                response.ok
+                    ? 'Validation returned an empty response'
+                    : `Validation failed (${response.status} ${response.statusText})`
+            );
+        }
+
+        if (!response.ok) {
+            try {
+                const errorJson = JSON.parse(text) as { message?: string };
+                throw new Error(errorJson.message ?? `Validation failed (${response.status})`);
+            } catch (error) {
+                if (error instanceof SyntaxError) {
+                    throw new Error(text.trim() || `Validation failed (${response.status})`);
+                }
+                throw error;
+            }
+        }
+
+        return MossUtils.parseShaclTurtleReport(text);
+    }
+
     static getIndexerPreviewURL(resourceUri: string, moduleId: string): string {
         resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
         return `/api/v1/get-indexer-preview?module=${moduleId}&resource=${resourceUri}`;

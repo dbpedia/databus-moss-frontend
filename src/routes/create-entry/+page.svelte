@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import jsonld from 'jsonld';
 	import { onMount } from 'svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import CodeMirror from '$lib/components/code-mirror.svelte';
@@ -10,7 +9,6 @@
 	import { env } from '$env/dynamic/public';
 	import { RdfFormats } from '$lib/utils/rdf-formats';
 	import type { MossModule } from '$lib/types';
-	import { JsonldUtils } from '$lib/utils/jsonld-utils';
 	import { RdfUris } from '$lib/utils/rdf-uris';
 	import MossModuleWidget from '$lib/components/moss-module-widget.svelte';
 	import MossModuleHeader from '$lib/components/moss-module-header.svelte';
@@ -229,31 +227,15 @@
 		validationMessages = [];
 		validationSuccess = false;
 		try {
-			const validationURL = MossUtils.getValidationRequestURL(databusResource, moduleId);
-			const headers: any = {
-				Accept: 'application/ld+json',
-				'Content-Type': activeModule?.language
-			};
-			const response = await fetch(validationURL, {
-				method: 'POST',
-				headers,
-				body: templateContent
-			});
+			const { conforms, messages } = await MossUtils.submitValidation(
+				databusResource,
+				moduleId,
+				templateContent,
+				activeModule?.language ?? 'text/turtle'
+			);
 
-			const reportGraph = await jsonld.expand(await response.json());
-			const report = JsonldUtils.getTypedGraph(reportGraph, RdfUris.SHACL_VALIDATION_REPORT);
-			const conformsRaw = JsonldUtils.getValue(report, RdfUris.SHACL_CONFORMS);
-			const conforms = conformsRaw === true || conformsRaw === 'true';
-
-			if (conforms === true) {
-				validationSuccess = true;
-			} else {
-				const results = report[RdfUris.SHACL_RESULT] ?? [];
-				validationMessages = results.map((result: any) => {
-					const resultGraph = JsonldUtils.getGraphById(reportGraph, result[RdfUris.JSONLD_ID]);
-					return JsonldUtils.getValue(resultGraph, RdfUris.SHACL_RESULT_MESSAGE);
-				});
-			}
+			if (conforms) validationSuccess = true;
+			else validationMessages = messages;
 		} catch (e: any) {
 			errorMessage = e.message;
 		}

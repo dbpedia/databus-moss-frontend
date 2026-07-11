@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
-	import jsonld from 'jsonld';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { JsonldUtils } from '$lib/utils/jsonld-utils';
-	import { RdfUris } from '$lib/utils/rdf-uris';
 	import ResourceUri from './resource-uri.svelte';
 	import MossModuleHeader from './moss-module-header.svelte';
 	import { GradientButton } from 'flowbite-svelte';
@@ -29,9 +26,9 @@
 	let validationView = false;
 	let validationMessages: string[] = [];
 	let validationSuccess = false;
+	let validationError = '';
 	let testReport: TestReport | null = null;
 	let testView = false;
-	let errorMessage = '';
 
 	const dispatch = createEventDispatcher();
 
@@ -96,37 +93,21 @@
 	async function validateEntry() {
 		validationMessages = [];
 		validationSuccess = false;
+		validationError = '';
 		try {
-			const validationURL = MossUtils.getValidationRequestURL(resourceUri, module.id);
-			const headers: any = {
-				Accept: 'application/ld+json',
-				'Content-Type': module.language
-			};
-			const response = await fetch(validationURL, {
-				method: 'POST',
-				headers,
-				body: content
-			});
+			const { conforms, messages } = await MossUtils.submitValidation(
+				resourceUri,
+				module.id,
+				content,
+				module.language
+			);
 
-			const responseJson = await response.json();
-			const reportGraph = await jsonld.expand(responseJson);
-			const report = JsonldUtils.getTypedGraph(reportGraph, RdfUris.SHACL_VALIDATION_REPORT);
-
-			if (report) {
-				const conformsRaw = JsonldUtils.getValue(report, RdfUris.SHACL_CONFORMS);
-				const conforms = conformsRaw === true || conformsRaw === 'true';
-				if (conforms) validationSuccess = true;
-				else {
-					const results = report[RdfUris.SHACL_RESULT] ?? [];
-					validationMessages = results.map((result: any) => {
-						const resultGraph = JsonldUtils.getGraphById(reportGraph, result[RdfUris.JSONLD_ID]);
-						return JsonldUtils.getValue(resultGraph, RdfUris.SHACL_RESULT_MESSAGE);
-					});
-				}
-			} else validationMessages = [responseJson.message];
+			if (conforms) validationSuccess = true;
+			else validationMessages = messages;
 			validationView = true;
 		} catch (e: any) {
-			errorMessage = e.message;
+			validationError = e.message;
+			validationView = true;
 		}
 	}
 
@@ -184,9 +165,7 @@
 	}
 </script>
 
-{#if errorMessage}
-	<div class="error-box">{errorMessage}</div>
-{:else if module}
+{#if module}
 	<div class="module-box">
 		<div class="module-box-header">
 			<div class="module-label">MODULE INFO</div>
@@ -220,7 +199,12 @@
 					</div>
 					{#if validationView}
 						<div class="validation-content">
-							{#if validationSuccess}
+							{#if validationError}
+								<div class="result fail-box">
+									<button class="report-close" on:click={closeValidationView}>×</button>
+									<p>{validationError}</p>
+								</div>
+							{:else if validationSuccess}
 								<div class="result success-box">
 									<button class="report-close" on:click={closeValidationView}>×</button>
 									<p>RDF is valid and conforms to SHACL shapes</p>
