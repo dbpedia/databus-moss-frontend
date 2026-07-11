@@ -40,17 +40,54 @@ export interface SearchTag {
     label: string;
 }
 
-export interface SearchConfig {
-    lookupBaseUrl: string;
-    module: string;
-    predicate: string;
-    selection: SearchTag[];
-    countQuery: string;
-}
-
 export interface MossFacet {
     id: string;
     label: string;
 	predicate: string;
     sortOrder: number;
+}
+
+export interface UserInfo {
+    sub?: string;
+    username?: string;
+    apiKeys?: string[];
+    roles?: string[];
+    permissions?: string[];
+}
+
+export interface MossRole {
+    name: string;
+    tokenRole?: string;
+    permissions?: string[];
+}
+
+export interface RoleCreateRequest {
+    name: string;
+    tokenRole?: string;
+    permissions?: string[];
+}
+
+export interface RoleUpdateRequest {
+    tokenRole?: string;
+}
+
+export interface RolePermissionsRequest {
+    permissions: string[];
+}
+
+export interface UserRolesRequest {
+    roles: string[];
+}
+
+export interface ApiKeyCreateRequest {
+    name: string;
+}
+
+export interface ApiKeyInfo {
+    name: string;
+    key: string;
+}
+
+export interface SetUsernameRequest {
+    username: string;
 }

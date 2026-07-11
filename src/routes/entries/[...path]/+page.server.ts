@@ -1,18 +1,29 @@
 import { MossUtils } from '$lib/utils/moss-utils';
 import { RdfUris } from '$lib/utils/rdf-uris';
-import { error } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
-import type { DatabusResource, MossModule } from '$lib/types';
+import { env as publicEnv } from '$env/dynamic/public';
+import type { DatabusResource } from '$lib/types';
+
+function toProxyUrl(uri: string): string {
+    const publicBase = publicEnv.PUBLIC_MOSS_BASE_URL;
+    if (publicBase && uri.startsWith(publicBase)) {
+        return uri.slice(publicBase.length);
+    }
+
+    try {
+        const parsed = new URL(uri);
+        return `${parsed.pathname}${parsed.search}`;
+    } catch {
+        return uri;
+    }
+}
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ url, locals, setHeaders }: any) {
-    const resourceUrl = `${env.MOSS_API_SERVER_URL}${url.pathname}`;
+export async function load({ fetch, url, locals, setHeaders }: any) {
     const session = await locals.auth();
 
     let response: Response;
 
-    // Fetch HAL description
-    response = await fetch(resourceUrl, {
+    response = await fetch(url.pathname, {
         headers: { Accept: 'application/hal+json' }
     });
 
@@ -20,6 +31,7 @@ export async function load({ url, locals, setHeaders }: any) {
         return {
             content: null,
             token: session?.accessToken,
+            entriesStatus: response.status,
             props: {
                 segments: [],
                 isDocument: false
@@ -27,8 +39,6 @@ export async function load({ url, locals, setHeaders }: any) {
         };
     }
 
-
-    // Forward ALL Link headers from Moss API → client
     const linkHeader = response.headers.get('link');
     if (linkHeader) {
         setHeaders({ link: linkHeader });
@@ -45,7 +55,6 @@ export async function load({ url, locals, setHeaders }: any) {
     let entryData: any = {};
     let resource: DatabusResource | null = null;
 
-    // Folder listing
     if (!isEntry) {
         const items = responseData._embedded?.items ?? [];
 
@@ -54,14 +63,12 @@ export async function load({ url, locals, setHeaders }: any) {
             if (item.type === 'folder') folders.push(item);
         }
     } else {
+        // console.log("ENTRY!");
 
-        console.log("ENTRY!");
-        
-        // Single entry
         try {
-            moduleData = await MossUtils.fetchJSON(responseData.module, '');
+            moduleData = await MossUtils.fetchJSON(toProxyUrl(responseData.module), fetch);
 
-            const contentResponse = await fetch(responseData.contentGraph);
+            const contentResponse = await fetch(toProxyUrl(responseData.contentGraph));
             content = await contentResponse.text();
         } catch (e) {
             console.error('Failed to load entry module', e);

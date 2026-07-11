@@ -2,8 +2,9 @@
     import { onMount } from 'svelte';
     import type { Indexer } from '$lib/types';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { env } from '$env/dynamic/public';
 	import CodeMirror from '../code-mirror.svelte';
+	import Button from '$lib/components/button.svelte';
+	import Input from '$lib/components/input.svelte';
     // @ts-ignore
     import  yaml from 'js-yaml';
 	import { page } from '$app/stores';
@@ -36,7 +37,7 @@
     async function fetchConfiguration(id : string) {
         if (!id) return;
 
-        let uri = `${id.replace(`indexer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/indexers/`)}/config.yml`;
+        let uri = `${id.replace(`indexer:`, `/api/indexers/`)}/config.yml`;
         const response = await fetch(uri);
 
         if (!response.ok) {
@@ -63,7 +64,7 @@
 
         if (indexerId) {
             let indexerName = MossUtils.getResourceNameFromId(indexerId);
-            const indexerDataResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/indexers/${indexerName}`);
+            const indexerDataResponse = await fetch(`/api/indexers/${indexerName}`);
             const indexerData = await indexerDataResponse.json();
 
             form.layers = indexerData.layers;
@@ -113,7 +114,7 @@
 
     async function runTest() {
 
-        let sparqlEndpointUrl = `${env.PUBLIC_MOSS_BASE_URL}/sparql/`;
+        let sparqlEndpointUrl = `/sparql/`;
         let results = [];
 
         try {
@@ -149,7 +150,7 @@
             return;
         }
 
-        let uri = `${env.PUBLIC_MOSS_BASE_URL}/api/indexers/${indexerNameInput}`
+        let uri = `/api/indexers/${indexerNameInput}`
         let response = await MossUtils.fetchAuthorized(uri, 'PUT', JSON.stringify(indexer), "application/json");
 
         if (!response.ok) {
@@ -158,7 +159,7 @@
             return;
         }
 
-        uri = `${env.PUBLIC_MOSS_BASE_URL}/api/indexers/${indexerNameInput}/config.yml`
+        uri = `/api/indexers/${indexerNameInput}/config.yml`
         response = await MossUtils.fetchAuthorized(uri, 'PUT', configInput, "text/plain");
 
         if (!response.ok) {
@@ -169,7 +170,7 @@
     }
 
     async function updateIndexer(indexer : Indexer) {
-        let uri = indexer.id.replace(`indexer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/indexers/`);
+        let uri = indexer.id.replace(`indexer:`, `/api/indexers/`);
         let response = await MossUtils.fetchAuthorized(uri, 'PUT', JSON.stringify(indexer), "application/json");
 
         if (!response.ok) {
@@ -225,12 +226,12 @@
         
         {#if $isEditing}
         <h3>Id</h3>
-        <input disabled type="text" bind:value={form.id} placeholder="Indexer Name" required />
+        <Input disabled type="text" bind:value={form.id} placeholder="Indexer Name" required />
         {/if}
 
         {#if !$isEditing}
         <h3>Name</h3>
-        <input type="text" bind:value={indexerNameInput} placeholder="Indexer Name" required />
+        <Input type="text" bind:value={indexerNameInput} placeholder="Indexer Name" required />
         {/if}
 
         <h3>Layers</h3>
@@ -246,7 +247,7 @@
                 {#each form.layers ?? [] as layer, i}
                     <tr>
                         <td>{layer}</td>
-                        <td><button type="button" on:click={() => removeLayer(i)}>Remove</button></td>
+                        <td><Button type="button" variant="table" on:click={() => removeLayer(i)}>Remove</Button></td>
                     </tr>
                 {/each}
             </tbody>
@@ -259,23 +260,23 @@
                     <option value={availableLayer}>{availableLayer}</option>
                 {/each}
             </select>
-            <button type="button" on:click={addLayer}>Add Layer</button>
+            <Button type="button" variant="secondary" on:click={addLayer}>Add Layer</Button>
         </div>
 
         <h3>Configuration</h3>
         <CodeMirror format='yaml' bind:value={configInput} />
 
         <div style="margin-top: 1em">
-            <button type="submit">{$isEditing ? 'Update' : 'Create'}</button>
-            <button type="button" on:click={cancelForm}>Cancel</button>
+            <Button type="submit" variant="primary">{$isEditing ? 'Update' : 'Create'}</Button>
+            <Button type="button" variant="secondary" on:click={cancelForm}>Cancel</Button>
         </div>
     </form>
 
     <div style="margin-bottom: 5em;">
         <form on:submit|preventDefault={runTest}>
             <h3>Test</h3>
-            <input type="text" bind:value={testEntryURI} placeholder="Entry URI for testing" required />
-            <button type="submit">Send Test Queries</button>
+            <Input type="text" bind:value={testEntryURI} placeholder="Entry URI for testing" required />
+            <Button type="submit" variant="primary">Send Test Queries</Button>
         </form>
 
         <table style="margin-top: 1em">
@@ -300,14 +301,6 @@
 
 <style>
 
-    input:disabled {
-        background-color: #f0f0f0; /* Light gray background */
-        color: #545454; /* Dimmed text color */
-        cursor: not-allowed; /* Show a 'not-allowed' cursor */
-        border: 1px solid #ccc; /* Slightly visible border */
-        opacity: 0.6; /* Reduce opacity for a disabled effect */
-    }
-
     h2 {
         font-size: 1.3em;
     }
@@ -316,26 +309,6 @@
         font-size: 1em;
         font-weight: 500;
         margin-top: 1em;
-    }
-
-    
-
-    
-    button {
-        padding: .5em 1em;
-        background-color:#f4f4f4;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-right: 5px;
-        cursor: pointer;
-    }
-
-    input {
-        border: 1px solid #dbdbdb;
-        border-radius: 6px;
-        padding: .55em;
-        background-color: #f6f8fa;
-        min-width: 600px;
     }
 
     table {
@@ -353,6 +326,5 @@
     th {
         background-color: #f4f4f4;
     }
- 
- 
+
 </style>

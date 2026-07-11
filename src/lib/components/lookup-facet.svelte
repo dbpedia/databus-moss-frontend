@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { Input } from 'flowbite-svelte';
+	import Input from '$lib/components/input.svelte';
 	import TagList from '$lib/components/tag-list.svelte';
 	import type { MossFacet, SearchTag } from '$lib/types';
 	import { MossUtils } from '$lib/utils/moss-utils';
@@ -72,6 +72,11 @@
 				headers: { 'Content-Type': 'application/sparql-query', Accept: 'application/json' },
 				body: countQuery
 			});
+			if (!res.ok) {
+				items = [];
+				filtered = [];
+				return;
+			}
 			const data = await res.json();
 
 			items = (data.results.bindings ?? []).map(
@@ -158,34 +163,29 @@
 	}
 </script>
 
-<div class="mb-4">
+<div class="facet">
 	<h2>{config.label}</h2>
 
-	<Input bind:value={searchInput} placeholder="Search..." />
+	<Input class="facet-input" bind:value={searchInput} placeholder="Search..." />
 
 	{#if filtered.length > 0}
-		<ul class="mt-4 max-h-80 w-full overflow-y-auto rounded border border-gray-300 bg-white">
+		<ul class="results">
 			{#each filtered as item (item.id)}
 				<li>
-					<button
-						type="button"
-						style="display: flex;"
-						class="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100"
-						on:click={() => selectItem(item)}
-					>
-						<span class="truncate">{item.label}</span>
+					<button type="button" class="result-button" on:click={() => selectItem(item)}>
+						<span class="result-label">{item.label}</span>
 						{#if item.id.startsWith('http')}
-							<span class="ml-1" style="display: flex;"
+							<span class="result-uri"
 								>(<a
 									href={item.id}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="truncate text-blue-600 underline"
+									class="result-uri-link"
 									>{item.id.split('/').pop()}
 								</a>)</span
 							>
 						{/if}
-						<span class="ml-2 text-gray-500">{item.count}</span>
+						<span class="result-count">{item.count}</span>
 					</button>
 				</li>
 			{/each}
@@ -198,15 +198,67 @@
 </div>
 
 <style>
-	button:focus {
+	.facet {
+		width: 100%;
+		margin-bottom: 1rem;
+	}
+
+	:global(.facet-input) {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.results {
+		margin-top: 1rem;
+		max-height: 20rem;
+		width: 100%;
+		overflow-y: auto;
+		border: 1px solid #d1d5db;
+		border-radius: 0.25rem;
+		background: white;
+		padding: 0;
+		list-style: none;
+	}
+
+	.result-button {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding: 0.5rem 0.75rem;
+		text-align: left;
+		border: none;
+		background: none;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+
+	.result-button:hover,
+	.result-button:focus {
+		background: #f3f4f6;
 		outline: none;
 	}
 
-	.truncate {
-		display: inline-block;
-		max-width: 320px;
+	.result-label {
+		flex: 1;
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.result-uri {
+		flex-shrink: 0;
+		margin-left: 0.25rem;
+	}
+
+	.result-uri-link {
+		color: #2563eb;
+		text-decoration: underline;
+	}
+
+	.result-count {
+		flex-shrink: 0;
+		margin-left: 0.5rem;
+		color: #6b7280;
 	}
 </style>

@@ -6,6 +6,7 @@
 	import { linter } from '@codemirror/lint';
 	import type { LanguageSupport } from '@codemirror/language';
 	import type { Extension } from '@codemirror/state';
+	import Button from '$lib/components/button.svelte';
 
 	export let moduleId: string;
 	export let resourceName: string;
@@ -99,89 +100,43 @@
 <div class="subresource-editor">
 	{#if content === null && !editing}
 		<p style="margin-bottom: 0.5rem">No {resourceName} yet.</p>
-		<button class="btn-primary" on:click={startEdit}>Create {resourceName}</button>
+		<Button variant="primary" type="button" on:click={startEdit}>Create {resourceName}</Button>
 	{:else if editing}
 		<CodeMirror bind:value={code} {lang} {extensions} />
 		<div class="form-actions">
-			<button class="btn-primary" on:click={save}>Save</button>
-			<button class="btn-secondary" on:click={cancel}>Cancel</button>
+			<Button variant="primary" type="button" on:click={save}>Save</Button>
+			<Button variant="secondary" type="button" on:click={cancel}>Cancel</Button>
 		</div>
 	{:else}
 		<div class="editor-preview">
 			<pre>{content}</pre>
 		</div>
 		<div class="form-actions">
-			<button class="btn-primary" on:click={startEdit}>Edit</button>
-			<button class="btn-delete" on:click={del}>Delete</button>
+			<Button variant="primary" type="button" on:click={startEdit}>Edit</Button>
+			<Button variant="danger" type="button" on:click={del}>Delete</Button>
 		</div>
 	{/if}
 </div>
 
 <style>
+	.editor-preview {
+		border: 1px solid #d1d5db;
+		background-color: #f9fafb;
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+	}
 
+	pre {
+		margin: 0;
+		font-family: monospace;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+	}
 
-.editor-preview {
-	border: 1px solid #d1d5db;
-	background-color:#f9fafb;
-	padding: 0.5rem;
-	border-radius: 0.5rem;
-}
-
-pre {
-	margin: 0;
-	font-family: monospace;
-	white-space: pre-wrap;
-	word-wrap: break-word;
-}
-
-.form-actions {
-	margin-top: 1rem;
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.5rem;
-}
-
-.btn-primary {
-	background-color: #4f46e5;
-	color: white;
-	font-weight: 600;
-	border-radius: 0.5rem;
-	padding: 0.4rem 0.8rem;
-	border: none;
-	cursor: pointer;
-	transition: background 0.2s;
-}
-
-.btn-primary:hover {
-	background-color: #6366f1;
-}
-
-.btn-secondary {
-	background-color: #f3f4f6;
-	color: #374151;
-	border-radius: 0.5rem;
-	padding: 0.4rem 0.8rem;
-	border: 1px solid #d1d5db;
-	cursor: pointer;
-	transition: background 0.2s;
-}
-
-.btn-secondary:hover {
-	background-color: #e5e7eb;
-}
-
-.btn-delete {
-	background-color: #ef4444;
-	color: white;
-	font-weight: 600;
-	border-radius: 0.5rem;
-	padding: 0.4rem 0.8rem;
-	border: none;
-	cursor: pointer;
-	transition: background 0.2s;
-}
-
-.btn-delete:hover {
-	background-color: #dc2626;
-}
+	.form-actions {
+		margin-top: 1rem;
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
+	}
 </style>

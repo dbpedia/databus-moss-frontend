@@ -55,9 +55,8 @@ h2:not(:first-child) {
 }
 
 .columns .column.small {
-    width: 20%;
-    flex: 0;
-    flex-basis: 20%;
+    width: 14rem;
+    flex: 0 0 14rem;
 }
 
 .columns .column.medium {
@@ -68,6 +67,7 @@ h2:not(:first-child) {
 
 .columns .column {
     flex: 1;
+    min-width: 0;
 }
 
 .sidebar {
@@ -107,4 +107,45 @@ input {
     color: #888;
     margin-top: 0.1em;
     font-size: .85em;
+}
+
+table.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    table-layout: auto;
+}
+
+table.table th,
+table.table td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+table.table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+table.table .ellipsis {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+table.table a.resource-link {
+    color: #2563eb;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+table.table a.resource-link:hover {
+    color: #1d4ed8;
+}
+
+.table-box {
+    overflow-x: auto;
 }

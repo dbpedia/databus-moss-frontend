@@ -5,13 +5,15 @@
 	import CodeMirror from '$lib/components/code-mirror.svelte';
 	import FileList from '$lib/components/file-list.svelte';
 	import TopBar from '$lib/components/top-bar.svelte';
-	import { Button, Toast, Spinner, Indicator, GradientButton } from 'flowbite-svelte';
+	import { Toast, Spinner, Indicator, GradientButton } from 'flowbite-svelte';
+	import Button from '$lib/components/button.svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import { A } from 'flowbite-svelte';
 	import FeedbackMessage from '$lib/components/feedback-message.svelte';
 	import MossModuleWidget from '$lib/components/moss-module-widget.svelte';
 	import MossEntryHeader from '$lib/components/moss-entry-header.svelte';
 	import type { MossModule } from '$lib/types';
+	import ContentGate from '$lib/components/content-gate.svelte';
 
 	export let data: any;
 
@@ -118,10 +120,14 @@
 	}
 </script>
 
+<div class="section">
 <div class="container">
+	{#if data.entriesStatus}
+		<ContentGate status={data.entriesStatus} unavailableMessage="Entries are temporarily unavailable." />
+	{:else}
 	<div class="top-bar-container">
 		<TopBar segments={data.props.segments} />
-		<button class="btn-create" on:click={showCreateForm}>+ Create Entry</button>
+		<Button variant="create" style="margin-top: 0.5rem; width: 160px;" on:click={showCreateForm}>+ Create Entry</Button>
 	</div>
 
 	{#if !isDocument}
@@ -144,7 +150,7 @@
 				<div class="editor-container">
 					<div class="buttons">
 						<A href={'./'}>
-							<Button color="alternative">Go Back</Button>
+							<Button variant="secondary">Go Back</Button>
 						</A>
 						<div class="button-group-right">
 							<div class="btn-size">
@@ -192,6 +198,8 @@
 			</div>
 		</div>
 	{/if}
+	{/if}
+</div>
 </div>
 
 <style>
@@ -224,24 +232,6 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-	}
-
-	.btn-create {
-		padding: 0.5em 1em;
-		margin-top: 0.5rem;
-		height: 40px;
-		width: 160px;
-		background-color: #4f46e5;
-		color: white;
-		border: none;
-		border-radius: 0.375rem;
-		cursor: pointer;
-		font-weight: 600;
-		transition: background 0.2s;
-	}
-
-	.btn-create:hover {
-		background-color: #6366f1;
 	}
 
 	.top-bar-container {

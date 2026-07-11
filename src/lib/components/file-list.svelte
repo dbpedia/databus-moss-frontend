@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { FolderOpenOutline, FileOutline } from 'flowbite-svelte-icons';
 	import { Listgroup } from 'flowbite-svelte';
+	import type { ComponentType } from 'svelte';
 
 	export let collection: any[];
 	export let files = true;
-	let iconType = files ? FileOutline : FolderOpenOutline;
+	export let icon: ComponentType | null = null;
+
+	$: iconType = icon ?? (files ? FileOutline : FolderOpenOutline);
 </script>
 
 <ul>

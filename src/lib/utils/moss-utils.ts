@@ -103,11 +103,10 @@ export class MossUtils {
         return title ? capital + title.slice(1) : "";
     }
 
-    static async fetchJSON(baseUrl: string, searchInput: string) {
-        const query = `${baseUrl}${searchInput}`;
-        const data = await fetch(query, {
+    static async fetchJSON(path: string, customFetch: typeof fetch = fetch) {
+        const data = await customFetch(path, {
             headers: {
-                'Accept': 'application/json'
+                Accept: 'application/hal+json, application/json'
             }
         });
         return await data.json() ?? [];
@@ -236,17 +235,17 @@ export class MossUtils {
 
     static getSaveRequestURL(resourceUri: string, moduleId: string): string {
         resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
-        return `/api/v1/save-entry?module=${moduleId}&resource=${resourceUri}`;
+        return `/entries?module=${moduleId}&resource=${resourceUri}`;
     }
 
     static getDeletionRequestURL(resourceUri: string, moduleId: string): string {
         resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
-        return `/api/v1/delete-entry?module=${moduleId}&resource=${resourceUri}`;
+        return `/entries?module=${moduleId}&resource=${resourceUri}`;
     }
 
     static getValidationRequestURL(resourceUri: string, moduleId: string): string {
         resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
-        return `/api/v1/validate-entry?module=${moduleId}&resource=${resourceUri}`;
+        return `/entries/validate?module=${moduleId}&resource=${resourceUri}`;
     }
 
     static getIndexerPreviewURL(resourceUri: string, moduleId: string): string {
@@ -297,31 +296,15 @@ export class MossUtils {
 
     static async fetchAuthorized(uri: string, method: string, body: any = undefined,
         contentType: string = "application/ld+json"): Promise<Response> {
-
         try {
-            // Fetch the access token
-            const tokenResponse = await fetch('/user/token');
-            if (!tokenResponse.ok) {
-                return Response.error();
-            }
-
-            const tokenData = await tokenResponse.json();
-            const accessToken = tokenData.accessToken;
-
-            // Prepare headers with the fetched access token
-            const headers: any = {
-                Accept: 'application/json',
-                'Content-Type': contentType,
-                Authorization: 'Bearer ' + accessToken
-            };
-
-            // Make the actual request with the authorization header
-            return await fetch(uri, {
-                method: method,
-                headers: headers,
-                body: body
+            return await fetch(MossUtils.getRelativeUri(uri), {
+                method,
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': contentType
+                },
+                body
             });
-
         } catch (error) {
             console.error('Error in fetchAuthorized:', error);
             return Response.error();

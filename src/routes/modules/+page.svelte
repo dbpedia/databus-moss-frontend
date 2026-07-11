@@ -4,4 +4,4 @@
 	export let data: any;
 </script>
 
-<HalResourcePage {data} unavailableMessage="Terminologies are temporarily unavailable." />
+<HalResourcePage {data} unavailableMessage="Modules are temporarily unavailable." />

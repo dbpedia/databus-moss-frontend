@@ -14,7 +14,8 @@
 	import { RdfUris } from '$lib/utils/rdf-uris';
 	import MossModuleWidget from '$lib/components/moss-module-widget.svelte';
 	import MossModuleHeader from '$lib/components/moss-module-header.svelte';
-	import { Button, GradientButton } from 'flowbite-svelte';
+	import { GradientButton } from 'flowbite-svelte';
+	import Button from '$lib/components/button.svelte';
 	import MossEntryHeader from '$lib/components/moss-entry-header.svelte';
 
 	type TemplateFormat = 'json-ld' | 'turtle' | 'yaml' | null;
@@ -336,8 +337,8 @@
 				{#if entryCreated}
 					<p class="resource-success">Entry was created successfully.</p>
 					<div class="form-actions right">
-						<button type="button" class="btn-secondary" on:click={goBack}>Back</button>
-						<button class="btn-primary" on:click={goToEntry}>Go To Entry</button>
+						<Button type="button" variant="secondary" on:click={goBack}>Back</Button>
+						<Button variant="primary" on:click={goToEntry}>Go To Entry</Button>
 					</div>
 				{:else if entryExists}
 					<div class="form-card">
@@ -345,8 +346,8 @@
 						<DatabusResourcePreview resourceUrl={databusResource} />
 						<p class="resource-warning">An entry for this resource and module already exists.</p>
 						<div class="form-actions right">
-							<button type="button" class="btn-secondary" on:click={goBack}>Back</button>
-							<button class="btn-primary" on:click={goToEntry}>Go To Entry</button>
+							<Button type="button" variant="secondary" on:click={goBack}>Back</Button>
+							<Button variant="primary" on:click={goToEntry}>Go To Entry</Button>
 						</div>
 					</div>
 				{:else}
@@ -355,12 +356,7 @@
 					<div style="display:flex; gap: 1rem">
 						<div class="editing">
 							<div class="form-actions" style="justify-content: space-between;">
-								<Button
-									color="alternative"
-									size="md"
-									class="button-group-size relative"
-									on:click={goBack}>Back</Button
-								>
+								<Button variant="secondary" on:click={goBack}>Back</Button>
 
 								<GradientButton
 									color="pinkToOrange"
@@ -483,31 +479,6 @@
 	}
 	.form-actions.right {
 		justify-content: flex-end;
-	}
-	.btn-primary {
-		background-color: #4f46e5;
-		color: white;
-		font-weight: 600;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border: none;
-		transition: background 0.3s;
-	}
-	.btn-primary:hover {
-		background-color: #6366f1;
-	}
-	.btn-secondary {
-		background-color: #f3f4f6;
-		color: #374151;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border: 1px solid #d1d5db;
-		transition: background 0.3s;
-	}
-	.btn-secondary:hover {
-		background-color: #e5e7eb;
 	}
 	.error-box {
 		padding: 1em;

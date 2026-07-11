@@ -1,26 +1,22 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { page } from "$app/stores"
-    import {
-        Input,
-        Button,
-     } from "flowbite-svelte";
-	import { env } from '$env/dynamic/public'
+    import Button from '$lib/components/button.svelte';
+    import Input from '$lib/components/input.svelte';
+    import type { ApiKeyInfo, UserInfo } from '$lib/types';
     
-    let usernameInput: string = "";
     let apiKeyNameInput: string = "";
-    let user: any;
+    let user: UserInfo | undefined;
     let currentKey: string;
     let currentKeyName: string;
 
     async function fetchUserData() {
-        let response = await fetch(`/api/v1/users/get-user`, {
+        let response = await fetch(`/users/me`, {
             method: 'GET'
         });
 
         if (response.ok) {
             user = await response.json();
-            usernameInput = user.username;
         } else {
             user = {};
         }
@@ -31,15 +27,17 @@
             return;
         }
 
-        let uri = `/api/v1/users/create-apikey?name=${apiKeyNameInput}`;
-        let response = await fetch(uri, {
-            method: 'POST'
+        let response = await fetch(`/users/me/api-keys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: apiKeyNameInput })
         });
 
         if(response.ok) {
-            let data = await response.json();
+            let data: ApiKeyInfo = await response.json();
             currentKey = data.key;
             currentKeyName = data.name;
+            apiKeyNameInput = '';
             await fetchUserData();
         }
     }
@@ -53,9 +51,8 @@
     }
 
     async function onRevokeAPIKeyButtonClicked(keyName: string) {
-        let uri = `/api/v1/users/revoke-apikey?name=${keyName}`;
-        let response = await fetch(uri, {
-            method: 'POST',
+        let response = await fetch(`/users/me/api-keys/${encodeURIComponent(keyName)}`, {
+            method: 'DELETE',
             credentials: 'include'
         });
 
@@ -67,10 +64,6 @@
     onMount(() => {
         fetchUserData();
     });
-
-    const rowNames  = [
-        "API Keys",
-    ];
 </script>
 
 <div class="section">
@@ -94,8 +87,8 @@
 
                 <h2>New API Key</h2>
                 <div style="display: flex; width: 100%; margin-bottom: 1em">
-                    <Input id="usernameInput" style="width: 450px; margin-right: .5em" bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
-                    <Button color="green" on:click={onCreateAPIKeyButtonClicked} >New API Key</Button>
+                    <Input id="apiKeyNameInput" style="width: 450px; margin-right: .5em" bind:value={apiKeyNameInput} placeholder="Enter API Key name..." />
+                    <Button variant="primary" on:click={onCreateAPIKeyButtonClicked}>New API Key</Button>
                 </div>
 
                 {#if currentKey != undefined && currentKey.length > 0}
@@ -104,7 +97,7 @@
                     <div style="padding: 0.5em; background-color: #f3f3f3;border-bottom: 1px solid #ddd;">New API Key Created: <b>{ currentKeyName }</b></div>
                     <div style="display: flex; align-items: center; padding: .5em;">
                         <div style="flex: 1">{ currentKey }</div>
-                        <Button color="green" on:click={() => copyToClipboard(currentKey)} >Copy to Clipboard</Button>
+                        <Button variant="primary" on:click={() => copyToClipboard(currentKey)}>Copy to Clipboard</Button>
                     </div>
                 </div>
                 <div class="warn-box"><b>IMPORTANT:</b> This key will only be displayed once. Copy it now and store it somewhere safe.</div>
@@ -120,8 +113,7 @@
                     <div style="display: flex; align-items: center; border: 1px solid #ddd; width: 500px;
                         border-radius: 8px; padding-left: 1em; margin-bottom: .5em">
                         <div style="flex: 1">{keyName}</div>
-                        <Button on:click={() => onRevokeAPIKeyButtonClicked(keyName)}
-                            color="red">Revoke</Button>
+                        <Button variant="danger" on:click={() => onRevokeAPIKeyButtonClicked(keyName)}>Revoke</Button>
                     </div>
                     {/each}
                 {/if}

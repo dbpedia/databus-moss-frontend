@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { MossModule } from '$lib/types';
+	import Button from '$lib/components/button.svelte';
+	import Input from '$lib/components/input.svelte';
+	import Textarea from '$lib/components/textarea.svelte';
+	import Select from '$lib/components/select.svelte';
 
 	const dispatch = createEventDispatcher<{ created: MossModule; cancel: void }>();
 
@@ -24,22 +28,22 @@
 	<form on:submit|preventDefault={submitForm}>
 		<div class="form-group">
 			<label for="id">ID</label>
-			<input id="id" type="text" bind:value={id} required placeholder="Unique module ID" />
+			<Input id="id" type="text" bind:value={id} required placeholder="Unique module ID" />
 		</div>
 
 		<div class="form-group">
 			<label for="label">Label</label>
-			<input id="label" type="text" bind:value={label} required />
+			<Input id="label" type="text" bind:value={label} required />
 		</div>
 
 		<div class="form-group">
 			<label for="description">Description</label>
-			<textarea id="description" bind:value={description} rows="3" required></textarea>
+			<Textarea id="description" bind:value={description} rows={3} required />
 		</div>
 
 		<div class="form-group">
 			<label for="language">Language</label>
-			<select bind:value={language} required>
+			<Select bind:value={language} required>
 				<option value="" disabled selected>Select language</option>
 				<option value="application/ld+json">JSON-LD</option>
 				<option value="text/turtle">Turtle</option>
@@ -47,12 +51,12 @@
 				<option value="application/n-triples">N-Triples</option>
 				<option value="application/n-quads">N-Quads</option>
 				<option value="application/trig">TriG</option>
-			</select>
+			</Select>
 		</div>
 
 		<div class="form-actions">
-			<button type="submit" class="btn-primary">Create Module</button>
-			<button type="button" class="btn-secondary" on:click={cancel}>Cancel</button>
+			<Button variant="primary" type="submit">Create Module</Button>
+			<Button variant="secondary" type="button" on:click={cancel}>Cancel</Button>
 		</div>
 	</form>
 </div>
@@ -85,82 +89,9 @@
 		color: #374151;
 	}
 
-	input,
-	textarea {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid #d1d5db;
-		border-radius: 0.5rem;
-		font-size: 1rem;
-		color: #111827;
-	}
-
-	input:focus,
-	textarea:focus {
-		outline: none;
-		border-color: #6366f1;
-		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-	}
-
 	.form-actions {
 		margin-top: 1.5rem;
 		display: flex;
 		gap: 0.5rem;
-	}
-
-	.btn-primary {
-		background-color: #4f46e5;
-		color: white;
-		font-weight: 600;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border: none;
-		transition: background 0.3s;
-	}
-
-	.btn-primary:hover {
-		background-color: #6366f1;
-	}
-
-	.btn-secondary {
-		background-color: #f3f4f6;
-		color: #374151;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border: 1px solid #d1d5db;
-		transition: background 0.3s;
-	}
-
-	.btn-secondary:hover {
-		background-color: #e5e7eb;
-	}
-
-	select {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid #d1d5db;
-		border-radius: 0.5rem;
-		font-size: 1rem;
-		color: #111827;
-		background-color: #fff;
-		appearance: none;
-	}
-
-	select:focus {
-		outline: none;
-		border-color: #6366f1;
-		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-	}
-
-	.form-group {
-		margin-bottom: 1rem;
-		display: flex;
-		flex-direction: column;
-	}
-
-	label {
-		margin-bottom: 0.25rem;
-		font-weight: 600;
-		color: #374151;
 	}
 </style>

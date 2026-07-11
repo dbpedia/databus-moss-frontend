@@ -2,9 +2,10 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import type { Indexer, Layer } from '$lib/types';
 	import { MossUtils } from '$lib/utils/moss-utils';
-	import { env } from '$env/dynamic/public';
 	import { writable, type Writable } from 'svelte/store';
 	import CodeMirror from '../code-mirror.svelte';
+	import Button from '$lib/components/button.svelte';
+	import Input from '$lib/components/input.svelte';
 
     let isEditing : Writable<boolean> = writable<boolean>(false);
     const dispatch = createEventDispatcher();
@@ -26,7 +27,7 @@
 
     async function fetchTemplate(templateId : string) {
         
-        let uri = `${templateId.replace(`layer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/layers/`)}`;
+        let uri = `${templateId.replace(`layer:`, `/api/layers/`)}`;
 
         const response = await fetch(uri);
 
@@ -47,7 +48,7 @@
             layer.id = `layer:${layerNameInput}`;
         }
 
-        let uri = layer.id.replace(`layer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/layers/`);
+        let uri = layer.id.replace(`layer:`, `/api/layers/`);
         let response = await MossUtils.fetchAuthorized(uri, 'PUT', JSON.stringify(layer), "application/json");
 
         if (!response.ok) {
@@ -56,7 +57,7 @@
             return;
         }
 
-        let templateUri = `${templatePath.replace(`layer:`, `${env.PUBLIC_MOSS_BASE_URL}/api/layers/`)}`;
+        let templateUri = `${templatePath.replace(`layer:`, `/api/layers/`)}`;
         response = await MossUtils.fetchAuthorized(templateUri, 'PUT', templateInput, "text/plain");
 
         if (!response.ok) {
@@ -88,7 +89,7 @@
 
         if (layerId) {
             let layerName = MossUtils.getResourceNameFromId(layerId);
-            const indexerDataResponse = await fetch(`${env.PUBLIC_MOSS_BASE_URL}/api/layers/${layerName}`);
+            const indexerDataResponse = await fetch(`/api/layers/${layerName}`);
             const indexerData = await indexerDataResponse.json();
 
             form.formatMimeType = indexerData.formatMimeType;
@@ -121,16 +122,16 @@
         
         {#if $isEditing}
         <h3>Id</h3>
-        <input disabled type="text" bind:value={form.id} placeholder="Layer Name" required />
+        <Input disabled type="text" bind:value={form.id} placeholder="Layer Name" required />
         {/if}
 
         {#if !$isEditing}
         <h3>Name</h3>
-        <input type="text" bind:value={layerNameInput} placeholder="Layer Name" required />
+        <Input type="text" bind:value={layerNameInput} placeholder="Layer Name" required />
         {/if}
 
         <h3>Format Mime Type</h3>
-        <input type="text" bind:value={form.formatMimeType} placeholder="Mime Type" required />
+        <Input type="text" bind:value={form.formatMimeType} placeholder="Mime Type" required />
         
         
         <h3>Template</h3>
@@ -169,21 +170,13 @@
         </div>-->
 
         <div style="margin-top: 1em">
-            <button type="submit">{$isEditing ? 'Update' : 'Create'}</button>
-            <button type="button" on:click={cancelForm}>Cancel</button>
+            <Button type="submit" variant="primary">{$isEditing ? 'Update' : 'Create'}</Button>
+            <Button type="button" variant="secondary" on:click={cancelForm}>Cancel</Button>
         </div>
     </form>
 </div>
 
 <style>
-
-    input:disabled {
-        background-color: #f0f0f0; /* Light gray background */
-        color: #545454; /* Dimmed text color */
-        cursor: not-allowed; /* Show a 'not-allowed' cursor */
-        border: 1px solid #ccc; /* Slightly visible border */
-        opacity: 0.6; /* Reduce opacity for a disabled effect */
-    }
 
     h2 {
         font-size: 1.3em;
@@ -195,15 +188,4 @@
         margin-top: 1em;
     }
 
-
-    button {
-        padding: .5em 1em;
-        background-color:#f4f4f4;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-right: 5px;
-        cursor: pointer;
-    }
-
- 
 </style>

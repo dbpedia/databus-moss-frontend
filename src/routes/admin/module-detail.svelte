@@ -6,6 +6,10 @@
 	import SubResourceEditor from './sub-resource-editor.svelte';
 	import TemplateEditor from './template-editor.svelte';
 	import ResourceUri from '$lib/components/resource-uri.svelte';
+	import Button from '$lib/components/button.svelte';
+	import Input from '$lib/components/input.svelte';
+	import Textarea from '$lib/components/textarea.svelte';
+	import Select from '$lib/components/select.svelte';
 
 	export let activeModule: MossModule;
 	const dispatch = createEventDispatcher();
@@ -75,7 +79,7 @@
 
 <div class="top-bar">
 	<h1 class="module-id">Module: {activeModule.id}</h1>
-	<button class="btn-secondary" on:click={back}>Back to Module List</button>
+	<Button variant="secondary" type="button" on:click={back}>Back to Module List</Button>
 </div>
 
 <div class="detail-wrapper">
@@ -110,17 +114,17 @@
 					<div class="form-group">
 						<!-- svelte-ignore a11y-label-has-associated-control -->
 						<label>Label</label>
-						<input type="text" bind:value={label} required />
+						<Input type="text" bind:value={label} required />
 					</div>
 					<div class="form-group">
 						<!-- svelte-ignore a11y-label-has-associated-control -->
 						<label>Description</label>
-						<textarea rows="3" bind:value={description} required></textarea>
+						<Textarea rows={3} bind:value={description} required />
 					</div>
 					<div class="form-group">
 						<!-- svelte-ignore a11y-label-has-associated-control -->
 						<label>Language</label>
-						<select bind:value={language} required>
+						<Select bind:value={language} required>
 							<option value="" disabled selected>Select language</option>
 							<option value="application/ld+json">JSON-LD</option>
 							<option value="text/turtle">Turtle</option>
@@ -128,7 +132,7 @@
 							<option value="application/n-triples">N-Triples</option>
 							<option value="application/n-quads">N-Quads</option>
 							<option value="application/trig">TriG</option>
-						</select>
+						</Select>
 					</div>
 
 					{#if successMessage}
@@ -139,10 +143,9 @@
 					{/if}
 
 					<div class="form-actions">
-						<button type="submit" class="btn-primary" disabled={saving}>
+						<Button variant="primary" type="submit" disabled={saving}>
 							{saving ? 'Saving...' : 'Save Changes'}
-						</button>
-
+						</Button>
 					</div>
 				</form>
 			</div>
@@ -298,52 +301,11 @@
 		margin-bottom: 0.25rem;
 		color: #374151;
 	}
-	input,
-	textarea {
-		padding: 0.5rem 0.75rem;
-		border-radius: 0.5rem;
-		border: 1px solid #d1d5db;
-		font-size: 1rem;
-		color: #111827;
-	}
-	input:focus,
-	textarea:focus {
-		outline: none;
-		border-color: #6366f1;
-		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-	}
 
 	.form-actions {
 		display: flex;
 		justify-content: flex-end;
 		gap: 0.5rem;
-	}
-
-	.btn-primary {
-		background-color: #4f46e5;
-		color: white;
-		font-weight: 600;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		border: none;
-		cursor: pointer;
-		transition: background 0.3s;
-	}
-	.btn-primary:hover {
-		background-color: #6366f1;
-	}
-
-	.btn-secondary {
-		background-color: #f3f4f6;
-		color: #374151;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		border: 1px solid #d1d5db;
-		cursor: pointer;
-		transition: background 0.3s;
-	}
-	.btn-secondary:hover {
-		background-color: #e5e7eb;
 	}
 
 	.success {
@@ -354,33 +316,4 @@
 		color: red;
 		margin-top: 0.5rem;
 	}
-	select {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid #d1d5db;
-		border-radius: 0.5rem;
-		font-size: 1rem;
-		color: #111827;
-		background-color: #fff;
-		appearance: none;
-	}
-
-	select:focus {
-		outline: none;
-		border-color: #6366f1;
-		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-	}
-
-	.form-group {
-		margin-bottom: 1rem;
-		display: flex;
-		flex-direction: column;
-	}
-
-	label {
-		margin-bottom: 0.25rem;
-		font-weight: 600;
-		color: #374151;
-	}
-
-	
 </style>

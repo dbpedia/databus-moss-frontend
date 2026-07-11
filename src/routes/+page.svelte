@@ -15,6 +15,8 @@
 
 	import type { MossFacet, SearchTag } from '$lib/types';
 	import LookupFacet from '$lib/components/lookup-facet.svelte';
+	import ContentGate from '$lib/components/content-gate.svelte';
+	import { isAccessDenied } from '$lib/utils/auth-utils';
 
 	export let data;
 
@@ -150,6 +152,7 @@
 
 		if (queryString == undefined || queryString.length == 0) {
 			searchResults = {};
+			searchError = null;
 			return;
 		}
 
@@ -161,6 +164,14 @@
 			},
 			body: queryString
 		});
+
+		if (!response.ok) {
+			searchResults = {};
+			searchError = isAccessDenied(response.status) ? 'denied' : 'failed';
+			return;
+		}
+
+		searchError = null;
 
 		const data = await response.json();
 		var results: any = {};
@@ -217,18 +228,12 @@
 
 	let queryString: string = '';
 
-	let searchResults: { [key: string]: any };
-	let annotationTags: any;
+	let searchResults: { [key: string]: any } = {};
+	let searchError: 'denied' | 'failed' | null = null;
 
-	annotationTags = [];
-	searchResults = {};
-
-	let searchInput: string;
-	searchInput = '';
-
-	let isSearching = false;
-
-
+	$: gateStatus =
+		data.facetsStatus ??
+		(searchError === 'denied' ? 403 : searchError === 'failed' ? 500 : undefined);
 
 	$: {
 		$page.url;
@@ -244,25 +249,26 @@
 
 <div class="section">
 	<div class="container">
-		<div class="columns">
-			<div class="column" style="width: 70%;">
-				<ul>
-					{#if isSearching}
-						<p>Searching...</p>
-					{/if}
-					{#each Object.entries(searchResults) as [key, result] (result.hash)}
-						<li>
-							<SearchResult data={result} />
-						</li>
+		{#if gateStatus}
+			<ContentGate status={gateStatus} unavailableMessage="Search is temporarily unavailable." />
+		{:else}
+			<div class="columns">
+				<div class="column main">
+					<ul>
+						{#each Object.entries(searchResults) as [key, result] (result.hash)}
+							<li>
+								<SearchResult data={result} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+				<div class="column facets-sidebar">
+					{#each facetConfigs as config (config.id)}
+						<LookupFacet selected={facetSelections[config.id] ?? []}  {config} {sparqlSelector} on:selectionChanged={onFacetChange} />
 					{/each}
-				</ul>
+				</div>
 			</div>
-			<div class="column medium">
-				{#each facetConfigs as config (config.id)}
-					<LookupFacet selected={facetSelections[config.id] ?? []}  {config} {sparqlSelector} on:selectionChanged={onFacetChange} />
-				{/each}
-			</div>
-		</div>
+		{/if}
 	</div>
 </div>
 
@@ -276,13 +282,15 @@
 		padding: 0;
 	}
 
-	.column {
+	.column.main {
+		flex: 1;
+		min-width: 0;
 		padding-right: 2em;
 	}
 
-	.column.medium {
-		min-width: 35%;
-		max-width: 35%;
-		width: 35%;
+	.column.facets-sidebar {
+		width: 26%;
+		flex: 0 0 26%;
+		min-width: 0;
 	}
 </style>

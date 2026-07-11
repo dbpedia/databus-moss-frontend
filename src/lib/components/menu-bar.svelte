@@ -9,8 +9,14 @@
     }
     from 'flowbite-svelte';
     import Login from './login.svelte';
+    import { getDefaultAdminPath, hasAdminAccess, hasPermission, PERMISSIONS } from '$lib/utils/auth-utils';
 
-
+    $: canWriteModules = hasPermission($page.data.userData, PERMISSIONS.WRITE_MODULES);
+    $: canWriteTerminologies = hasPermission($page.data.userData, PERMISSIONS.WRITE_TERMINOLOGIES);
+    $: canWriteFacets = hasPermission($page.data.userData, PERMISSIONS.WRITE_FACETS);
+    $: canReadUsers = hasPermission($page.data.userData, PERMISSIONS.READ_USERS);
+    $: canWriteRoles = hasPermission($page.data.userData, PERMISSIONS.WRITE_ROLES);
+    $: settingsHref = getDefaultAdminPath($page.data.userData) ?? '/admin';
 </script>
 
 <Navbar rounded color="form" >
@@ -27,8 +33,8 @@
         <NavLi href="/modules">Modules</NavLi>
         <NavLi href="/terminologies">Terminologies</NavLi>
 
-        {#if $page.data.userData != undefined}
-        <NavLi href="/admin">Admin Settings</NavLi>
+        {#if hasAdminAccess($page.data.userData)}
+        <NavLi href={settingsHref}>Settings</NavLi>
         {/if}
     </NavUl>
 

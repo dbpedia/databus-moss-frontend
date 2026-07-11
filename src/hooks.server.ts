@@ -7,6 +7,12 @@ let proxyRoutes: string[] = [
     `/terminologies`,
     `/modules`,
     `/facets`,
+    `/entries`,
+    `/users`,
+    `/roles`,
+    `/permissions`,
+    `/sparql`,
+    `/data`,
     `/api`,
 ];
 
@@ -45,34 +51,32 @@ async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, str
     return new Response(body, { status: res.status, headers: responseHeaders });
 }
 
+function isProxyRoute(pathname: string): boolean {
+    return proxyRoutes.some((route) => pathname.startsWith(route));
+}
+
 const apiProxy: Handle = async ({ event, resolve }) => {
     const accept = event.request.headers.get('accept') ?? '';
     const requestURL = new URL(event.request.url);
-
-    // console.log(requestURL.pathname);
+    const pathname = requestURL.pathname;
 
     const session = await event.locals.auth?.() as any;
     const accessToken = session?.accessToken ?? '';
 
-    for (var route of proxyRoutes) {
-        if (requestURL.pathname.startsWith(route)) {
-            return await fetchProxyResponse(event, accessToken, requestURL);
-        }
+    const useSvelteKit =
+        accept.includes('text/html') ||
+        pathname.startsWith('/auth') ||
+        pathname.endsWith('__data.json');
+
+    if (isProxyRoute(pathname) && !useSvelteKit) {
+        return await fetchProxyResponse(event, accessToken, requestURL);
     }
 
-    // HTML requests and /auth routes go through normal SvelteKit + auth flow
-    if (accept.includes('text/html') || requestURL.pathname.startsWith('/auth') || requestURL.pathname.endsWith('__data.json')) {
-
-        var response = await resolve(event);
-
-        if (response.status !== 404) {
-            return response;
-        }
+    if (useSvelteKit) {
+        return await resolve(event);
     }
 
     return await fetchProxyResponse(event, accessToken, requestURL);
-
-
 };
 
 export const handle = sequence(authHandle, apiProxy);

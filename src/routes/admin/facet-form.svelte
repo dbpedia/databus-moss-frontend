@@ -1,21 +1,24 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import type { MossFacet } from '$lib/types';
+	import Button from '$lib/components/button.svelte';
+	import Input from '$lib/components/input.svelte';
+
 	export let activeFacet: MossFacet | null = null;
-    
+
 	const dispatch = createEventDispatcher<{ saved: MossFacet; cancel: void }>();
 
 	let id = '';
 	let label = '';
 	let predicate = '';
-    let sortOrder = 0;
+	let sortOrder = 0;
 
 	onMount(() => {
 		if (activeFacet) {
 			id = activeFacet.id;
 			label = activeFacet.label;
 			predicate = activeFacet.predicate;
-            sortOrder = activeFacet.sortOrder;
+			sortOrder = activeFacet.sortOrder;
 		}
 	});
 
@@ -34,7 +37,7 @@
 	<form on:submit|preventDefault={submitForm}>
 		<div class="form-group">
 			<label for="id">ID</label>
-			<input
+			<Input
 				id="id"
 				type="text"
 				bind:value={id}
@@ -46,12 +49,12 @@
 
 		<div class="form-group">
 			<label for="label">Label</label>
-			<input id="label" type="text" bind:value={label} required />
+			<Input id="label" type="text" bind:value={label} required />
 		</div>
 
 		<div class="form-group">
 			<label for="predicate">Predicate</label>
-			<input
+			<Input
 				id="predicate"
 				type="text"
 				bind:value={predicate}
@@ -60,9 +63,9 @@
 			/>
 		</div>
 
-        <div class="form-group">
+		<div class="form-group">
 			<label for="sortOrder">Sort Order</label>
-			<input
+			<Input
 				id="sortOrder"
 				type="number"
 				bind:value={sortOrder}
@@ -72,8 +75,8 @@
 		</div>
 
 		<div class="form-actions">
-			<button type="submit" class="btn-primary">{activeFacet ? 'Save Changes' : 'Create Facet'}</button>
-			<button type="button" class="btn-secondary" on:click={cancel}>Cancel</button>
+			<Button variant="primary" type="submit">{activeFacet ? 'Save Changes' : 'Create Facet'}</Button>
+			<Button variant="secondary" type="button" on:click={cancel}>Cancel</Button>
 		</div>
 	</form>
 </div>
@@ -106,57 +109,9 @@
 		color: #374151;
 	}
 
-	input {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid #d1d5db;
-		border-radius: 0.5rem;
-		font-size: 1rem;
-		color: #111827;
-	}
-
-	input:focus {
-		outline: none;
-		border-color: #6366f1;
-		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-	}
-
-	input[readonly] {
-		background-color: #f3f4f6;
-		cursor: not-allowed;
-	}
-
 	.form-actions {
 		margin-top: 1.5rem;
 		display: flex;
 		gap: 0.5rem;
-	}
-
-	.btn-primary {
-		background-color: #4f46e5;
-		color: white;
-		font-weight: 600;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border: none;
-		transition: background 0.3s;
-	}
-
-	.btn-primary:hover {
-		background-color: #6366f1;
-	}
-
-	.btn-secondary {
-		background-color: #f3f4f6;
-		color: #374151;
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border: 1px solid #d1d5db;
-		transition: background 0.3s;
-	}
-
-	.btn-secondary:hover {
-		background-color: #e5e7eb;
 	}
 </style>

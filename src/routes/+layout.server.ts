@@ -1,26 +1,16 @@
-import { env } from '$env/dynamic/private';
-import { env as ENV } from '$env/dynamic/public';
+import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import jwt from 'jsonwebtoken';
+import type { UserInfo } from '$lib/types';
 
-async function fetchUserData(session: any) {
+async function fetchUserData(fetch: typeof globalThis.fetch, session: any): Promise<UserInfo | null> {
 
     if (session == null || session.user == undefined) {
         return null;
     }
 
-    const accessToken = session.accessToken;
-
-    
-
-    const headers: any = {
-        Accept: 'application/json',
-        Authorization: 'Bearer ' + accessToken
-    };
-
-    let response = await fetch(`${env.MOSS_API_SERVER_URL}/api/v1/users/get-user`, {
-        method: "GET",
-        headers: headers,
+    let response = await fetch('/users/me', {
+        method: 'GET',
+        headers: { Accept: 'application/json' }
     });
 
     if (response.ok) {
@@ -31,25 +21,32 @@ async function fetchUserData(session: any) {
     return null;
 }
 
+function isUsernameSetupExempt(pathname: string): boolean {
+    return pathname.startsWith('/user')
+        || pathname.startsWith('/auth')
+        || pathname.startsWith('/login')
+        || pathname.startsWith('/signin')
+        || pathname.startsWith('/signout');
+}
+
 export const load: LayoutServerLoad = async (event) => {
 
     let userData = null;
-    // console.log(`Fetching user data....`);
-
 
     try {
         const session = await event.locals.auth() as any;
+        userData = await fetchUserData(event.fetch, session);
 
-        // console.log(JSON.stringify(session, null, 3));
-        userData = await fetchUserData(session);
-
-        // userData.isAdmin now comes from backend API, no local role check here
+        if (userData && !userData.username?.trim() && !isUsernameSetupExempt(event.url.pathname)) {
+            throw redirect(302, '/user');
+        }
 
     } catch (error) {
+        if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
+            throw error;
+        }
         console.error("Error fetching user data:", error);
     }
-
-    // console.log(JSON.stringify(userData, null, 3));
  
     return {
         userData: userData

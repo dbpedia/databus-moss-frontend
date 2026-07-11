@@ -1,17 +1,17 @@
 import type { PageServerLoad } from './$types';
-import { env } from '$env/dynamic/private'
 
-export const load: PageServerLoad = async () => {
-
-
-	const res = await fetch(`${env.MOSS_API_SERVER_URL}/facets`, {
-		headers: { Accept: 'application/json' }
+export const load: PageServerLoad = async ({ fetch }) => {
+	const res = await fetch('/facets', {
+		headers: { Accept: 'application/hal+json' }
 	});
 
+	if (!res.ok) {
+		return { facetConfigs: [], facetsStatus: res.status };
+	}
 
-	var data = await res.json();
-	
+	const data = await res.json();
+
 	return {
-		facetConfigs: data._embedded.facets
+		facetConfigs: data._embedded?.facets ?? []
 	};
 };

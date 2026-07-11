@@ -1,24 +1,12 @@
-import { env as ENV } from '$env/dynamic/public';  
-import { MossUtils } from '$lib/utils/moss-utils.js';
+import { redirect } from '@sveltejs/kit';
+import { getDefaultAdminPath } from '$lib/utils/auth-utils';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals, parent }) {
+export async function load({ parent }) {
 	const parentData = await parent();
+	const defaultPath = getDefaultAdminPath(parentData?.userData);
 
-	if (!parentData?.userData?.isAdmin) {
-
-		return {
-			isAdmin: false
-		}
+	if (defaultPath) {
+		throw redirect(302, defaultPath);
 	}
-
-	
-    //console.log( moduleListResource._embedded.modules);
-    
-
-	return {
-		...parentData,
-		isAdmin: true
-		//modules: moduleListResource._embedded.modules
-	};
 }
