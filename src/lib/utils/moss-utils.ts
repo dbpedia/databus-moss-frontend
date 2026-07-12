@@ -1,6 +1,7 @@
 import { env } from "$env/dynamic/public";
 import type { DatabusResource, MossModule, RdfFormatInfo } from "$lib/types";
 import { JsonldUtils } from "./jsonld-utils";
+import { RdfFormats } from "./rdf-formats";
 import { RdfUris } from "./rdf-uris";
 import jsonld from 'jsonld';
 
@@ -21,8 +22,13 @@ export class MossUtils {
     }
 
     static getRelativeUri(uri: string): string {
+        const publicBase = env.PUBLIC_MOSS_BASE_URL;
+        if (publicBase && uri.startsWith(publicBase)) {
+            return uri.slice(publicBase.length) || '/';
+        }
         try {
-            return new URL(uri).pathname;
+            const parsed = new URL(uri);
+            return `${parsed.pathname}${parsed.search}`;
         } catch {
             return uri;
         }
@@ -117,6 +123,11 @@ export class MossUtils {
         const result = reFileExtension.exec(file);
         const extension = result?.pop();
         return extension ? extension : "";
+    }
+
+    static getGraphContentAccept(pathname: string): string {
+        const format = RdfFormats.getFormatByExtension(MossUtils.getFileExtension(pathname));
+        return format?.mimeType ?? '*/*';
     }
 
     static getEntryURIFromBrowsePath(baseUrl: string, browsePath: string) {
@@ -269,6 +280,25 @@ export class MossUtils {
         }
 
         return { conforms, messages };
+    }
+
+    static async parseApiErrorMessages(response: Response): Promise<string[]> {
+        const text = await response.text();
+        if (!text) {
+            return [`Request failed (${response.status} ${response.statusText})`];
+        }
+
+        try {
+            const errorJson = JSON.parse(text) as { message?: string };
+            return [errorJson.message ?? `Request failed (${response.status})`];
+        } catch (error) {
+            if (error instanceof SyntaxError && /sh:conforms|sh:resultMessage/i.test(text)) {
+                const { messages } = MossUtils.parseShaclTurtleReport(text);
+                if (messages.length) return messages;
+            }
+            const trimmed = text.trim();
+            return [trimmed || `Request failed (${response.status})`];
+        }
     }
 
     static async submitValidation(

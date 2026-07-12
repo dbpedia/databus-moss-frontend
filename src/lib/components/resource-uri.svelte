@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { MossUtils } from '$lib/utils/moss-utils';
 
 	export let uri: string | null | undefined;
 	export let fontSize: string = '0.8rem';
@@ -8,14 +8,17 @@
 	let copied = false;
 	let timeout: ReturnType<typeof setTimeout> | null = null;
 
-	$: displayUri =
-		uri && isRelative && browser ? new URL(uri, window.location.origin).pathname : uri;
+	$: linkUri = uri ? (isRelative ? MossUtils.getRelativeUri(uri) : uri) : null;
 
 	async function copyToClipboard() {
-		if (!uri) return;
+		if (!linkUri) return;
+
+		const textToCopy = isRelative
+			? new URL(linkUri, window.location.origin).href
+			: linkUri;
 
 		try {
-			await navigator.clipboard.writeText(uri);
+			await navigator.clipboard.writeText(textToCopy);
 			copied = true;
 			if (timeout) clearTimeout(timeout);
 			timeout = setTimeout(() => (copied = false), 1200);
@@ -26,7 +29,11 @@
 </script>
 
 <div class="uri-wrapper" style={`font-size: ${fontSize}`}>
-	<a class="uri-link" href={uri} target="_blank" rel="noopener noreferrer">{displayUri}</a>
+	<a
+		class="uri-link"
+		href={linkUri}
+		{...(isRelative ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
+	>{linkUri}</a>
 	<button
 		type="button"
 		class="copy-btn {copied ? 'copied' : ''}"

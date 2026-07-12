@@ -80,17 +80,21 @@
 		indicatorColor = 'none';
 		displaySave.set(true);
 
-		let response = await saveEntry();
+		try {
+			const response = await saveEntry();
 
-		if (response.ok) {
-			feedback.showMessage('Document Saved!', true);
-		} else {
-			let data = await response.json();
+			if (response.ok) {
+				feedback.showMessage('Document Saved!', true);
+			} else {
+				errors = await MossUtils.parseApiErrorMessages(response);
+				feedback.showMessage('Failed to save document.', false);
+			}
+		} catch (e: any) {
 			feedback.showMessage('Failed to save document.', false);
-			errors = [...errors, data.message];
+			errors = [e?.message ?? 'An unexpected error occurred.'];
+		} finally {
+			displaySave.set(false);
 		}
-
-		displaySave.set(false);
 	}
 
 	async function onDeleteButtonClicked() {

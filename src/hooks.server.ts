@@ -13,6 +13,7 @@ let proxyRoutes: string[] = [
     `/permissions`,
     `/data`,
     `/api`,
+    `/g`,
 ];
 
 function isSparqlRoute(pathname: string): boolean {

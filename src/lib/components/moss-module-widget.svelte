@@ -13,7 +13,6 @@
 	let contextUri = '';
 	let shaclExists = false;
 	let contextExists = false;
-	let activeTab: 'shacl' | 'context' | null = 'shacl';
 	let validationView = false;
 	let validationMessages: string[] = [];
 	let validationSuccess = false;
@@ -33,8 +32,6 @@
 					shaclContent = await res.text();
 				} else if (res.status === 404) {
 					shaclExists = false;
-				} else {
-					activeTab = 'context';
 				}
 			} catch {
 				shaclExists = false;
@@ -95,63 +92,49 @@
 			<MossModuleHeader moduleInfo={module} />
 		</div>
 
-		{#if shaclExists || contextExists}
+		{#if shaclExists}
 			<hr class="section-divider" />
-			<div class="tabs">
-				{#if shaclExists}
-					<button class:active={activeTab === 'shacl'} on:click={() => (activeTab = 'shacl')}
-						>RDF/SHACL</button
-					>
-				{/if}
-				{#if contextExists}
-					<button class:active={activeTab === 'context'} on:click={() => (activeTab = 'context')}
-						>Context</button
-					>
-				{/if}
+			<div class="section-header">
+				<div class="section-label shacl-label">SHACL</div>
+				<GradientButton on:click={validateEntry}>Validate</GradientButton>
 			</div>
-
-			{#if activeTab === 'shacl'}
-				<div class="tab-content">
-					<div class="tab-actions">
-						<GradientButton on:click={validateEntry}>Validate</GradientButton>
-					</div>
-					{#if validationView}
-						<div class="validation-content">
-							{#if validationError}
-								<div class="result fail-box">
-									<button class="report-close" on:click={closeValidationView}>×</button>
-									<p>{validationError}</p>
-								</div>
-							{:else if validationSuccess}
-								<div class="result success-box">
-									<button class="report-close" on:click={closeValidationView}>×</button>
-									<p>RDF is valid and conforms to SHACL shapes</p>
-								</div>
-							{:else if validationMessages.length > 0}
-								<div class="result fail-box">
-									<button class="report-close" on:click={closeValidationView}>×</button>
-									<p>Content failed validation</p>
-									<ul class="violations">
-										{#each validationMessages as msg}
-											<li>{msg}</li>
-										{/each}
-									</ul>
-								</div>
-							{:else}
-								<p>No validation results available.</p>
-							{/if}
+			{#if validationView}
+				<div class="validation-content">
+					{#if validationError}
+						<div class="result fail-box">
+							<button class="report-close" on:click={closeValidationView}>×</button>
+							<p>{validationError}</p>
 						</div>
+					{:else if validationSuccess}
+						<div class="result success-box">
+							<button class="report-close" on:click={closeValidationView}>×</button>
+							<p>RDF is valid and conforms to SHACL shapes</p>
+						</div>
+					{:else if validationMessages.length > 0}
+						<div class="result fail-box">
+							<button class="report-close" on:click={closeValidationView}>×</button>
+							<p>Content failed validation</p>
+							<ul class="violations">
+								{#each validationMessages as msg}
+									<li>{msg}</li>
+								{/each}
+							</ul>
+						</div>
+					{:else}
+						<p>No validation results available.</p>
 					{/if}
-					<pre class="code turtle">{shaclContent}</pre>
-				</div>
-			{:else if activeTab === 'context'}
-				<div class="tab-content">
-					<div style="margin-bottom: 0.5rem">
-						<ResourceUri uri={contextUri} />
-					</div>
-					<pre class="code json">{contextContent}</pre>
 				</div>
 			{/if}
+			<pre class="code turtle">{shaclContent}</pre>
+		{/if}
+
+		{#if contextExists}
+			<hr class="section-divider" />
+			<div class="section-label">Context</div>
+			<div style="margin-bottom: 0.5rem">
+				<ResourceUri uri={contextUri} />
+			</div>
+			<pre class="code json">{contextContent}</pre>
 		{/if}
 	</div>
 {/if}
@@ -173,31 +156,31 @@
 		text-transform: uppercase;
 		margin: 0;
 	}
-	.tabs {
+	.section-divider {
+		margin: 0;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border: none;
+		border-top: 1px solid #e5e7eb;
+	}
+	.section-header {
 		display: flex;
-		gap: 0.5rem;
+		align-items: center;
+		justify-content: space-between;
 		margin-bottom: 0.5rem;
 	}
-	.tabs button {
-		flex: none;
-		padding: 0.5rem 1rem;
-		background: #f3f4f6;
-		border-radius: 0.5rem;
-		cursor: pointer;
-		font-weight: 500;
+	.section-label {
+		color: #878b94;
+		font-size: 0.75rem;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+		margin: 0;
 	}
-	.tabs button.active {
-		background: #4f46e5;
-		color: white;
-		border-color: #4f46e5;
-	}
-	.tab-content {
-		position: relative;
-	}
-	.tab-actions {
-		margin-bottom: 0.5rem;
-		display: flex;
-		justify-content: flex-end;
+	.shacl-label {
+		font-size: 1rem;
+		font-weight: 600;
+		color: #3b3f44;
+		letter-spacing: 0.5px;
 	}
 	pre.code {
 		background: #f3f4f6;
