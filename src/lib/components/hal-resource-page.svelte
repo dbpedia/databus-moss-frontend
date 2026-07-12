@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import TopBar from '$lib/components/top-bar.svelte';
 	import FileList from '$lib/components/file-list.svelte';
 	import ContentGate from '$lib/components/content-gate.svelte';
+	import Button from '$lib/components/button.svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
+	import { canWriteEntityType, type EntityType } from '$lib/utils/auth-utils';
 	import { CodeOutline, BookOutline } from 'flowbite-svelte-icons';
 	import type { HalBrowseItem } from '$lib/server/load-hal-resource';
+
+	export let entityType: EntityType | null = null;
 
 	export let data: {
 		mode: 'browse' | 'content';
@@ -22,6 +27,12 @@
 	let timeout: ReturnType<typeof setTimeout> | null = null;
 
 	$: backLink = MossUtils.createListGroupNavigationItems(['..'], $page.url.pathname);
+	$: addButton =
+		entityType && canWriteEntityType($page.data.userData, entityType)
+			? entityType === 'modules'
+				? { label: '+ Create Module', href: '/admin/modules#create-module' }
+				: { label: '+ Create Terminology', href: '/admin/terminologies#create-terminology' }
+			: null;
 	$: browseIcon =
 		$page.url.pathname.startsWith('/modules') ? CodeOutline :
 		$page.url.pathname.startsWith('/terminologies') ? BookOutline :
@@ -48,6 +59,15 @@
 	{:else}
 	<div class="top-bar-container">
 		<TopBar segments={data.segments} />
+		{#if addButton && data.mode === 'browse'}
+			<Button
+				variant="primary"
+				class="entity-add-btn"
+				on:click={() => goto(addButton.href)}
+			>
+				{addButton.label}
+			</Button>
+		{/if}
 	</div>
 
 	{#if data.mode === 'browse'}
@@ -116,6 +136,12 @@
 		display: flex;
 		margin-top: 1em;
 		margin-bottom: 0.5em;
+	}
+
+	:global(.entity-add-btn) {
+		margin-top: 0.5rem;
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
 	.content-panel {

@@ -42,8 +42,20 @@ export function compareRoles(a: string, b: string): number {
     return a.localeCompare(b);
 }
 
+export type EntityType = 'entries' | 'modules' | 'terminologies';
+
+const ENTITY_WRITE_PERMISSIONS: Record<EntityType, string> = {
+    entries: PERMISSIONS.WRITE_ENTRIES,
+    modules: PERMISSIONS.WRITE_MODULES,
+    terminologies: PERMISSIONS.WRITE_TERMINOLOGIES
+};
+
 export function hasPermission(user: UserInfo | null | undefined, permission: string): boolean {
     return user?.permissions?.includes(permission) ?? false;
+}
+
+export function canWriteEntityType(user: UserInfo | null | undefined, entityType: EntityType): boolean {
+    return hasPermission(user, ENTITY_WRITE_PERMISSIONS[entityType]);
 }
 
 export function hasAdminAccess(user: UserInfo | null | undefined): boolean {

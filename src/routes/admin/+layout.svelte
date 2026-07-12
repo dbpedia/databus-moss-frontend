@@ -1,5 +1,16 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { hashStore } from '$lib/stores/hash-navigation';
+
+	onMount(() => {
+		hashStore.sync();
+	});
+
+	afterNavigate(() => {
+		hashStore.sync();
+	});
 </script>
 
 <div class="section">

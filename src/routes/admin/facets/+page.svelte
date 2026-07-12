@@ -103,7 +103,7 @@
 			<div class="box">
 				<div class="top-bar">
 					<h1>Facets</h1>
-					<Button variant="create" type="button" on:click={createFacet}>+ Create Facet</Button>
+					<Button variant="primary" type="button" on:click={createFacet}>+ Create Facet</Button>
 				</div>
 				<table class="table">
 					<thead>

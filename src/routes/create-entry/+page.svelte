@@ -357,7 +357,6 @@
 								bind:module={activeModule}
 								content={templateContent}
 								resourceUri={databusResource}
-								on:testIndexer={(e) => console.log('Test Indexer', e.detail)}
 							/>
 						</div>
 					</div>

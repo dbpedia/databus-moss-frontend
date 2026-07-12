@@ -4,4 +4,4 @@
 	export let data: any;
 </script>
 
-<HalResourcePage {data} unavailableMessage="This terminology resource is temporarily unavailable." />
+<HalResourcePage {data} entityType="terminologies" unavailableMessage="This terminology resource is temporarily unavailable." />

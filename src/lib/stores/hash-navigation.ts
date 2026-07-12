@@ -30,11 +30,15 @@ function createHashStore() {
 		if (browser) window.location.hash = hash;
 	}
 
-	if (browser) {
-		window.addEventListener('hashchange', () => set(parseHash()));
+	function sync() {
+		set(parseHash());
 	}
 
-	return { subscribe, navigate };
+	if (browser) {
+		window.addEventListener('hashchange', sync);
+	}
+
+	return { subscribe, navigate, sync };
 }
 
 export const hashStore = createHashStore();

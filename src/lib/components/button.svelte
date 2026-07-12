@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
-	type Variant = 'primary' | 'secondary' | 'create' | 'table' | 'danger';
+	type Variant = 'primary' | 'secondary' | 'table' | 'danger';
 
 	interface $$Props extends Omit<HTMLButtonAttributes, 'class'> {
 		variant?: Variant;
@@ -63,19 +63,6 @@
 
 	.moss-btn-secondary:hover:not(:disabled) {
 		background-color: #e5e7eb;
-	}
-
-	.moss-btn-create {
-		padding: 0.3em 0.6em;
-		background-color: #4f46e5;
-		color: white;
-		border: none;
-		border-radius: 0.375rem;
-		font-weight: 600;
-	}
-
-	.moss-btn-create:hover:not(:disabled) {
-		background-color: #6366f1;
 	}
 
 	.moss-btn-table {

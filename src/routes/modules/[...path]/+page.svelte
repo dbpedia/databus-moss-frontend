@@ -4,4 +4,4 @@
 	export let data: any;
 </script>
 
-<HalResourcePage {data} unavailableMessage="This module resource is temporarily unavailable." />
+<HalResourcePage {data} entityType="modules" unavailableMessage="This module resource is temporarily unavailable." />

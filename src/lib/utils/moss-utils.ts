@@ -307,11 +307,6 @@ export class MossUtils {
         return MossUtils.parseShaclTurtleReport(text);
     }
 
-    static getIndexerPreviewURL(resourceUri: string, moduleId: string): string {
-        resourceUri = resourceUri.replaceAll("#", MossUtils.encodedHashTag);
-        return `/api/v1/get-indexer-preview?module=${moduleId}&resource=${resourceUri}`;
-    }
-
     static getUriSegments(path: string) {
         let links: string[] = [];
         if (!path) {

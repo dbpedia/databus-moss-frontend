@@ -7,6 +7,7 @@
 	import TopBar from '$lib/components/top-bar.svelte';
 	import { Toast, Spinner, Indicator, GradientButton } from 'flowbite-svelte';
 	import Button from '$lib/components/button.svelte';
+	import { canWriteEntityType } from '$lib/utils/auth-utils';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import { A } from 'flowbite-svelte';
 	import FeedbackMessage from '$lib/components/feedback-message.svelte';
@@ -127,7 +128,11 @@
 	{:else}
 	<div class="top-bar-container">
 		<TopBar segments={data.props.segments} />
-		<Button variant="create" style="margin-top: 0.5rem; width: 160px;" on:click={showCreateForm}>+ Create Entry</Button>
+		{#if canWriteEntityType($page.data.userData, 'entries')}
+			<Button variant="primary" class="entity-add-btn" on:click={showCreateForm}>
+				+ Create Entry
+			</Button>
+		{/if}
 	</div>
 
 	{#if !isDocument}
@@ -240,6 +245,12 @@
 		display: flex;
 		margin-top: 1em;
 		margin-bottom: 0.5em;
+	}
+
+	:global(.entity-add-btn) {
+		margin-top: 0.5rem;
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
 	.editor-container {

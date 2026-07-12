@@ -14,7 +14,7 @@
 	export let activeModule: MossModule;
 	const dispatch = createEventDispatcher();
 
-	let activeTab: 'general' | 'context' | 'shapes' | 'indexer' | 'template' = 'general';
+	let activeTab: 'general' | 'context' | 'shapes' | 'template' = 'general';
 	let label = activeModule.label;
 	let description = activeModule.description;
 	let language = activeModule.language;
@@ -25,7 +25,6 @@
 	const unsubscribe = hashStore.subscribe(({ params }) => {
 		if (params.res === 'context') activeTab = 'context';
 		else if (params.res === 'shapes') activeTab = 'shapes';
-		else if (params.res === 'indexer') activeTab = 'indexer';
 		else if (params.res === 'template') activeTab = 'template';
 		else activeTab = 'general';
 	});
@@ -86,10 +85,6 @@
 	<div class="tabs">
 		<button class:selected={activeTab === 'general'} on:click={() => switchTab('general')}>
 			General
-		</button>
-
-		<button class:selected={activeTab === 'indexer'} on:click={() => switchTab('indexer')}>
-			Indexer
 		</button>
 
 		<button class:selected={activeTab === 'shapes'} on:click={() => switchTab('shapes')}>
@@ -174,16 +169,6 @@
 					The SHACL shapes define constraints and validation rules for your RDF data.
 				</p>
 				<SubResourceEditor moduleId={activeModule.id} resourceName="shapes" format="turtle" />
-			</div>
-		{/if}
-
-		{#if activeTab === 'indexer'}
-			<div class="detail-card">
-				<p class="resource-info">
-					The indexer YAML config controls how information in this module is selected and processed
-					by the search index system.
-				</p>
-				<SubResourceEditor moduleId={activeModule.id} resourceName="indexer" format="yaml" />
 			</div>
 		{/if}
 

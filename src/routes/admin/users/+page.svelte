@@ -193,7 +193,7 @@
 						<div class="top-bar-end">
 							<FeedbackMessage bind:feedback />
 							{#if $page.data.canWriteRoles}
-								<Button variant="create" type="button" on:click={showCreateRole}>+ Create Role</Button>
+								<Button variant="primary" type="button" on:click={showCreateRole}>+ Create Role</Button>
 							{/if}
 						</div>
 					</div>

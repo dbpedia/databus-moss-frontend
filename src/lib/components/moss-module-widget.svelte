@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
 	import { MossUtils } from '$lib/utils/moss-utils';
 	import ResourceUri from './resource-uri.svelte';
 	import MossModuleHeader from './moss-module-header.svelte';
@@ -9,28 +8,16 @@
 	export let content: string;
 	export let resourceUri: string;
 
-	type Binding = { key: string; value: string | null };
-	type FieldData = { bindings: Binding[] };
-	type TestReport =
-		| { success: true; message: string; details: Record<string, FieldData> }
-		| { success: false; message: string; details: string[] };
-
 	let shaclContent = '';
-	let indexerContent = '';
 	let contextContent = '';
 	let contextUri = '';
 	let shaclExists = false;
-	let indexerExists = false;
 	let contextExists = false;
-	let activeTab: 'shacl' | 'indexer' | 'context' | null = 'shacl';
+	let activeTab: 'shacl' | 'context' | null = 'shacl';
 	let validationView = false;
 	let validationMessages: string[] = [];
 	let validationSuccess = false;
 	let validationError = '';
-	let testReport: TestReport | null = null;
-	let testView = false;
-
-	const dispatch = createEventDispatcher();
 
 	async function fetchOptionalResources() {
 		if (module._links == undefined) {
@@ -39,9 +26,7 @@
 
 		if (module._links.shapes) {
 			try {
-				const res = await fetch(module._links.shapes.href, {
-					headers: { Accept: 'text/turtle' }
-				});
+				const res = await fetch(module._links.shapes.href);
 
 				if (res.ok) {
 					shaclExists = true;
@@ -49,27 +34,10 @@
 				} else if (res.status === 404) {
 					shaclExists = false;
 				} else {
-					activeTab = 'indexer';
-				}
-			} catch {
-				shaclExists = false;
-			}
-		}
-
-		if (module._links.indexer) {
-			try {
-				const res = await fetch(module._links.indexer.href);
-
-				if (res.ok) {
-					indexerExists = true;
-					indexerContent = await res.text();
-				} else if (res.status === 404) {
-					indexerExists = false;
-				} else {
 					activeTab = 'context';
 				}
 			} catch {
-				indexerExists = false;
+				shaclExists = false;
 			}
 		}
 
@@ -113,51 +81,6 @@
 
 	function closeValidationView() {
 		validationView = false;
-		testView = false;
-	}
-
-	async function testIndexer() {
-		testReport = null;
-		testView = false;
-
-		if (!module._links.indexer) return;
-
-		try {
-			const url = module._links.indexer.href + '/preview';
-			const headers: any = {
-				Accept: 'application/json',
-				'Content-Type': module.language
-			};
-
-			const response = await fetch(url, {
-				method: 'POST',
-				headers,
-				body: content
-			});
-
-			if (!response.ok) {
-				const errBody = await response.json();
-				testReport = {
-					success: false,
-					message: 'Indexer failed',
-					details: [errBody.message || 'Unknown error']
-				};
-			} else {
-				const data = await response.json();
-				testReport = {
-					success: true,
-					message: 'MOSS will index the following fields:',
-					details: data
-				};
-			}
-		} catch (err: any) {
-			testReport = { success: false, message: 'Indexer failed', details: [err.message] };
-		}
-		testView = true;
-	}
-
-	function closeTestView() {
-		testView = false;
 	}
 
 	$: if (module && module._links) {
@@ -172,17 +95,12 @@
 			<MossModuleHeader moduleInfo={module} />
 		</div>
 
-		{#if shaclExists || indexerExists || contextExists}
+		{#if shaclExists || contextExists}
 			<hr class="section-divider" />
 			<div class="tabs">
 				{#if shaclExists}
 					<button class:active={activeTab === 'shacl'} on:click={() => (activeTab = 'shacl')}
 						>RDF/SHACL</button
-					>
-				{/if}
-				{#if indexerExists}
-					<button class:active={activeTab === 'indexer'} on:click={() => (activeTab = 'indexer')}
-						>Indexer</button
 					>
 				{/if}
 				{#if contextExists}
@@ -225,33 +143,6 @@
 						</div>
 					{/if}
 					<pre class="code turtle">{shaclContent}</pre>
-				</div>
-			{:else if activeTab === 'indexer'}
-				<div class="tab-content">
-					<div class="tab-actions">
-						<GradientButton on:click={testIndexer}>Test</GradientButton>
-					</div>
-					{#if testView && testReport}
-						<div class="validation-content">
-							<div class="result {testReport.success ? 'success-box' : 'fail-box'}">
-								<button class="report-close" on:click={closeTestView}>×</button>
-								<p>{testReport.message}</p>
-								{#if testReport.success}
-									{#each Object.entries(testReport.details) as [fieldName, fieldData]}
-										<div class="field-report">
-											<h4>{fieldName}</h4>
-											<ul>
-												{#each fieldData.bindings as binding}
-													<li>{binding.value ?? 'null'}</li>
-												{/each}
-											</ul>
-										</div>
-									{/each}
-								{/if}
-							</div>
-						</div>
-					{/if}
-					<pre class="code yaml">{indexerContent}</pre>
 				</div>
 			{:else if activeTab === 'context'}
 				<div class="tab-content">

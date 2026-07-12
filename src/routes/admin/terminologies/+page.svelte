@@ -124,7 +124,7 @@
 			<div class="box">
 				<div class="top-bar">
 					<h1>Terminologies</h1>
-					<Button variant="create" type="button" on:click={createTerminology}>+ Create Terminology</Button>
+					<Button variant="primary" type="button" on:click={createTerminology}>+ Create Terminology</Button>
 				</div>
 				<table class="table">
 					<thead>

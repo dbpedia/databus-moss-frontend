@@ -86,7 +86,7 @@
 			<div class="box">
 				<div class="top-bar">
 					<h1>Modules</h1>
-					<Button variant="create" type="button" on:click={showCreateForm}>+ Create Module</Button>
+					<Button variant="primary" type="button" on:click={showCreateForm}>+ Create Module</Button>
 				</div>
 				<table class="table">
 					<thead>
