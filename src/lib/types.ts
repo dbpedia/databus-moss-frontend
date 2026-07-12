@@ -44,6 +44,11 @@ export interface UserInfo {
     permissions?: string[];
 }
 
+export interface CallerInfo {
+    roles?: string[];
+    permissions?: string[];
+}
+
 export interface MossRole {
     name: string;
     tokenRole?: string;

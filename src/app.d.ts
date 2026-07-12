@@ -10,6 +10,12 @@ declare global {
 	}
 }
 
+declare module '@auth/core/types' {
+	interface Session {
+		accessToken?: string;
+	}
+}
+
 interface ImportMetaEnv {
 	readonly VITE_APP_VERSION: string;
 }

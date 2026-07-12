@@ -1,24 +1,25 @@
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import type { UserInfo } from '$lib/types';
+import type { CallerInfo, UserInfo } from '$lib/types';
 
-async function fetchUserData(fetch: typeof globalThis.fetch, session: any): Promise<UserInfo | null> {
-
-    if (session == null || session.user == undefined) {
-        return null;
-    }
-
-    let response = await fetch('/users/me', {
+async function fetchMe(fetch: typeof globalThis.fetch): Promise<UserInfo | null> {
+    const response = await fetch('/users/me', {
         method: 'GET',
         headers: { Accept: 'application/json' }
     });
 
     if (response.ok) {
-        const data = await response.json();
-        return data;
+        return await response.json();
     }
 
     return null;
+}
+
+function toCaller(me: UserInfo): CallerInfo {
+    return {
+        roles: me.roles,
+        permissions: me.permissions
+    };
 }
 
 function isUsernameSetupExempt(pathname: string): boolean {
@@ -30,12 +31,19 @@ function isUsernameSetupExempt(pathname: string): boolean {
 }
 
 export const load: LayoutServerLoad = async (event) => {
-
-    let userData = null;
+    let userData: UserInfo | null = null;
+    let caller: CallerInfo | null = null;
 
     try {
         const session = await event.locals.auth() as any;
-        userData = await fetchUserData(event.fetch, session);
+        const me = await fetchMe(event.fetch);
+
+        if (me) {
+            caller = toCaller(me);
+            if (session?.user != null) {
+                userData = me;
+            }
+        }
 
         if (userData && !userData.username?.trim() && !isUsernameSetupExempt(event.url.pathname)) {
             throw redirect(302, '/user');
@@ -45,10 +53,11 @@ export const load: LayoutServerLoad = async (event) => {
         if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
             throw error;
         }
-        console.error("Error fetching user data:", error);
+        console.error('Error fetching user data:', error);
     }
- 
+
     return {
-        userData: userData
+        userData,
+        caller
     };
 };

@@ -1,4 +1,6 @@
-import type { UserInfo } from '$lib/types';
+import type { CallerInfo, UserInfo } from '$lib/types';
+
+type PermissionSubject = UserInfo | CallerInfo | null | undefined;
 
 export const PERMISSIONS = {
     READ_METADATA: 'read-metadata',
@@ -50,23 +52,23 @@ const ENTITY_WRITE_PERMISSIONS: Record<EntityType, string> = {
     terminologies: PERMISSIONS.WRITE_TERMINOLOGIES
 };
 
-export function hasPermission(user: UserInfo | null | undefined, permission: string): boolean {
-    return user?.permissions?.includes(permission) ?? false;
+export function hasPermission(subject: PermissionSubject, permission: string): boolean {
+    return subject?.permissions?.includes(permission) ?? false;
 }
 
-export function canWriteEntityType(user: UserInfo | null | undefined, entityType: EntityType): boolean {
-    return hasPermission(user, ENTITY_WRITE_PERMISSIONS[entityType]);
+export function canWriteEntityType(subject: PermissionSubject, entityType: EntityType): boolean {
+    return hasPermission(subject, ENTITY_WRITE_PERMISSIONS[entityType]);
 }
 
-export function hasAdminAccess(user: UserInfo | null | undefined): boolean {
-    return getDefaultAdminPath(user) !== null;
+export function hasAdminAccess(subject: PermissionSubject): boolean {
+    return getDefaultAdminPath(subject) !== null;
 }
 
-export function getDefaultAdminPath(user: UserInfo | null | undefined): string | null {
-    if (hasPermission(user, PERMISSIONS.WRITE_MODULES)) return '/admin/modules';
-    if (hasPermission(user, PERMISSIONS.WRITE_TERMINOLOGIES)) return '/admin/terminologies';
-    if (hasPermission(user, PERMISSIONS.WRITE_FACETS)) return '/admin/facets';
-    if (hasPermission(user, PERMISSIONS.READ_USERS) || hasPermission(user, PERMISSIONS.WRITE_ROLES)) {
+export function getDefaultAdminPath(subject: PermissionSubject): string | null {
+    if (hasPermission(subject, PERMISSIONS.WRITE_MODULES)) return '/admin/modules';
+    if (hasPermission(subject, PERMISSIONS.WRITE_TERMINOLOGIES)) return '/admin/terminologies';
+    if (hasPermission(subject, PERMISSIONS.WRITE_FACETS)) return '/admin/facets';
+    if (hasPermission(subject, PERMISSIONS.READ_USERS) || hasPermission(subject, PERMISSIONS.WRITE_ROLES)) {
         return '/admin/users';
     }
     return null;

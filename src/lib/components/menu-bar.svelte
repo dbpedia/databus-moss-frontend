@@ -11,12 +11,14 @@
     import Login from './login.svelte';
     import { getDefaultAdminPath, hasAdminAccess, hasPermission, PERMISSIONS } from '$lib/utils/auth-utils';
 
-    $: canWriteModules = hasPermission($page.data.userData, PERMISSIONS.WRITE_MODULES);
-    $: canWriteTerminologies = hasPermission($page.data.userData, PERMISSIONS.WRITE_TERMINOLOGIES);
-    $: canWriteFacets = hasPermission($page.data.userData, PERMISSIONS.WRITE_FACETS);
-    $: canReadUsers = hasPermission($page.data.userData, PERMISSIONS.READ_USERS);
-    $: canWriteRoles = hasPermission($page.data.userData, PERMISSIONS.WRITE_ROLES);
-    $: settingsHref = getDefaultAdminPath($page.data.userData) ?? '/admin';
+    $: caller = $page.data.caller;
+    $: canWriteModules = hasPermission(caller, PERMISSIONS.WRITE_MODULES);
+    $: canWriteTerminologies = hasPermission(caller, PERMISSIONS.WRITE_TERMINOLOGIES);
+    $: canWriteFacets = hasPermission(caller, PERMISSIONS.WRITE_FACETS);
+    $: canReadUsers = hasPermission(caller, PERMISSIONS.READ_USERS);
+    $: canWriteRoles = hasPermission(caller, PERMISSIONS.WRITE_ROLES);
+    $: canReadMetadata = hasPermission(caller, PERMISSIONS.READ_METADATA);
+    $: settingsHref = getDefaultAdminPath(caller) ?? '/admin';
 </script>
 
 <Navbar rounded color="form" >
@@ -33,7 +35,11 @@
         <NavLi href="/modules">Modules</NavLi>
         <NavLi href="/terminologies">Terminologies</NavLi>
 
-        {#if hasAdminAccess($page.data.userData)}
+        {#if canReadMetadata}
+        <NavLi href="/sparql" target="_blank" rel="noopener noreferrer">SPARQL</NavLi>
+        {/if}
+
+        {#if hasAdminAccess(caller)}
         <NavLi href={settingsHref}>Settings</NavLi>
         {/if}
     </NavUl>

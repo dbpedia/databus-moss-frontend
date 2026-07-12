@@ -28,7 +28,7 @@
 
 	$: backLink = MossUtils.createListGroupNavigationItems(['..'], $page.url.pathname);
 	$: addButton =
-		entityType && canWriteEntityType($page.data.userData, entityType)
+		entityType && canWriteEntityType($page.data.caller, entityType)
 			? entityType === 'modules'
 				? { label: '+ Create Module', href: '/admin/modules#create-module' }
 				: { label: '+ Create Terminology', href: '/admin/terminologies#create-terminology' }

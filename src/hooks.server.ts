@@ -11,10 +11,13 @@ let proxyRoutes: string[] = [
     `/users`,
     `/roles`,
     `/permissions`,
-    `/sparql`,
     `/data`,
     `/api`,
 ];
+
+function isSparqlRoute(pathname: string): boolean {
+    return pathname === '/sparql' || pathname.startsWith('/sparql/');
+}
 
 async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, string>>, string | null>, accessToken: string, requestURL: URL) {
 
@@ -68,12 +71,16 @@ const apiProxy: Handle = async ({ event, resolve }) => {
         pathname.startsWith('/auth') ||
         pathname.endsWith('__data.json');
 
-    if (isProxyRoute(pathname) && !useSvelteKit) {
-        return await fetchProxyResponse(event, accessToken, requestURL);
-    }
-
     if (useSvelteKit) {
         return await resolve(event);
+    }
+
+    if (isSparqlRoute(pathname)) {
+        return await resolve(event);
+    }
+
+    if (isProxyRoute(pathname)) {
+        return await fetchProxyResponse(event, accessToken, requestURL);
     }
 
     return await fetchProxyResponse(event, accessToken, requestURL);

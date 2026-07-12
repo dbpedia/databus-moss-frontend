@@ -128,7 +128,7 @@
 	{:else}
 	<div class="top-bar-container">
 		<TopBar segments={data.props.segments} />
-		{#if canWriteEntityType($page.data.userData, 'entries')}
+		{#if canWriteEntityType($page.data.caller, 'entries')}
 			<Button variant="primary" class="entity-add-btn" on:click={showCreateForm}>
 				+ Create Entry
 			</Button>
