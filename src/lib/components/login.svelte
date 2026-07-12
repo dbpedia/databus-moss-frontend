@@ -16,7 +16,8 @@
 	// Function to handle sign-out manually
 	async function handleSignOut() {
 		try {
-			await signOut();
+			const callbackUrl = $page.url.pathname.startsWith('/user') ? '/' : undefined;
+			await signOut(callbackUrl ? { callbackUrl } : undefined);
 		} catch (error) {
 			console.error('Sign-out failed:', error);
 		}
