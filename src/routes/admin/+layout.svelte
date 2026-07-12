@@ -69,7 +69,7 @@
 
 <style>
 	:global(.admin-page) {
-		padding: 1rem 0;
+		padding-bottom: 1rem;
 		font-family: 'Inter', sans-serif;
 	}
 
