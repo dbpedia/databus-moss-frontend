@@ -68,7 +68,9 @@ export async function load({ fetch, url, locals, setHeaders }: any) {
         try {
             moduleData = await MossUtils.fetchJSON(toProxyUrl(responseData.module), fetch);
 
-            const contentResponse = await fetch(toProxyUrl(responseData.contentGraph));
+            const contentResponse = await fetch(toProxyUrl(responseData.contentGraph), {
+                headers: { Accept: moduleData.language ?? 'text/turtle' }
+            });
             content = await contentResponse.text();
         } catch (e) {
             console.error('Failed to load entry module', e);

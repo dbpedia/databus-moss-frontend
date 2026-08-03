@@ -48,7 +48,7 @@
 		errorMessage = '';
 
 		try {
-			const res = await fetch(`modules/${activeModule.id}`, {
+			const res = await fetch(`/modules/${activeModule.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': YAML_CONTENT_TYPE },
 				body: toYaml({ id: activeModule.id, label, description, language })
@@ -160,6 +160,7 @@
 					moduleId={activeModule.id}
 					resourceName="context"
 					format="json-ld"
+					contentType="application/ld+json"
 				/>
 			</div>
 		{/if}
@@ -169,7 +170,12 @@
 				<p class="resource-info">
 					The SHACL shapes define constraints and validation rules for your RDF data.
 				</p>
-				<SubResourceEditor moduleId={activeModule.id} resourceName="shapes" format="turtle" />
+				<SubResourceEditor
+					moduleId={activeModule.id}
+					resourceName="shapes"
+					format="turtle"
+					contentType="text/turtle"
+				/>
 			</div>
 		{/if}
 

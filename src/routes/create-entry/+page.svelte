@@ -246,7 +246,7 @@
 
 		try {
 			const response = await fetch(activeModule._links.template.href, {
-				headers: { Accept: 'application/ld+json' }
+				headers: { Accept: activeModule.language ?? 'text/turtle' }
 			});
 
 			if (response.ok) {

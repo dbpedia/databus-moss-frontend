@@ -90,6 +90,20 @@ async function getAcceptHeader(
 	const root = parts[0];
 
 	if (parts.length > 2 && (root === 'modules' || root === 'terminologies')) {
+		if (root === 'modules') {
+			const sub = parts[2];
+			if (sub === 'context') return 'application/ld+json';
+			if (sub === 'shapes') return 'text/turtle';
+			if (sub === 'template') {
+				const parentRes = await fetch(`/${root}/${parts[1]}`, {
+					headers: { Accept: 'application/hal+json, application/json, */*' }
+				});
+				if (parentRes.ok) {
+					const parent = (await parentRes.json()) as { language?: string };
+					if (parent.language) return parent.language;
+				}
+			}
+		}
 		if (root === 'terminologies' && parts[2] === 'data') {
 			const parentRes = await fetch(`/${root}/${parts[1]}`, {
 				headers: { Accept: 'application/hal+json, application/json, */*' }
