@@ -5,6 +5,7 @@
 	import ModuleDeleter from '../module-deleter.svelte';
 	import ModuleDetail from '../module-detail.svelte';
 	import type { MossModule } from '$lib/types';
+	import { toYaml, YAML_CONTENT_TYPE } from '$lib/utils/yaml-utils';
 	import { writable, derived } from 'svelte/store';
 	import { page } from '$app/stores';
 	import Button from '$lib/components/button.svelte';
@@ -53,8 +54,8 @@
 		try {
 			const res = await fetch(`/modules`, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(moduleData)
+				headers: { 'Content-Type': YAML_CONTENT_TYPE },
+				body: toYaml(moduleData)
 			});
 			if (!res.ok) {
 				console.error(await res.text());

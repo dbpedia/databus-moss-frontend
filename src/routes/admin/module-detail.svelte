@@ -10,6 +10,7 @@
 	import Input from '$lib/components/input.svelte';
 	import Textarea from '$lib/components/textarea.svelte';
 	import Select from '$lib/components/select.svelte';
+	import { toYaml, YAML_CONTENT_TYPE } from '$lib/utils/yaml-utils';
 
 	export let activeModule: MossModule;
 	const dispatch = createEventDispatcher();
@@ -49,8 +50,8 @@
 		try {
 			const res = await fetch(`modules/${activeModule.id}`, {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ label, description, language })
+				headers: { 'Content-Type': YAML_CONTENT_TYPE },
+				body: toYaml({ id: activeModule.id, label, description, language })
 			});
 
 			if (!res.ok) {
