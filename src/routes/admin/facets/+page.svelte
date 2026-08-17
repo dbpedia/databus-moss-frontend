@@ -4,6 +4,7 @@
 	import FacetForm from '../facet-form.svelte';
 	import FacetDeleter from '../facet-deleter.svelte';
 	import type { MossFacet } from '$lib/types';
+	import { toYaml, YAML_CONTENT_TYPE } from '$lib/utils/yaml-utils';
 	import { writable, derived } from 'svelte/store';
 	import { page } from '$app/stores';
 	import Button from '$lib/components/button.svelte';
@@ -52,8 +53,8 @@
 		try {
 			const res = await fetch(`/facets`, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(facetData)
+				headers: { 'Content-Type': YAML_CONTENT_TYPE },
+				body: toYaml(facetData)
 			});
 			if (!res.ok) {
 				console.error(await res.text());
@@ -70,8 +71,8 @@
 		try {
 			const res = await fetch(`/facets/${facetData.id}`, {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(facetData)
+				headers: { 'Content-Type': YAML_CONTENT_TYPE },
+				body: toYaml(facetData)
 			});
 			if (!res.ok) {
 				console.error(await res.text());

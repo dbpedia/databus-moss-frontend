@@ -11,6 +11,7 @@
 	export let moduleId: string;
 	export let resourceName: string;
 	export let format: 'json-ld' | 'turtle' | 'yaml' | null = null;
+	export let contentType: string;
 
 	let content: string | null = null;
 	let editing = false;
@@ -30,7 +31,9 @@
 
 	async function loadContent() {
 		try {
-			const res = await fetch(`/modules/${moduleId}/${resourceName}`);
+			const res = await fetch(`/modules/${moduleId}/${resourceName}`, {
+				headers: { Accept: contentType }
+			});
 			if (res.ok) {
 				content = await res.text();
 			} else if (res.status === 404) {
@@ -70,7 +73,7 @@
 		try {
 			const res = await fetch(`/modules/${moduleId}/${resourceName}`, {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 'Content-Type': contentType },
 				body: code
 			});
 			if (!res.ok) console.error(await res.text());

@@ -27,7 +27,7 @@
 </script>
 
 <div class="detail-card">
-	<SubResourceEditor {moduleId} {resourceName} {format} />
+	<SubResourceEditor {moduleId} {resourceName} {format} contentType={language} />
 </div>
 
 <style>

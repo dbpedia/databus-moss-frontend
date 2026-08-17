@@ -25,7 +25,9 @@
 
 		if (module._links.shapes) {
 			try {
-				const res = await fetch(module._links.shapes.href);
+				const res = await fetch(module._links.shapes.href, {
+					headers: { Accept: 'text/turtle' }
+				});
 
 				if (res.ok) {
 					shaclExists = true;
@@ -40,7 +42,9 @@
 
 		if (module._links.context) {
 			try {
-				const res = await fetch(module._links.context.href);
+				const res = await fetch(module._links.context.href, {
+					headers: { Accept: 'application/ld+json' }
+				});
 
 				if (res.ok) {
 					contextExists = true;

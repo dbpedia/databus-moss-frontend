@@ -4,6 +4,7 @@
 	import TerminologyDeleter from '../terminology-deleter.svelte';
 	import TerminologyForm from '../terminology-form.svelte';
 	import type { MossTerminology } from '$lib/types';
+	import { toYaml, YAML_CONTENT_TYPE } from '$lib/utils/yaml-utils';
 	import { writable, derived } from 'svelte/store';
 	import { page } from '$app/stores';
 	import Button from '$lib/components/button.svelte';
@@ -64,15 +65,15 @@
 		try {
 			const res = await fetch(`/terminologies`, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(data.terminology)
+				headers: { 'Content-Type': YAML_CONTENT_TYPE },
+				body: toYaml(data.terminology)
 			});
 			if (!res.ok) {
 				console.error(await res.text());
 				return;
 			}
 
-			const dataRes = await fetch(`/data`, {
+			const dataRes = await fetch(`/terminologies/${data.terminology.id}/data`, {
 				method: 'PUT',
 				headers: { 'Content-Type': `${data.terminology.language}; charset=UTF-8` },
 				body: data.body
@@ -92,8 +93,8 @@
 		try {
 			const res = await fetch(`/terminologies/${data.terminology.id}`, {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(data.terminology)
+				headers: { 'Content-Type': YAML_CONTENT_TYPE },
+				body: toYaml(data.terminology)
 			});
 			if (!res.ok) {
 				console.error(await res.text());
