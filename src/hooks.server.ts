@@ -1,7 +1,10 @@
 import { handle as authHandle } from "./auth";
 import { env } from "$env/dynamic/private";
+import { setupFetchProxy } from "$lib/fetch-proxy";
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle, RequestEvent } from "@sveltejs/kit";
+
+setupFetchProxy();
 
 let proxyRoutes: string[] = [
     `/terminologies`,

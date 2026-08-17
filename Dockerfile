@@ -12,9 +12,10 @@ RUN npm install
 
 # Copy the rest of the application files and build the app
 COPY . .
-RUN npm run build
+RUN npm run build \
+  && npm prune --omit=dev
 
-# Stage 3: Run the Node.js SvelteKit server
+# Stage 2: Run the Node.js SvelteKit server
 FROM node:20-alpine AS sveltekit_server
 
 RUN apk add --no-cache bash
@@ -22,11 +23,8 @@ RUN apk add --no-cache bash
 # Set the working directory
 WORKDIR /app
 
-# Copy the build files from the previous stage
+# Copy the build output and pruned production dependencies
 COPY --from=builder /app ./
-
-# Install production dependencies
-RUN npm install --omit=dev
 
 # Expose the SvelteKit app port (typically 3000)
 EXPOSE 3000
