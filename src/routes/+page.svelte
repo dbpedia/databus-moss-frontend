@@ -16,7 +16,6 @@
 	import type { MossFacet, SearchTag } from '$lib/types';
 	import LookupFacet from '$lib/components/lookup-facet.svelte';
 	import ContentGate from '$lib/components/content-gate.svelte';
-	import { isAccessDenied } from '$lib/utils/auth-utils';
 
 	export let data;
 
@@ -152,7 +151,7 @@
 
 		if (queryString == undefined || queryString.length == 0) {
 			searchResults = {};
-			searchError = null;
+			searchErrorStatus = null;
 			return;
 		}
 
@@ -167,11 +166,11 @@
 
 		if (!response.ok) {
 			searchResults = {};
-			searchError = isAccessDenied(response.status) ? 'denied' : 'failed';
+			searchErrorStatus = response.status;
 			return;
 		}
 
-		searchError = null;
+		searchErrorStatus = null;
 
 		const data = await response.json();
 		var results: any = {};
@@ -229,11 +228,9 @@
 	let queryString: string = '';
 
 	let searchResults: { [key: string]: any } = {};
-	let searchError: 'denied' | 'failed' | null = null;
+	let searchErrorStatus: number | null = null;
 
-	$: gateStatus =
-		data.facetsStatus ??
-		(searchError === 'denied' ? 403 : searchError === 'failed' ? 500 : undefined);
+	$: gateStatus = data.facetsStatus ?? searchErrorStatus ?? undefined;
 
 	$: {
 		$page.url;

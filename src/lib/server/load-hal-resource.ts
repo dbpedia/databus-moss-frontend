@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { MossUtils } from '$lib/utils/moss-utils';
+import { getModuleSubResource, normalizeProxyPath } from '$lib/server/proxy-path';
 import type { PageServerLoad } from '@sveltejs/kit';
 
 export type HalBrowseItem = {
@@ -91,7 +92,7 @@ async function getAcceptHeader(
 
 	if (parts.length > 2 && (root === 'modules' || root === 'terminologies')) {
 		if (root === 'modules') {
-			const sub = parts[2];
+			const sub = getModuleSubResource(pathname);
 			if (sub === 'context') return 'application/ld+json';
 			if (sub === 'shapes') return 'text/turtle';
 			if (sub === 'template') {
@@ -125,7 +126,7 @@ export const loadHalResource: PageServerLoad = async ({ fetch, url }) => {
 	const segments = MossUtils.getUriSegments(url.pathname);
 	const accept = await getAcceptHeader(url.pathname, fetch);
 
-	const res = await fetch(url.pathname, {
+	const res = await fetch(normalizeProxyPath(url.pathname), {
 		headers: { Accept: accept }
 	});
 

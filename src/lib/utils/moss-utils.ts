@@ -34,6 +34,16 @@ export class MossUtils {
         }
     }
 
+    static getPublicContextUri(uri: string): string {
+        if (uri.endsWith('/context.jsonld')) {
+            return uri;
+        }
+        if (uri.endsWith('/context')) {
+            return `${uri}.jsonld`;
+        }
+        return uri;
+    }
+
     static async fetchDatabusResource(uri: string): Promise<DatabusResource> {
         const response = await fetch(uri, {
             headers: { Accept: 'application/ld+json' }

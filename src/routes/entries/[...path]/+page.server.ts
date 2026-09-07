@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import { MossUtils } from '$lib/utils/moss-utils';
 import { RdfUris } from '$lib/utils/rdf-uris';
 import { env as publicEnv } from '$env/dynamic/public';
@@ -26,6 +27,10 @@ export async function load({ fetch, url, locals, setHeaders }: any) {
     response = await fetch(url.pathname, {
         headers: { Accept: 'application/hal+json' }
     });
+
+    if (response.status === 404) {
+        error(404, 'Not found');
+    }
 
     if (!response.ok) {
         return {

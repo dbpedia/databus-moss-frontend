@@ -136,7 +136,7 @@
 			<hr class="section-divider" />
 			<div class="section-label">Context</div>
 			<div style="margin-bottom: 0.5rem">
-				<ResourceUri uri={contextUri} />
+				<ResourceUri uri={MossUtils.getPublicContextUri(contextUri)} />
 			</div>
 			<pre class="code json">{contextContent}</pre>
 		{/if}

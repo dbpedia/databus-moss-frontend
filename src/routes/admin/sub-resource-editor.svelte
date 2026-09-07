@@ -102,26 +102,71 @@
 
 <div class="subresource-editor">
 	{#if content === null && !editing}
-		<p style="margin-bottom: 0.5rem">No {resourceName} yet.</p>
-		<Button variant="primary" type="button" on:click={startEdit}>Create {resourceName}</Button>
-	{:else if editing}
-		<CodeMirror bind:value={code} {lang} {extensions} />
-		<div class="form-actions">
-			<Button variant="primary" type="button" on:click={save}>Save</Button>
-			<Button variant="secondary" type="button" on:click={cancel}>Cancel</Button>
+		<p class="empty-message">No {resourceName} yet.</p>
+		<div class="editor-container">
+			<div class="editor-toolbar">
+				<div class="button-group-right">
+					<Button variant="primary" type="button" on:click={startEdit}>Create {resourceName}</Button>
+				</div>
+			</div>
+			<div class="editor-preview empty">
+				<p>No content</p>
+			</div>
 		</div>
 	{:else}
-		<div class="editor-preview">
-			<pre>{content}</pre>
-		</div>
-		<div class="form-actions">
-			<Button variant="primary" type="button" on:click={startEdit}>Edit</Button>
-			<Button variant="danger" type="button" on:click={del}>Delete</Button>
+		<div class="editor-container">
+			<div class="editor-toolbar">
+				<div class="button-group-right">
+					{#if editing}
+						<Button variant="primary" type="button" on:click={save}>Save</Button>
+						<Button variant="secondary" type="button" on:click={cancel}>Cancel</Button>
+					{:else}
+						<Button variant="primary" type="button" on:click={startEdit}>Edit</Button>
+						<Button variant="danger" type="button" on:click={del}>Delete</Button>
+					{/if}
+				</div>
+			</div>
+
+			{#if editing}
+				<div class="editor-content">
+					<CodeMirror bind:value={code} {lang} {extensions} />
+				</div>
+			{:else}
+				<div class="editor-preview">
+					<pre>{content}</pre>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
 
 <style>
+	.empty-message {
+		margin-bottom: 0.5rem;
+	}
+
+	.editor-container {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.editor-toolbar {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 0.5rem;
+	}
+
+	.button-group-right {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.editor-content {
+		border: 1px solid #d1d5db;
+		border-radius: 0.5rem;
+		overflow: hidden;
+	}
+
 	.editor-preview {
 		border: 1px solid #d1d5db;
 		background-color: #f9fafb;
@@ -129,17 +174,19 @@
 		border-radius: 0.5rem;
 	}
 
+	.editor-preview.empty {
+		color: #6b7280;
+		font-size: 0.875rem;
+	}
+
+	.editor-preview.empty p {
+		margin: 0;
+	}
+
 	pre {
 		margin: 0;
 		font-family: monospace;
 		white-space: pre-wrap;
 		word-wrap: break-word;
-	}
-
-	.form-actions {
-		margin-top: 1rem;
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.5rem;
 	}
 </style>

@@ -2,21 +2,27 @@
 	import { page } from '$app/stores';
 	import Login from './login.svelte';
 	import { isAccessDenied } from '$lib/utils/auth-utils';
+	import { isServiceUnavailable, isServerError } from '$lib/utils/http-utils';
 
 	export let status: number | undefined = undefined;
 	export let unavailableMessage = 'This content is temporarily unavailable.';
+	export let serverErrorMessage = 'Something went wrong. Please try again later.';
 </script>
 
 {#if status}
 	<div class="content-gate">
 		<div class="content-gate-inner">
-			{#if !$page.data.userData}
+			{#if isServiceUnavailable(status)}
+				<p class="denied-message">{unavailableMessage}</p>
+			{:else if !$page.data.userData}
 				<p class="sign-in-message">Sign in to browse content</p>
 				<div class="sign-in-action">
 					<Login />
 				</div>
 			{:else if isAccessDenied(status)}
 				<p class="denied-message">You are not allowed to view this content.</p>
+			{:else if isServerError(status)}
+				<p class="denied-message">{serverErrorMessage}</p>
 			{:else}
 				<p class="denied-message">{unavailableMessage}</p>
 			{/if}
