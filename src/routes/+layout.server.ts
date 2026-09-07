@@ -23,7 +23,8 @@ function toCaller(me: UserInfo): CallerInfo {
 }
 
 function isUsernameSetupExempt(pathname: string): boolean {
-    return pathname.startsWith('/user')
+    return pathname === '/'
+        || pathname.startsWith('/user')
         || pathname.startsWith('/auth')
         || pathname.startsWith('/login')
         || pathname.startsWith('/signin')
@@ -35,17 +36,19 @@ export const load: LayoutServerLoad = async (event) => {
     let caller: CallerInfo | null = null;
 
     try {
-        const session = await event.locals.auth() as any;
         const me = await fetchMe(event.fetch);
 
         if (me) {
             caller = toCaller(me);
-            if (session?.user != null) {
+            // Only treat as logged in when the backend recognizes the bearer token (returns sub).
+            // A valid Auth.js cookie with an unrecognized/expired OIDC token still gets a public
+            // /users/me stub — that must not count as an authenticated MOSS user.
+            if (me.sub) {
                 userData = me;
             }
         }
 
-        if (userData && !userData.username?.trim() && !isUsernameSetupExempt(event.url.pathname)) {
+        if (userData?.sub && !userData.username?.trim() && !isUsernameSetupExempt(event.url.pathname)) {
             throw redirect(302, '/user');
         }
 

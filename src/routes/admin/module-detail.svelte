@@ -154,7 +154,7 @@
 				</p>
 
 				<div style="margin-bottom: 0.5rem">
-					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/modules/${activeModule.id}/context`}></ResourceUri>
+					<ResourceUri uri={`${env.PUBLIC_MOSS_BASE_URL}/modules/${activeModule.id}/context.jsonld`}></ResourceUri>
 				</div>
 				<SubResourceEditor
 					moduleId={activeModule.id}

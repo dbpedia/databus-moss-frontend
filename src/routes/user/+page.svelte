@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import Button from '$lib/components/button.svelte';
 	import Input from '$lib/components/input.svelte';
 	import FeedbackMessage from '$lib/components/feedback-message.svelte';
+	import Login from '$lib/components/login.svelte';
 	import type { UserInfo } from '$lib/types';
 
 	let usernameInput: string = '';
 	let user: UserInfo | undefined;
+	let sessionInvalid = false;
 	let feedback: any;
 
 	async function fetchUserData() {
@@ -16,9 +19,11 @@
 
 		if (response.ok) {
 			user = await response.json();
+			sessionInvalid = !user?.sub;
 			usernameInput = user?.username ?? '';
 		} else {
 			user = {};
+			sessionInvalid = response.status === 401;
 		}
 	}
 
@@ -36,6 +41,9 @@
 		if (response.ok) {
 			await fetchUserData();
 			feedback.showMessage('Profile saved!', true);
+		} else if (response.status === 401) {
+			sessionInvalid = true;
+			feedback.showMessage('Session expired or invalid. Please sign in again.', false);
 		} else {
 			feedback.showMessage('Failed to save profile.', false);
 		}
@@ -46,7 +54,12 @@
 	});
 </script>
 
-{#if user != undefined}
+{#if user != undefined && sessionInvalid && !$page.data.userData}
+	<p class="setup-notice">
+		Your sign-in session is not recognized by this MOSS instance. Sign out and sign in again.
+	</p>
+	<Login />
+{:else if user != undefined}
 	{#if !user.username?.trim()}
 		<p class="setup-notice">
 			Please choose a username to continue using MOSS.

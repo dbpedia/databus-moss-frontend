@@ -1,6 +1,7 @@
 import { handle as authHandle } from "./auth";
 import { env } from "$env/dynamic/private";
 import { setupFetchProxy } from "$lib/fetch-proxy";
+import { isModuleContextJsonLdPath, normalizeProxyPath } from "$lib/server/proxy-path";
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle, RequestEvent } from "@sveltejs/kit";
 
@@ -31,7 +32,8 @@ async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, str
     const headers = new Headers(event.request.headers);
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
 
-    const backendUrl = `${env.MOSS_API_SERVER_URL}${requestURL.pathname}${requestURL.search}`;
+    const backendPath = normalizeProxyPath(requestURL.pathname);
+    const backendUrl = `${env.MOSS_API_SERVER_URL}${backendPath}${requestURL.search}`;
 
     const proxyOptions: RequestInit = {
         method: event.request.method,
@@ -71,7 +73,7 @@ const apiProxy: Handle = async ({ event, resolve }) => {
     const accessToken = session?.accessToken ?? '';
 
     const useSvelteKit =
-        accept.includes('text/html') ||
+        (accept.includes('text/html') && !isModuleContextJsonLdPath(pathname)) ||
         pathname.startsWith('/auth') ||
         pathname.endsWith('__data.json');
 
