@@ -10,6 +10,7 @@
 	import Input from '$lib/components/input.svelte';
 	import Textarea from '$lib/components/textarea.svelte';
 	import Select from '$lib/components/select.svelte';
+	import CopySpan from '$lib/components/copy-span.svelte';
 	import { toYaml, YAML_CONTENT_TYPE } from '$lib/utils/yaml-utils';
 
 	export let activeModule: MossModule;
@@ -181,9 +182,26 @@
 
 		{#if activeTab === 'template'}
 			<div class="detail-card">
-				<p class="resource-info">
-					The template describes the structure of resources for this module.
-				</p>
+				<div class="resource-info">
+					<p>The template describes the structure of entries for this module.</p>
+				</div>
+
+				<div class="resource-info">
+					<p>
+						Use <CopySpan text="$DATABUS_RESOURCE" /> as a placeholder in the template for the target
+						resource URI.
+					</p>
+				</div>
+
+				{#if activeModule.language === 'application/ld+json'}
+					<div class="resource-info">
+						<p>
+							Use <CopySpan
+								text={`${env.PUBLIC_MOSS_BASE_URL}/modules/${activeModule.id}/context.jsonld`}
+							/> in the <code>@context</code> field.
+						</p>
+					</div>
+				{/if}
 
 				<TemplateEditor moduleId={activeModule.id} language={activeModule.language} />
 			</div>
@@ -224,14 +242,13 @@
 
 	.resource-info {
 		position: relative;
-		display: flex;
-		align-items: flex-start;
 		background-color: #eff6ff;
 		border: 1px solid #3b82f6;
 		color: #1e40af;
 		padding: 0.5rem 0.75rem 0.5rem 2rem;
 		border-radius: 0.5rem;
 		font-size: 0.875rem;
+		line-height: 1.5;
 		margin-bottom: 0.75rem;
 	}
 
@@ -252,6 +269,18 @@
 		font-weight: bold;
 		font-size: 0.75rem;
 	}
+
+	.resource-info p {
+		margin: 0;
+	}
+
+	.resource-info code {
+		font-family: monospace;
+		background-color: rgba(59, 130, 246, 0.1);
+		padding: 0.05rem 0.25rem;
+		border-radius: 0.25rem;
+	}
+
 	.tabs button:hover {
 		background: #e5e7eb;
 	}

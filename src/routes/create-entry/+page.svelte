@@ -347,6 +347,19 @@
 									on:click={createEntry}>Create Entry</GradientButton
 								>
 							</div>
+
+							{#if validationMessages.length > 0}
+								<ul class="error-box">
+									{#each validationMessages as msg}
+										<li>{msg}</li>
+									{/each}
+								</ul>
+							{/if}
+
+							{#if errorMessage && validationMessages.length === 0}
+								<div class="error-box">{errorMessage}</div>
+							{/if}
+
 							<div class="code-area">
 								<CodeMirror bind:value={templateContent} format={activeModule.language} />
 							</div>
@@ -360,18 +373,6 @@
 							/>
 						</div>
 					</div>
-
-					{#if validationMessages.length > 0}
-						<ul class="error-box">
-							{#each validationMessages as msg}
-								<li>{msg}</li>
-							{/each}
-						</ul>
-					{/if}
-
-					{#if errorMessage && validationMessages.length === 0}<div class="error-box">
-							{errorMessage}
-						</div>{/if}
 				{/if}
 			{/if}
 		</div>
@@ -466,7 +467,7 @@
 		background-color: #f8d7da;
 		color: #721c24;
 		border-radius: 0.5rem;
-		margin-top: 1em;
+		margin-bottom: 0.5rem;
 	}
 	.resource-warning {
 		position: relative;

@@ -18,6 +18,7 @@
 	let code: string = '';
 	let lang: LanguageSupport | null = null;
 	let extensions: Extension[] = [];
+	let errorMessage = '';
 
 	$: {
 		const config = getLanguageAndExtensions(format);
@@ -61,46 +62,74 @@
 	}
 
 	function startEdit() {
+		errorMessage = '';
 		editing = true;
 		code = content || '';
 	}
 
 	function cancel() {
+		errorMessage = '';
 		editing = false;
 	}
 
+	function parseErrorMessage(text: string, status: number): string {
+		try {
+			const json = JSON.parse(text);
+			if (typeof json.message === 'string') return json.message;
+		} catch {
+			// not JSON
+		}
+		return text || `Failed to save (${status})`;
+	}
+
 	async function save() {
+		errorMessage = '';
 		try {
 			const res = await fetch(`/modules/${moduleId}/${resourceName}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': contentType },
 				body: code
 			});
-			if (!res.ok) console.error(await res.text());
-			else content = code;
-		} catch (err) {
-			console.error(err);
-		} finally {
+			if (!res.ok) {
+				const text = await res.text();
+				errorMessage = parseErrorMessage(text, res.status);
+				console.error(errorMessage);
+				return;
+			}
+			content = code;
 			editing = false;
+		} catch (err) {
+			errorMessage = `Error: ${err}`;
+			console.error(err);
 		}
 	}
 
 	async function del() {
 		if (!confirm(`Are you sure you want to delete ${resourceName}? This cannot be undone.`)) return;
 
+		errorMessage = '';
 		try {
 			const res = await fetch(`/modules/${moduleId}/${resourceName}`, {
 				method: 'DELETE'
 			});
-			if (!res.ok) console.error(await res.text());
-			else content = null;
+			if (!res.ok) {
+				const text = await res.text();
+				errorMessage = parseErrorMessage(text, res.status);
+				console.error(errorMessage);
+				return;
+			}
+			content = null;
 		} catch (err) {
+			errorMessage = `Error: ${err}`;
 			console.error(err);
 		}
 	}
 </script>
 
 <div class="subresource-editor">
+	{#if errorMessage}
+		<p class="error">{errorMessage}</p>
+	{/if}
 	{#if content === null && !editing}
 		<p class="empty-message">No {resourceName} yet.</p>
 		<div class="editor-container">
@@ -141,6 +170,11 @@
 </div>
 
 <style>
+	.error {
+		color: red;
+		margin-bottom: 0.75rem;
+	}
+
 	.empty-message {
 		margin-bottom: 0.5rem;
 	}
