@@ -2,6 +2,7 @@ import { handle as authHandle } from "./auth";
 import { env } from "$env/dynamic/private";
 import { setupFetchProxy } from "$lib/fetch-proxy";
 import { isModuleContextJsonLdPath, normalizeProxyPath } from "$lib/server/proxy-path";
+import { readProxyBody } from "$lib/server/proxy-body";
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle, RequestEvent } from "@sveltejs/kit";
 
@@ -26,11 +27,10 @@ function isSparqlRoute(pathname: string): boolean {
 
 async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, string>>, string | null>, accessToken: string, requestURL: URL) {
 
-    // var text = await event.request.text();
-
     // API request: use session to append Bearer token
     const headers = new Headers(event.request.headers);
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+    headers.delete('content-length');
 
     const backendPath = normalizeProxyPath(requestURL.pathname);
     const backendUrl = `${env.MOSS_API_SERVER_URL}${backendPath}${requestURL.search}`;
@@ -38,11 +38,7 @@ async function fetchProxyResponse(event: RequestEvent<Partial<Record<string, str
     const proxyOptions: RequestInit = {
         method: event.request.method,
         headers,
-        body: ['GET', 'HEAD'].includes(event.request.method)
-            ? undefined
-            : event.request.body,
-        // @ts-expect-error duplex is required for streaming
-        duplex: 'half'
+        body: await readProxyBody(event.request)
     };
 
     const res = await fetch(backendUrl, proxyOptions);

@@ -1,5 +1,5 @@
 import { env } from "$env/dynamic/private";
-import fetch from "node-fetch";
+import nodeFetch from "node-fetch";
 import type { RequestInit, RequestInfo } from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { HttpProxyAgent } from "http-proxy-agent";
@@ -35,16 +35,23 @@ export function setupFetchProxy() {
 		return undefined;
 	};
 
-	const originalFetch = fetch;
+	// Keep the native (undici) fetch for everything that is not proxied. node-fetch
+	// does not support WHATWG ReadableStream bodies, so internal traffic (e.g. to
+	// moss-server, usually listed in NO_PROXY) must not go through it.
+	const nativeFetch = globalThis.fetch;
 
-	(global as any).fetch = async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
-		if (shouldBypassProxy(url as string)) {
-			return originalFetch(url, init) as any;
+	(globalThis as any).fetch = async (input: any, init?: any): Promise<Response> => {
+		const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+
+		if (shouldBypassProxy(url)) {
+			return nativeFetch(input, init);
 		}
 
-		const proxyAgent = getProxyAgent(url as string);
-		const options = proxyAgent ? { ...init, agent: proxyAgent } : init;
+		const proxyAgent = getProxyAgent(url);
+		if (!proxyAgent) {
+			return nativeFetch(input, init);
+		}
 
-		return originalFetch(url, options) as any;
+		return nodeFetch(url as RequestInfo, { ...(init as RequestInit), agent: proxyAgent }) as any;
 	};
 }

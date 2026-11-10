@@ -1,5 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
+import { readProxyBody } from '$lib/server/proxy-body';
 
 async function proxyHandler({ request, locals }: Parameters<RequestHandler>[0]) {
 	const session = await locals.auth?.();
@@ -13,14 +14,13 @@ async function proxyHandler({ request, locals }: Parameters<RequestHandler>[0]) 
 	}
 	headers.delete('accept-encoding');
 	headers.delete('host');
+	headers.delete('content-length');
 
 	try {
 		const proxyOptions: RequestInit = {
 			method: request.method,
 			headers,
-			body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
-			// @ts-expect-error duplex is required for streaming request bodies
-			duplex: 'half'
+			body: await readProxyBody(request)
 		};
 
 		const res = await fetch(backendUrl, proxyOptions);
